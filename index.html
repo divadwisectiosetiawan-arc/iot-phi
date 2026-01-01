@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>ESP32 IoT Dashboard</title>
+<script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+
+<style>
+:root {
+  --bg:#0f172a;
+  --card:#1e293b;
+  --dark:#020617;
+  --primary:#38bdf8;
+  --success:#22c55e;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;
+  font-family:"Segoe UI",Arial;
+  background:var(--bg);
+  color:#e5e7eb;
+}
+
+/* LOGIN */
+#loginPage{
+  height:100vh;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+}
+.login-box{
+  background:var(--card);
+  padding:40px;
+  width:340px;
+  border-radius:16px;
+  box-shadow:0 0 25px rgba(0,0,0,.5);
+}
+.login-box h2{text-align:center}
+.login-box input{
+  width:100%;
+  padding:12px;
+  margin-bottom:12px;
+  border-radius:8px;
+  border:none;
+}
+.login-box button{
+  width:100%;
+  padding:12px;
+  background:var(--primary);
+  border:none;
+  border-radius:8px;
+  font-weight:bold;
+  cursor:pointer;
+}
+#error{color:#f87171;text-align:center}
+
+/* DASHBOARD */
+#dashboardPage{display:none;animation:fade .4s ease}
+@keyframes fade{
+  from{opacity:0;transform:translateY(8px)}
+  to{opacity:1;transform:translateY(0)}
+}
+
+header{
+  background:var(--dark);
+  padding:14px 25px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+nav button{
+  margin-left:6px;
+  padding:8px 14px;
+  border-radius:6px;
+  border:none;
+  background:#334155;
+  color:white;
+  cursor:pointer;
+}
+
+.container{padding:25px}
+
+.total-box{
+  background:var(--dark);
+  padding:22px;
+  border-radius:18px;
+  text-align:center;
+  margin-bottom:25px;
+}
+.total-box h1{
+  margin:5px 0 0;
+  font-size:48px;
+  color:var(--primary);
+}
+
+.grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(160px,1fr));
+  gap:18px;
+}
+.card{
+  background:var(--card);
+  padding:18px;
+  border-radius:14px;
+  text-align:center;
+}
+.count{
+  font-size:30px;
+  color:var(--success);
+}
+
+table{
+  width:100%;
+  border-collapse:collapse;
+}
+th,td{
+  padding:10px;
+  border-bottom:1px solid #334155;
+  font-size:14px;
+}
+
+footer{
+  text-align:center;
+  padding:10px;
+  font-size:13px;
+  color:#94a3b8;
+}
+</style>
+</head>
+
+<body>
+
+<!-- LOGIN -->
+<div id="loginPage">
+  <div class="login-box">
+    <h2>IoT Dashboard Login</h2>
+    <input id="username" placeholder="Username">
+    <input id="password" type="password" placeholder="Password">
+    <button onclick="doLogin()">LOGIN</button>
+    <p id="error"></p>
+  </div>
+</div>
+
+<!-- DASHBOARD -->
+<div id="dashboardPage">
+
+<header>
+  <b>ESP32 Proximity Counter</b>
+  <nav>
+    <span id="clock"></span>
+    <button onclick="showDashboard()">Dashboard</button>
+    <button onclick="showHistory()">History</button>
+    <button onclick="saveData()">Simpan</button>
+    <button onclick="resetCounter()">Reset</button>
+    <button onclick="logout()">Logout</button>
+  </nav>
+</header>
+
+<div class="container" id="dashboardView">
+  <div class="total-box">
+    <div>Total Counter</div>
+    <h1 id="total">0</h1>
+  </div>
+  <div class="grid" id="cards"></div>
+</div>
+
+<div class="container" id="historyView" style="display:none">
+  <h2>Data Tersimpan</h2>
+  <table id="historyTable">
+    <tr><th>Waktu</th><th>Total</th><th>Detail</th></tr>
+  </table>
+</div>
+
+<footer>Status MQTT: <span id="status">Initializing...</span></footer>
+</div>
+
+<script>
+/* ================= LOGIN ================= */
+function doLogin(){
+  if(username.value==="admin" && password.value==="admin123"){
+    sessionStorage.setItem("login","1");
+    location.reload();
+  }else{
+    error.innerText="Username atau password salah";
+  }
+}
+function logout(){
+  sessionStorage.clear();
+  location.reload();
+}
+window.onload=()=>{
+  if(sessionStorage.getItem("login")==="1"){
+    loginPage.style.display="none";
+    dashboardPage.style.display="block";
+  }
+};
+
+/* ================= CLOCK ================= */
+setInterval(()=>{
+  clock.innerText=new Date().toLocaleString();
+},1000);
+
+/* ================= VIEW ================= */
+function showDashboard(){
+  dashboardView.style.display="block";
+  historyView.style.display="none";
+}
+function showHistory(){
+  dashboardView.style.display="none";
+  historyView.style.display="block";
+  loadHistory();
+}
+
+/* ================= SENSOR CARDS ================= */
+for(let i=1;i<=12;i++){
+  cards.innerHTML+=`
+    <div class="card">
+      Sensor ${i}
+      <div class="count" id="s${i}">0</div>
+    </div>`;
+}
+
+/* ================= MQTT (FIXED) ================= */
+let latestCounter = {};
+const client = mqtt.connect(
+  "wss://c836c913dd894d7db71ce06137b51f4e.s1.eu.hivemq.cloud:8884/mqtt",
+  {
+    username: "adminphi123",
+    password: "Phi12345",
+    reconnectPeriod: 2000
+  }
+);
+
+client.on("connect", () => {
+  document.getElementById("status").innerText = "Connected";
+  client.subscribe("iot/esp32/proximity_counter");
+});
+
+client.on("message", (topic, msg) => {
+  const data = JSON.parse(msg.toString());
+  let total = 0;
+  latestCounter = data.counter;
+
+  for (let i = 1; i <= 12; i++) {
+    const val = data.counter[`s${i}`] || 0;
+    document.getElementById(`s${i}`).innerText = val;
+    total += val;
+  }
+  document.getElementById("total").innerText = total;
+});
+
+
+/* ================= SAVE DATA ================= */
+function saveData(){
+  const history=JSON.parse(localStorage.getItem("history")||"[]");
+  history.push({
+    time:new Date().toLocaleString(),
+    total:total.innerText,
+    counter:latestCounter
+  });
+  localStorage.setItem("history",JSON.stringify(history));
+  alert("Data disimpan");
+}
+function loadHistory(){
+  historyTable.innerHTML="<tr><th>Waktu</th><th>Total</th><th>Detail</th></tr>";
+  const history=JSON.parse(localStorage.getItem("history")||"[]");
+  history.forEach(h=>{
+    historyTable.innerHTML+=`
+      <tr>
+        <td>${h.time}</td>
+        <td>${h.total}</td>
+        <td>${JSON.stringify(h.counter)}</td>
+      </tr>`;
+  });
+}
+
+/* ================= RESET ================= */
+function resetCounter(){
+  client.publish("iot/esp32/cmd","RESET");
+}
+</script>
+
+</body>
+</html>
