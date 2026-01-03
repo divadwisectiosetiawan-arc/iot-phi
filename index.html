@@ -147,6 +147,12 @@ footer{
 <header>
   <b>ESP32 Proximity Counter</b>
   <nav>
+<select id="machineSelect" onchange="changeMachine()">
+  <option value="machine01">Machine 01</option>
+  <option value="machine02">Machine 02</option>
+  <option value="machine03">Machine 03</option>
+</select>
+
     <span id="clock"></span>
     <button onclick="showDashboard()">Dashboard</button>
     <button onclick="showHistory()">History</button>
@@ -278,6 +284,47 @@ function loadHistory(){
 function resetCounter(){
   client.publish("iot/esp32/cmd","RESET");
 }
+
+/* ================= TAMBAHAN MULTI MACHINE ================= */
+
+// machine aktif
+let currentMachine = "machine01";
+
+// simpan topic lama
+let dataTopic = "iot/esp32/proximity_counter";
+let cmdTopic  = "iot/esp32/cmd";
+
+/* GANTI SUBSCRIBE SAAT GANTI MACHINE */
+function changeMachine(){
+  // unsubscribe topic lama
+  client.unsubscribe(dataTopic);
+
+  // update topic baru
+  dataTopic = `iot/esp32/${currentMachine}/proximity_counter`;
+  cmdTopic  = `iot/esp32/${currentMachine}/cmd`;
+
+  // subscribe baru
+  client.subscribe(dataTopic);
+
+  // reset tampilan
+  for(let i=1;i<=12;i++){
+    document.getElementById(`s${i}`).innerText = 0;
+  }
+  document.getElementById("total").innerText = 0;
+}
+
+/* override nilai machine saat dropdown berubah */
+document.getElementById("machineSelect").addEventListener("change", e=>{
+  currentMachine = e.target.value;
+  changeMachine();
+});
+
+/* ================= OVERRIDE RESET (TANPA UBAH FUNGSI LAMA) ================= */
+const oldReset = resetCounter;
+resetCounter = function(){
+  client.publish(cmdTopic, "RESET");
+};
+
 </script>
 
 </body>
