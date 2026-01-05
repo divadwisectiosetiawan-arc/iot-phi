@@ -212,9 +212,7 @@ window.onload=()=>{
           total+=v;
         }
         document.getElementById("total").innerText=total;
-      }client.on("close", ()=>{
-  document.getElementById("status").innerText = "ESP Offline (Cache)";
-});
+      }
     }
   }
 };
@@ -280,24 +278,35 @@ client.on("message", (topic, msg) => {
   if(machine !== activeMachine) return;
   // =====================================
   // ===== PROTEKSI DATA RESET AKIBAT ESP MATI =====
-const isAllZero = Object.values(data.counter).every(v => v === 0);
+  const isAllZero = Object.values(data.counter).every(v => v === 0);
 
-// jika semua 0 DAN bukan reset dari web → abaikan
-if(isAllZero && data.reset_source !== "web"){
-  console.warn("IGNORE ESP REBOOT RESET");
-  return;
-}
-// ==============================================
-
-  let total = 0;
-  latestCounter = data.counter;
-
-  for (let i = 1; i <= 12; i++) {
-    const val = data.counter[`s${i}`] || 0;
-    document.getElementById(`s${i}`).innerText = val;
-    total += val;
+  // jika semua 0 DAN bukan reset dari web → abaikan
+  if(isAllZero && data.reset_source !== "web"){
+    console.warn("IGNORE ESP REBOOT RESET");
+    return;
   }
-  document.getElementById("total").innerText = total;
+  // ==============================================
+
+  // ===== TAMBAHAN: HANYA UPDATE JIKA NILAI BARU >= NILAI LAMA (COUNTER HANYA NAIK) =====
+  let total = parseInt(document.getElementById("total").innerText) || 0;
+  let updated = false;
+  for (let i = 1; i <= 12; i++) {
+    const currentVal = parseInt(document.getElementById(`s${i}`).innerText) || 0;
+    const newVal = data.counter[`s${i}`] || 0;
+    if (newVal >= currentVal) {
+      document.getElementById(`s${i}`).innerText = newVal;
+      total += (newVal - currentVal);
+      updated = true;
+    }
+  }
+  if (updated) {
+    document.getElementById("total").innerText = total;
+    latestCounter = {};
+    for (let i = 1; i <= 12; i++) {
+      latestCounter[`s${i}`] = parseInt(document.getElementById(`s${i}`).innerText) || 0;
+    }
+  }
+  // ==============================================
 });
 
 
