@@ -133,7 +133,7 @@ footer{
 <!-- LOGIN -->
 <div id="loginPage">
   <div class="login-box">
-    <h2>IoT Dashboard Login</h2>
+    <h2>USER LOGIN</h2>
     <input id="username" placeholder="Username">
     <input id="password" type="password" placeholder="Password">
     <button onclick="doLogin()">LOGIN</button>
@@ -145,7 +145,7 @@ footer{
 <div id="dashboardPage">
 
 <header>
-  <b>ESP32 Proximity Counter</b>
+  <b>Counter Total Produksi PHI</b>
   <nav>
 <select id="machineSelect" onchange="changeMachine()">
   <option value="machine01">Machine 01</option>
@@ -237,7 +237,7 @@ function showHistory(){
 for(let i=1;i<=12;i++){
   cards.innerHTML+=`
     <div class="card">
-      Sensor ${i}
+      Line ${i}
       <div class="count" id="s${i}">0</div>
     </div>`;
 }
