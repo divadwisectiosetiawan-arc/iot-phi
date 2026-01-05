@@ -212,10 +212,10 @@ window.onload=()=>{
           total+=v;
         }
         document.getElementById("total").innerText=total;
-      }
+      }client.on("close", ()=>{
+  document.getElementById("status").innerText = "ESP Offline (Cache)";
+});
     }
-    // =====================================
-  
   }
 };
 
@@ -279,6 +279,15 @@ client.on("message", (topic, msg) => {
   // jika bukan machine aktif → jangan render
   if(machine !== activeMachine) return;
   // =====================================
+  // ===== PROTEKSI DATA RESET AKIBAT ESP MATI =====
+const isAllZero = Object.values(data.counter).every(v => v === 0);
+
+// jika semua 0 DAN bukan reset dari web → abaikan
+if(isAllZero && data.reset_source !== "web"){
+  console.warn("IGNORE ESP REBOOT RESET");
+  return;
+}
+// ==============================================
 
   let total = 0;
   latestCounter = data.counter;
