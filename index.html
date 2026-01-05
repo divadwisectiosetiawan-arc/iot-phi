@@ -198,6 +198,24 @@ window.onload=()=>{
   if(sessionStorage.getItem("login")==="1"){
     loginPage.style.display="none";
     dashboardPage.style.display="block";
+
+   // ==== TAMBAHAN LOAD CACHE TERAKHIR ====
+    const keys = Object.keys(localStorage).filter(k=>k.startsWith("cache_"));
+    if(keys.length){
+      activeMachine = keys[0].replace("cache_","");
+      const cached = loadCache(activeMachine);
+      if(cached && cached.counter){
+        let total=0;
+        for(let i=1;i<=12;i++){
+          const v=cached.counter[`s${i}`]||0;
+          document.getElementById(`s${i}`).innerText=v;
+          total+=v;
+        }
+        document.getElementById("total").innerText=total;
+      }
+    }
+    // =====================================
+  
   }
 };
 
@@ -228,6 +246,7 @@ for(let i=1;i<=12;i++){
 
 /* ================= MQTT (FIXED) ================= */
 let latestCounter = {};
+let activeMachine = null;
 const client = mqtt.connect(
   "wss://c836c913dd894d7db71ce06137b51f4e.s1.eu.hivemq.cloud:8884/mqtt",
   {
@@ -244,6 +263,23 @@ client.on("connect", () => {
 
 client.on("message", (topic, msg) => {
   const data = JSON.parse(msg.toString());
+
+  // ==== TAMBAHAN AUTO DETECT MACHINE ====
+  const parts = topic.split("/");
+  const machine = parts[2]; // iot/esp32/<machine>/proximity_counter
+
+  // simpan cache
+  saveCache(machine, data);
+
+  // jika belum ada machine aktif → jadikan aktif
+  if(!activeMachine){
+    activeMachine = machine;
+  }
+
+  // jika bukan machine aktif → jangan render
+  if(machine !== activeMachine) return;
+  // =====================================
+
   let total = 0;
   latestCounter = data.counter;
 
@@ -325,6 +361,28 @@ resetCounter = function(){
   client.publish(cmdTopic, "RESET");
 };
 
+/* ========== CACHE PER MACHINE (TAMBAHAN) ========== */
+
+function cacheKey(machine){
+  return "cache_" + machine;
+}
+
+function saveCache(machine, payload){
+  localStorage.setItem(cacheKey(machine), JSON.stringify(payload));
+}
+
+function loadCache(machine){
+  const raw = localStorage.getItem(cacheKey(machine));
+  if(!raw) return null;
+  return JSON.parse(raw);
+}
+
+const originalReset = resetCounter;
+resetCounter = function(){
+  const targetMachine = document.getElementById("machineSelect").value;
+  const targetCmd = `iot/esp32/${targetMachine}/cmd`;
+  client.publish(targetCmd, "RESET");
+};
 </script>
 
 </body>
