@@ -6,27 +6,125 @@
 <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
 
 <style>
-:root{
-  --bg:#0f172a;--card:#1e293b;--dark:#020617;
-  --primary:#38bdf8;--success:#22c55e;
+:root {
+  --bg:#0f172a;
+  --card:#1e293b;
+  --dark:#020617;
+  --primary:#38bdf8;
+  --success:#22c55e;
 }
 *{box-sizing:border-box}
-body{margin:0;font-family:Segoe UI;background:var(--bg);color:#e5e7eb}
-#loginPage{height:100vh;display:flex;justify-content:center;align-items:center}
-.login-box{background:var(--card);padding:40px;width:340px;border-radius:16px}
-.login-box input{width:100%;padding:12px;margin-bottom:12px;border-radius:8px;border:none}
-.login-box button{width:100%;padding:12px;background:var(--primary);border:none;border-radius:8px}
+body{
+  margin:0;
+  font-family:"Segoe UI",Arial;
+  background:var(--bg);
+  color:#e5e7eb;
+}
+
+/* LOGIN */
+#loginPage{
+  height:100vh;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+}
+.login-box{
+  background:var(--card);
+  padding:40px;
+  width:340px;
+  border-radius:16px;
+  box-shadow:0 0 25px rgba(0,0,0,.5);
+}
+.login-box h2{text-align:center}
+.login-box input{
+  width:100%;
+  padding:12px;
+  margin-bottom:12px;
+  border-radius:8px;
+  border:none;
+}
+.login-box button{
+  width:100%;
+  padding:12px;
+  background:var(--primary);
+  border:none;
+  border-radius:8px;
+  font-weight:bold;
+  cursor:pointer;
+}
 #error{color:#f87171;text-align:center}
-#dashboardPage{display:none}
-header{background:var(--dark);padding:14px 25px;display:flex;justify-content:space-between}
-nav button{margin-left:6px;padding:8px 14px;border:none;border-radius:6px}
+
+/* DASHBOARD */
+#dashboardPage{display:none;animation:fade .4s ease}
+@keyframes fade{
+  from{opacity:0;transform:translateY(8px)}
+  to{opacity:1;transform:translateY(0)}
+}
+
+header{
+  background:var(--dark);
+  padding:14px 25px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+nav button{
+  margin-left:6px;
+  padding:8px 14px;
+  border-radius:6px;
+  border:none;
+  background:#334155;
+  color:white;
+  cursor:pointer;
+}
+
 .container{padding:25px}
-.total-box{background:var(--dark);padding:22px;border-radius:18px;text-align:center}
-.total-box h1{font-size:48px;color:var(--primary)}
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:18px}
-.card{background:var(--card);padding:18px;border-radius:14px;text-align:center}
-.count{font-size:30px;color:var(--success)}
-footer{text-align:center;padding:10px;font-size:13px}
+
+.total-box{
+  background:var(--dark);
+  padding:22px;
+  border-radius:18px;
+  text-align:center;
+  margin-bottom:25px;
+}
+.total-box h1{
+  margin:5px 0 0;
+  font-size:48px;
+  color:var(--primary);
+}
+
+.grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(160px,1fr));
+  gap:18px;
+}
+.card{
+  background:var(--card);
+  padding:18px;
+  border-radius:14px;
+  text-align:center;
+}
+.count{
+  font-size:30px;
+  color:var(--success);
+}
+
+table{
+  width:100%;
+  border-collapse:collapse;
+}
+th,td{
+  padding:10px;
+  border-bottom:1px solid #334155;
+  font-size:14px;
+}
+
+footer{
+  text-align:center;
+  padding:10px;
+  font-size:13px;
+  color:#94a3b8;
+}
 </style>
 </head>
 
@@ -45,17 +143,26 @@ footer{text-align:center;padding:10px;font-size:13px}
 
 <!-- DASHBOARD -->
 <div id="dashboardPage">
+
 <header>
   <b>ESP32 Proximity Counter</b>
   <nav>
-    <select id="machineSelect"></select>
+<select id="machineSelect" onchange="changeMachine()">
+  <option value="machine01">Machine 01</option>
+  <option value="machine02">Machine 02</option>
+  <option value="machine03">Machine 03</option>
+</select>
+
     <span id="clock"></span>
+    <button onclick="showDashboard()">Dashboard</button>
+    <button onclick="showHistory()">History</button>
+    <button onclick="saveData()">Simpan</button>
     <button onclick="resetCounter()">Reset</button>
     <button onclick="logout()">Logout</button>
   </nav>
 </header>
 
-<div class="container">
+<div class="container" id="dashboardView">
   <div class="total-box">
     <div>Total Counter</div>
     <h1 id="total">0</h1>
@@ -63,118 +170,229 @@ footer{text-align:center;padding:10px;font-size:13px}
   <div class="grid" id="cards"></div>
 </div>
 
-<footer>Status MQTT: <span id="status">Init</span></footer>
+<div class="container" id="historyView" style="display:none">
+  <h2>Data Tersimpan</h2>
+  <table id="historyTable">
+    <tr><th>Waktu</th><th>Total</th><th>Detail</th></tr>
+  </table>
+</div>
+
+<footer>Status MQTT: <span id="status">Initializing...</span></footer>
 </div>
 
 <script>
 /* ================= LOGIN ================= */
 function doLogin(){
-  if(username.value==="admin"&&password.value==="admin123"){
-    sessionStorage.setItem("login","1");location.reload();
-  }else error.innerText="Login salah";
+  if(username.value==="admin" && password.value==="admin123"){
+    sessionStorage.setItem("login","1");
+    location.reload();
+  }else{
+    error.innerText="Username atau password salah";
+  }
 }
-function logout(){sessionStorage.clear();location.reload()}
+function logout(){
+  sessionStorage.clear();
+  location.reload();
+}
 window.onload=()=>{
   if(sessionStorage.getItem("login")==="1"){
     loginPage.style.display="none";
     dashboardPage.style.display="block";
-    loadLastCache();
+
+   // ==== TAMBAHAN LOAD CACHE TERAKHIR ====
+    const keys = Object.keys(localStorage).filter(k=>k.startsWith("cache_"));
+    if(keys.length){
+      activeMachine = keys[0].replace("cache_","");
+      const cached = loadCache(activeMachine);
+      if(cached && cached.counter){
+        let total=0;
+        for(let i=1;i<=12;i++){
+          const v=cached.counter[`s${i}`]||0;
+          document.getElementById(`s${i}`).innerText=v;
+          total+=v;
+        }
+        document.getElementById("total").innerText=total;
+      }client.on("close", ()=>{
+  document.getElementById("status").innerText = "ESP Offline (Cache)";
+});
+    }
   }
 };
 
 /* ================= CLOCK ================= */
-setInterval(()=>clock.innerText=new Date().toLocaleString(),1000);
+setInterval(()=>{
+  clock.innerText=new Date().toLocaleString();
+},1000);
 
-/* ================= SENSOR UI ================= */
-for(let i=1;i<=12;i++){
-  cards.innerHTML+=`<div class="card">Sensor ${i}<div class="count" id="s${i}">0</div></div>`;
+/* ================= VIEW ================= */
+function showDashboard(){
+  dashboardView.style.display="block";
+  historyView.style.display="none";
+}
+function showHistory(){
+  dashboardView.style.display="none";
+  historyView.style.display="block";
+  loadHistory();
 }
 
-/* ================= MQTT ================= */
-let activeMachine=null;
-let allowZeroOnce=false;
-let latestCounter={};
+/* ================= SENSOR CARDS ================= */
+for(let i=1;i<=12;i++){
+  cards.innerHTML+=`
+    <div class="card">
+      Sensor ${i}
+      <div class="count" id="s${i}">0</div>
+    </div>`;
+}
 
-const client=mqtt.connect(
-"wss://c836c913dd894d7db71ce06137b51f4e.s1.eu.hivemq.cloud:8884/mqtt",
-{username:"adminphi123",password:"Phi12345",reconnectPeriod:2000}
+/* ================= MQTT (FIXED) ================= */
+let latestCounter = {};
+let activeMachine = null;
+const client = mqtt.connect(
+  "wss://c836c913dd894d7db71ce06137b51f4e.s1.eu.hivemq.cloud:8884/mqtt",
+  {
+    username: "adminphi123",
+    password: "Phi12345",
+    reconnectPeriod: 2000
+  }
 );
 
-client.on("connect",()=>{
-  status.innerText="Connected";
+client.on("connect", () => {
+  document.getElementById("status").innerText = "Connected";
+  client.subscribe("iot/esp32/proximity_counter");
 });
 
-client.on("message",(topic,msg)=>{
-  const data=JSON.parse(msg.toString());
-  const machine=topic.split("/")[2];
-  const isZero=Object.values(data.counter||{}).every(v=>v===0);
+client.on("message", (topic, msg) => {
+  const data = JSON.parse(msg.toString());
 
-  if(isZero && !allowZeroOnce){
-    console.warn("ESP reboot ignored");
-    return;
+  // ==== TAMBAHAN AUTO DETECT MACHINE ====
+  const parts = topic.split("/");
+  const machine = parts[2]; // iot/esp32/<machine>/proximity_counter
+
+  // simpan cache
+  saveCache(machine, data);
+
+  // jika belum ada machine aktif → jadikan aktif
+  if(!activeMachine){
+    activeMachine = machine;
   }
-  allowZeroOnce=false;
 
-  saveCache(machine,data);
-  if(!activeMachine){setActiveMachine(machine)}
+  // jika bukan machine aktif → jangan render
+  if(machine !== activeMachine) return;
+  // =====================================
+  // ===== PROTEKSI DATA RESET AKIBAT ESP MATI =====
+const isAllZero = Object.values(data.counter).every(v => v === 0);
 
-  if(machine!==activeMachine)return;
+// jika semua 0 DAN bukan reset dari web → abaikan
+if(isAllZero && data.reset_source !== "web"){
+  console.warn("IGNORE ESP REBOOT RESET");
+  return;
+}
+// ==============================================
 
-  renderData(data.counter);
+  let total = 0;
+  latestCounter = data.counter;
+
+  for (let i = 1; i <= 12; i++) {
+    const val = data.counter[`s${i}`] || 0;
+    document.getElementById(`s${i}`).innerText = val;
+    total += val;
+  }
+  document.getElementById("total").innerText = total;
 });
 
-/* ================= MACHINE ================= */
-function setActiveMachine(m){
-  activeMachine=m;
-  machineSelect.value=m;
-  subscribeMachine(m);
-  loadCacheUI(m);
-}
-function subscribeMachine(m){
-  client.subscribe(`iot/esp32/${m}/proximity_counter`);
-}
-machineSelect.onchange=e=>{
-  setActiveMachine(e.target.value);
-}
 
-/* ================= RENDER ================= */
-function renderData(counter){
-  let total=0;
-  for(let i=1;i<=12;i++){
-    const v=counter[`s${i}`]||0;
-    document.getElementById(`s${i}`).innerText=v;
-    total+=v;
-  }
-  total.innerText=total;
+/* ================= SAVE DATA ================= */
+function saveData(){
+  const history=JSON.parse(localStorage.getItem("history")||"[]");
+  history.push({
+    time:new Date().toLocaleString(),
+    total:total.innerText,
+    counter:latestCounter
+  });
+  localStorage.setItem("history",JSON.stringify(history));
+  alert("Data disimpan");
+}
+function loadHistory(){
+  historyTable.innerHTML="<tr><th>Waktu</th><th>Total</th><th>Detail</th></tr>";
+  const history=JSON.parse(localStorage.getItem("history")||"[]");
+  history.forEach(h=>{
+    historyTable.innerHTML+=`
+      <tr>
+        <td>${h.time}</td>
+        <td>${h.total}</td>
+        <td>${JSON.stringify(h.counter)}</td>
+      </tr>`;
+  });
 }
 
 /* ================= RESET ================= */
 function resetCounter(){
-  allowZeroOnce=true;
-  client.publish(`iot/esp32/${activeMachine}/cmd`,"RESET");
+  client.publish("iot/esp32/cmd","RESET");
 }
 
-/* ================= CACHE ================= */
-function cacheKey(m){return "cache_"+m}
-function saveCache(m,d){localStorage.setItem(cacheKey(m),JSON.stringify(d))}
-function loadCache(m){
-  const r=localStorage.getItem(cacheKey(m));
-  return r?JSON.parse(r):null;
+/* ================= TAMBAHAN MULTI MACHINE ================= */
+
+// machine aktif
+let currentMachine = "machine01";
+
+// simpan topic lama
+let dataTopic = "iot/esp32/proximity_counter";
+let cmdTopic  = "iot/esp32/cmd";
+
+/* GANTI SUBSCRIBE SAAT GANTI MACHINE */
+function changeMachine(){
+  // unsubscribe topic lama
+  client.unsubscribe(dataTopic);
+
+  // update topic baru
+  dataTopic = `iot/esp32/${currentMachine}/proximity_counter`;
+  cmdTopic  = `iot/esp32/${currentMachine}/cmd`;
+
+  // subscribe baru
+  client.subscribe(dataTopic);
+
+  // reset tampilan
+  for(let i=1;i<=12;i++){
+    document.getElementById(`s${i}`).innerText = 0;
+  }
+  document.getElementById("total").innerText = 0;
 }
-function loadCacheUI(m){
-  const c=loadCache(m);if(!c)return;
-  renderData(c.counter);
+
+/* override nilai machine saat dropdown berubah */
+document.getElementById("machineSelect").addEventListener("change", e=>{
+  currentMachine = e.target.value;
+  changeMachine();
+});
+
+/* ================= OVERRIDE RESET (TANPA UBAH FUNGSI LAMA) ================= */
+const oldReset = resetCounter;
+resetCounter = function(){
+  client.publish(cmdTopic, "RESET");
+};
+
+/* ========== CACHE PER MACHINE (TAMBAHAN) ========== */
+
+function cacheKey(machine){
+  return "cache_" + machine;
 }
-function loadLastCache(){
-  const k=Object.keys(localStorage).filter(k=>k.startsWith("cache_"));
-  if(!k.length)return;
-  const m=k[0].replace("cache_","");
-  machineSelect.innerHTML=k.map(x=>{
-    const v=x.replace("cache_","");
-    return `<option>${v}</option>`;
-  }).join("");
-  setActiveMachine(m);
+
+function saveCache(machine, payload){
+  localStorage.setItem(cacheKey(machine), JSON.stringify(payload));
 }
+
+function loadCache(machine){
+  const raw = localStorage.getItem(cacheKey(machine));
+  if(!raw) return null;
+  return JSON.parse(raw);
+}
+
+const originalReset = resetCounter;
+resetCounter = function(){
+  const targetMachine = document.getElementById("machineSelect").value;
+  const targetCmd = `iot/esp32/${targetMachine}/cmd`;
+  client.publish(targetCmd, "RESET");
+};
 </script>
+
 </body>
 </html>
