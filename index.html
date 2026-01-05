@@ -151,6 +151,15 @@ footer{
   <option value="machine01">Machine 01</option>
   <option value="machine02">Machine 02</option>
   <option value="machine03">Machine 03</option>
+  <option value="machine01">Machine 04</option>
+  <option value="machine02">Machine 05</option>
+  <option value="machine03">Machine 06</option>
+  <option value="machine01">Machine 07</option>
+  <option value="machine02">Machine 08</option>
+  <option value="machine03">Machine 09</option>
+  <option value="machine01">Machine 10</option>
+  <option value="machine02">Machine 11</option>
+  <option value="machine03">Machine 12</option>
 </select>
 
     <span id="clock"></span>
@@ -164,7 +173,7 @@ footer{
 
 <div class="container" id="dashboardView">
   <div class="total-box">
-    <div>Total Counter</div>
+    <div>Total Produksi</div>
     <h1 id="total">0</h1>
   </div>
   <div class="grid" id="cards"></div>
@@ -237,7 +246,7 @@ function showHistory(){
 for(let i=1;i<=12;i++){
   cards.innerHTML+=`
     <div class="card">
-      Line ${i}
+      LINE ${i}
       <div class="count" id="s${i}">0</div>
     </div>`;
 }
@@ -343,6 +352,17 @@ function resetCounter(){
 
 // machine aktif
 let currentMachine = "machine01";
+let currentMachine = "machine02";
+let currentMachine = "machine03";
+let currentMachine = "machine04";
+let currentMachine = "machine05";
+let currentMachine = "machine06";
+let currentMachine = "machine07";
+let currentMachine = "machine08";
+let currentMachine = "machine09";
+let currentMachine = "machine10";
+let currentMachine = "machine11";
+let currentMachine = "machine12";
 
 // simpan topic lama
 let dataTopic = "iot/esp32/proximity_counter";
