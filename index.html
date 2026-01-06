@@ -276,7 +276,7 @@ function generateAllCards(){
 }
 
 /* ================= MQTT ================= */
-let latestCounter = {};
+let latestCounter = {};  // Gabungan counter dari semua mesin
 const client = mqtt.connect(
   "wss://c836c913dd894d7db71ce06137b51f4e.s1.eu.hivemq.cloud:8884/mqtt",
   {
@@ -288,33 +288,46 @@ const client = mqtt.connect(
 
 client.on("connect", () => {
   document.getElementById("status").innerText = "Connected";
-  client.subscribe("iot/esp32/proximity_counter");
+  // Subscribe ke semua topik counter mesin
+  for(let i=1; i<=6; i++){
+    const machine = `machine${i.toString().padStart(2,'0')}`;
+    client.subscribe(`iot/esp32/${machine}/counter`);
+  }
 });
 
 client.on("message", (topic, msg) => {
   const data = JSON.parse(msg.toString());
+  const machine = topic.split('/')[2];  // Extract machine from topic, e.g., "machine01"
 
-  // Simpan ke Firebase
-  saveCacheToFirebase(data);
+  // Simpan ke Firebase per mesin
+  saveCacheToFirebase(machine, data);
 
   // ===== PROTEKSI DATA RESET AKIBAT ESP MATI =====
   const isAllZero = Object.values(data.counter).every(v => v === 0);
   if(isAllZero && data.reset_source !== "web"){
-    console.warn("IGNORE ESP REBOOT RESET");
+    console.warn("IGNORE ESP REBOOT RESET for " + machine);
     return;
   }
   // ==============================================
 
-  // Update counter dari MQTT
+  // Update counter untuk mesin ini
+  Object.keys(data.counter).forEach(key => {
+    latestCounter[key] = data.counter[key];
+  });
+
+  // Update UI
+  updateUI();
+});
+
+function updateUI(){
   let total = 0;
   for (let i = 1; i <= 14; i++) {
-    const newVal = data.counter[`L${i}`] || 0;
-    document.getElementById(`L${i}`).innerText = newVal;
-    total += newVal;
+    const val = latestCounter[`L${i}`] || 0;
+    document.getElementById(`L${i}`).innerText = val;
+    total += val;
   }
   document.getElementById("total").innerText = total;
-  latestCounter = data.counter;
-});
+}
 
 /* ================= SAVE DATA KE FIREBASE ================= */
 function saveData(){
@@ -331,8 +344,8 @@ function saveData(){
   });
 }
 
-function saveCacheToFirebase(data){
-  const cacheRef = ref(database, 'lastCache');
+function saveCacheToFirebase(machine, data){
+  const cacheRef = ref(database, `lastCache/${machine}`);
   set(cacheRef, data).then(() => {
     document.getElementById("firebaseStatus").innerText = "Synced";
   }).catch((error) => {
@@ -344,14 +357,16 @@ function loadLastCacheFromFirebase(){
   const cacheRef = ref(database, 'lastCache');
   get(cacheRef).then((snapshot) => {
     const cached = snapshot.val();
-    if(cached && cached.counter){
-      let total = 0;
-      for(let i=1;i<=14;i++){
-        const v = cached.counter[`L${i}`] || 0;
-        document.getElementById(`L${i}`).innerText = v;
-        total += v;
-      }
-      document.getElementById("total").innerText = total;
+    if(cached){
+      Object.keys(cached).forEach(machine => {
+        const data = cached[machine];
+        if(data && data.counter){
+          Object.keys(data.counter).forEach(key => {
+            latestCounter[key] = data.counter[key];
+          });
+        }
+      });
+      updateUI();
     }
   }).catch((error) => {
     console.error("Error loading cache:", error);
