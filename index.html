@@ -306,7 +306,7 @@ footer{
   <div class="login-box">
     <div class="logo">
       <!-- Placeholder logo, ganti dengan gambar asli jika ada -->
-      <i class="fas fa-cogs"></i> <!-- Ikon gear untuk representasi mesin -->
+      <i class="phi.png"></i> <!-- Ikon gear untuk representasi mesin -->
     </div>
     <h2>USER LOGIN</h2>
     <div class="input-group">
@@ -398,6 +398,13 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const database = getDatabase(app);
 
+
+// Tambahkan ini di awal script, setelah import Firebase
+const username = document.getElementById("username");
+const password = document.getElementById("password");
+const error = document.getElementById("error");
+
+// Sisanya kode tetap sama...
 /* ================= LOGIN ================= */
 function doLogin(){
   if(username.value==="admin" && password.value==="admin123"){
