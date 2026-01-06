@@ -148,19 +148,13 @@ footer{
 <header>
   <b>Counter Total Produksi PHI</b>
   <nav>
-<select id="machineSelect" onchange="changeMachine()">
+<select id="machineSelect">
   <option value="machine01">Machine 01</option>
   <option value="machine02">Machine 02</option>
   <option value="machine03">Machine 03</option>
-  <option value="machine01">Machine 04</option>
-  <option value="machine02">Machine 05</option>
-  <option value="machine03">Machine 06</option>
-  <option value="machine01">Machine 07</option>
-  <option value="machine02">Machine 08</option>
-  <option value="machine03">Machine 09</option>
-  <option value="machine01">Machine 10</option>
-  <option value="machine02">Machine 11</option>
-  <option value="machine03">Machine 12</option>
+  <option value="machine04">Machine 04</option>
+  <option value="machine05">Machine 05</option>
+  <option value="machine06">Machine 06</option>
 </select>
 
     <span id="clock"></span>
@@ -218,21 +212,11 @@ window.onload=()=>{
     loginPage.style.display="none";
     dashboardPage.style.display="block";
 
-   // ==== TAMBAHAN LOAD CACHE TERAKHIR ====
-    const keys = Object.keys(localStorage).filter(k=>k.startsWith("cache_"));
-    if(keys.length){
-      activeMachine = keys[0].replace("cache_","");
-      const cached = loadCache(activeMachine);
-      if(cached && cached.counter){
-        let total=0;
-        for(let i=1;i<=12;i++){
-          const v=cached.counter[`s${i}`]||0;
-          document.getElementById(`s${i}`).innerText=v;
-          total+=v;
-        }
-        document.getElementById("total").innerText=total;
-      }
-    }
+    // Generate semua sensor cards
+    generateAllCards();
+
+    // Load cache terakhir jika ada
+    loadLastCache();
   }
 };
 
@@ -263,18 +247,20 @@ function showSensorHistory(sensorId){
   loadSensorHistory(sensorId);
 }
 
-/* ================= SENSOR CARDS ================= */
-for(let i=1;i<=12;i++){
-  cards.innerHTML+=`
-    <div class="card" onclick="showSensorHistory(${i})">
-      LINE ${i}
-      <div class="count" id="s${i}">0</div>
-    </div>`;
+/* ================= GENERATE SEMUA SENSOR CARDS ================= */
+function generateAllCards(){
+  cards.innerHTML = '';
+  for(let i=1;i<=12;i++){
+    cards.innerHTML += `
+      <div class="card" onclick="showSensorHistory(${i})">
+        LINE ${i}
+        <div class="count" id="s${i}">0</div>
+      </div>`;
+  }
 }
 
-/* ================= MQTT (FIXED) ================= */
+/* ================= MQTT ================= */
 let latestCounter = {};
-let activeMachine = null;
 const client = mqtt.connect(
   "wss://c836c913dd894d7db71ce06137b51f4e.s1.eu.hivemq.cloud:8884/mqtt",
   {
@@ -292,21 +278,9 @@ client.on("connect", () => {
 client.on("message", (topic, msg) => {
   const data = JSON.parse(msg.toString());
 
-  // ==== TAMBAHAN AUTO DETECT MACHINE ====
-  const parts = topic.split("/");
-  const machine = parts[2]; // iot/esp32/<machine>/proximity_counter
-
   // simpan cache
-  saveCache(machine, data);
+  saveCache(data);
 
-  // jika belum ada machine aktif → jadikan aktif
-  if(!activeMachine){
-    activeMachine = machine;
-  }
-
-  // jika bukan machine aktif → jangan render
-  if(machine !== activeMachine) return;
-  // =====================================
   // ===== PROTEKSI DATA RESET AKIBAT ESP MATI =====
   const isAllZero = Object.values(data.counter).every(v => v === 0);
 
@@ -380,72 +354,31 @@ function loadSensorHistory(sensorId){
 
 /* ================= RESET ================= */
 function resetCounter(){
-  client.publish("iot/esp32/cmd","RESET");
-}
-
-/* ================= TAMBAHAN MULTI MACHINE ================= */
-
-// machine aktif
-let currentMachine = "machine01";
-
-
-// simpan topic lamag
-let dataTopic = "iot/esp32/proximity_counter";
-let cmdTopic  = "iot/esp32/cmd";
-
-/* GANTI SUBSCRIBE SAAT GANTI MACHINE */
-function changeMachine(){
-  // unsubscribe topic lama
-  client.unsubscribe(dataTopic);
-
-  // update topic baru
-  dataTopic = `iot/esp32/${currentMachine}/proximity_counter`;
-  cmdTopic  = `iot/esp32/${currentMachine}/cmd`;
-
-  // subscribe baru
-  client.subscribe(dataTopic);
-
-  // reset tampilan
-  for(let i=1;i<=12;i++){
-    document.getElementById(`s${i}`).innerText = 0;
-  }
-  document.getElementById("total").innerText = 0;
-}
-
-/* override nilai machine saat dropdown berubah */
-document.getElementById("machineSelect").addEventListener("change", e=>{
-  currentMachine = e.target.value;
-  changeMachine();
-});
-
-/* ================= OVERRIDE RESET (TANPA UBAH FUNGSI LAMA) ================= */
-const oldReset = resetCounter;
-resetCounter = function(){
-  client.publish(cmdTopic, "RESET");
-};
-
-/* ========== CACHE PER MACHINE (TAMBAHAN) ========== */
-
-function cacheKey(machine){
-  return "cache_" + machine;
-}
-
-function saveCache(machine, payload){
-  localStorage.setItem(cacheKey(machine), JSON.stringify(payload));
-}
-
-function loadCache(machine){
-  const raw = localStorage.getItem(cacheKey(machine));
-  if(!raw) return null;
-  return JSON.parse(raw);
-}
-
-const originalReset = resetCounter;
-resetCounter = function(){
-  const targetMachine = document.getElementById("machineSelect").value;
-  const targetCmd = `iot/esp32/${targetMachine}/cmd`;
+  const selectedMachine = document.getElementById("machineSelect").value;
+  const targetCmd = `iot/esp32/${selectedMachine}/cmd`;
   client.publish(targetCmd, "RESET");
-};
+}
+
+/* ========== CACHE (TAMBAHAN) ========== */
+
+function saveCache(payload){
+  localStorage.setItem("lastCache", JSON.stringify(payload));
+}
+
+function loadLastCache(){
+  const raw = localStorage.getItem("lastCache");
+  if(!raw) return;
+  const cached = JSON.parse(raw);
+  if(cached && cached.counter){
+    let total=0;
+    for(let i=1;i<=12;i++){
+      const v=cached.counter[`s${i}`]||0;
+      document.getElementById(`s${i}`).innerText=v;
+      total+=v;
+    }
+    document.getElementById("total").innerText=total;
+  }
+}
 </script>
 
 </body>
