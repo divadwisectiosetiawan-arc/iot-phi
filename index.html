@@ -6,6 +6,7 @@
 <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
 
 <style>
+/* CSS tetap sama */
 :root {
   --bg:#0f172a;
   --card:#1e293b;
@@ -103,7 +104,7 @@ nav button{
   padding:18px;
   border-radius:14px;
   text-align:center;
-  cursor:pointer; /* Tambahan untuk menunjukkan bisa diklik */
+  cursor:pointer;
 }
 .count{
   font-size:30px;
@@ -146,7 +147,7 @@ footer{
 <div id="dashboardPage">
 
 <header>
-  <b>Counter Total Produksi PHI</b>
+  <b>Total Hasil Produksi Sardines PHI</b>
   <nav>
 <select id="machineSelect">
   <option value="machine01">Machine 01</option>
@@ -190,10 +191,30 @@ footer{
   </table>
 </div>
 
-<footer>Status MQTT: <span id="status">Initializing...</span></footer>
+<footer>Status MQTT: <span id="status">Initializing...</span> | Firebase: <span id="firebaseStatus">Initializing...</span></footer>
 </div>
 
-<script>
+<script type="module">
+// TAMBAHAN: Import Firebase SDK v12.7.0
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-app.js";
+import { getDatabase, ref, set, onValue, push, get } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-database.js";
+
+// Your web app's Firebase configuration
+const firebaseConfig = {
+  apiKey: "AIzaSyAcA7CYQqoig7eVaMbopIQpq9EWn1mVudA",
+  authDomain: "iot-phi.firebaseapp.com",
+  databaseURL: "https://iot-phi-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "iot-phi",
+  storageBucket: "iot-phi.firebasestorage.app",
+  messagingSenderId: "284686032428",
+  appId: "1:284686032428:web:82bec581d6c9d1a3193b89",
+  measurementId: "G-HWD5C417GN"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const database = getDatabase(app);
+
 /* ================= LOGIN ================= */
 function doLogin(){
   if(username.value==="admin" && password.value==="admin123"){
@@ -211,12 +232,8 @@ window.onload=()=>{
   if(sessionStorage.getItem("login")==="1"){
     loginPage.style.display="none";
     dashboardPage.style.display="block";
-
-    // Generate semua sensor cards
     generateAllCards();
-
-    // Load cache terakhir jika ada
-    loadLastCache();
+    loadLastCacheFromFirebase();  // Load dari Firebase
   }
 };
 
@@ -229,32 +246,31 @@ setInterval(()=>{
 function showDashboard(){
   dashboardView.style.display="block";
   historyView.style.display="none";
-  sensorHistoryView.style.display="none"; // Sembunyikan view sensor history
+  sensorHistoryView.style.display="none";
 }
 function showHistory(){
   dashboardView.style.display="none";
   historyView.style.display="block";
   sensorHistoryView.style.display="none";
-  loadHistory();
+  loadHistoryFromFirebase();  // Load dari Firebase
 }
 
-// TAMBAHAN: FUNGSI UNTUK TAMPILKAN HISTORY PER SENSOR
 function showSensorHistory(sensorId){
   dashboardView.style.display="none";
   historyView.style.display="none";
   sensorHistoryView.style.display="block";
   document.getElementById("sensorTitle").innerText = `LINE ${sensorId}`;
-  loadSensorHistory(sensorId);
+  loadSensorHistoryFromFirebase(sensorId);  // Load dari Firebase
 }
 
 /* ================= GENERATE SEMUA SENSOR CARDS ================= */
 function generateAllCards(){
   cards.innerHTML = '';
-  for(let i=1;i<=12;i++){
+  for(let i=1;i<=14;i++){
     cards.innerHTML += `
       <div class="card" onclick="showSensorHistory(${i})">
         LINE ${i}
-        <div class="count" id="s${i}">0</div>
+        <div class="count" id="L${i}">0</div>
       </div>`;
   }
 }
@@ -278,77 +294,107 @@ client.on("connect", () => {
 client.on("message", (topic, msg) => {
   const data = JSON.parse(msg.toString());
 
-  // simpan cache
-  saveCache(data);
+  // Simpan ke Firebase
+  saveCacheToFirebase(data);
 
   // ===== PROTEKSI DATA RESET AKIBAT ESP MATI =====
   const isAllZero = Object.values(data.counter).every(v => v === 0);
-
-  // jika semua 0 DAN bukan reset dari web → abaikan
   if(isAllZero && data.reset_source !== "web"){
     console.warn("IGNORE ESP REBOOT RESET");
     return;
   }
   // ==============================================
 
-  // ===== TAMBAHAN: HANYA UPDATE JIKA NILAI BARU >= NILAI LAMA (COUNTER HANYA NAIK) =====
-  let total = parseInt(document.getElementById("total").innerText) || 0;
-  let updated = false;
-  for (let i = 1; i <= 12; i++) {
-    const currentVal = parseInt(document.getElementById(`s${i}`).innerText) || 0;
-    const newVal = data.counter[`s${i}`] || 0;
-    if (newVal >= currentVal) {
-      document.getElementById(`s${i}`).innerText = newVal;
-      total += (newVal - currentVal);
-      updated = true;
-    }
+  // Update counter dari MQTT
+  let total = 0;
+  for (let i = 1; i <= 14; i++) {
+    const newVal = data.counter[`L${i}`] || 0;
+    document.getElementById(`L${i}`).innerText = newVal;
+    total += newVal;
   }
-  if (updated) {
-    document.getElementById("total").innerText = total;
-    latestCounter = {};
-    for (let i = 1; i <= 12; i++) {
-      latestCounter[`s${i}`] = parseInt(document.getElementById(`s${i}`).innerText) || 0;
-    }
-  }
-  // ==============================================
+  document.getElementById("total").innerText = total;
+  latestCounter = data.counter;
 });
 
-
-/* ================= SAVE DATA ================= */
+/* ================= SAVE DATA KE FIREBASE ================= */
 function saveData(){
-  const history=JSON.parse(localStorage.getItem("history")||"[]");
-  history.push({
-    time:new Date().toLocaleString(),
-    total:total.innerText,
-    counter:latestCounter
-  });
-  localStorage.setItem("history",JSON.stringify(history));
-  alert("Data disimpan");
-}
-function loadHistory(){
-  historyTable.innerHTML="<tr><th>Waktu</th><th>Total</th><th>Detail</th></tr>";
-  const history=JSON.parse(localStorage.getItem("history")||"[]");
-  history.forEach(h=>{
-    historyTable.innerHTML+=`
-      <tr>
-        <td>${h.time}</td>
-        <td>${h.total}</td>
-        <td>${JSON.stringify(h.counter)}</td>
-      </tr>`;
+  const entry = {
+    time: new Date().toLocaleString(),
+    total: total.innerText,
+    counter: latestCounter
+  };
+  const historyRef = ref(database, 'history');
+  push(historyRef, entry).then(() => {
+    alert("Data disimpan ke Firebase");
+  }).catch((error) => {
+    console.error("Error saving data:", error);
   });
 }
 
-// TAMBAHAN: LOAD HISTORY UNTUK SENSOR TERTENTU
-function loadSensorHistory(sensorId){
-  sensorHistoryTable.innerHTML="<tr><th>Waktu</th><th>Nilai Sensor</th></tr>";
-  const history=JSON.parse(localStorage.getItem("history")||"[]");
-  history.forEach(h=>{
-    const sensorValue = h.counter[`s${sensorId}`] || 0;
-    sensorHistoryTable.innerHTML+=`
-      <tr>
-        <td>${h.time}</td>
-        <td>${sensorValue}</td>
-      </tr>`;
+function saveCacheToFirebase(data){
+  const cacheRef = ref(database, 'lastCache');
+  set(cacheRef, data).then(() => {
+    document.getElementById("firebaseStatus").innerText = "Synced";
+  }).catch((error) => {
+    console.error("Error saving cache:", error);
+  });
+}
+
+function loadLastCacheFromFirebase(){
+  const cacheRef = ref(database, 'lastCache');
+  get(cacheRef).then((snapshot) => {
+    const cached = snapshot.val();
+    if(cached && cached.counter){
+      let total = 0;
+      for(let i=1;i<=14;i++){
+        const v = cached.counter[`L${i}`] || 0;
+        document.getElementById(`L${i}`).innerText = v;
+        total += v;
+      }
+      document.getElementById("total").innerText = total;
+    }
+  }).catch((error) => {
+    console.error("Error loading cache:", error);
+  });
+}
+
+function loadHistoryFromFirebase(){
+  historyTable.innerHTML = "<tr><th>Waktu</th><th>Total</th><th>Detail</th></tr>";
+  const historyRef = ref(database, 'history');
+  get(historyRef).then((snapshot) => {
+    const history = snapshot.val();
+    if(history){
+      Object.values(history).forEach(h => {
+        historyTable.innerHTML += `
+          <tr>
+            <td>${h.time}</td>
+            <td>${h.total}</td>
+            <td>${JSON.stringify(h.counter)}</td>
+          </tr>`;
+      });
+    }
+  }).catch((error) => {
+    console.error("Error loading history:", error);
+  });
+}
+
+function loadSensorHistoryFromFirebase(sensorId){
+  sensorHistoryTable.innerHTML = "<tr><th>Waktu</th><th>Nilai Sensor</th></tr>";
+  const historyRef = ref(database, 'history');
+  get(historyRef).then((snapshot) => {
+    const history = snapshot.val();
+    if(history){
+      Object.values(history).forEach(h => {
+        const sensorValue = h.counter[`L${sensorId}`] || 0;
+        sensorHistoryTable.innerHTML += `
+          <tr>
+            <td>${h.time}</td>
+            <td>${sensorValue}</td>
+          </tr>`;
+      });
+    }
+  }).catch((error) => {
+    console.error("Error loading sensor history:", error);
   });
 }
 
@@ -359,26 +405,14 @@ function resetCounter(){
   client.publish(targetCmd, "RESET");
 }
 
-/* ========== CACHE (TAMBAHAN) ========== */
-
-function saveCache(payload){
-  localStorage.setItem("lastCache", JSON.stringify(payload));
-}
-
-function loadLastCache(){
-  const raw = localStorage.getItem("lastCache");
-  if(!raw) return;
-  const cached = JSON.parse(raw);
-  if(cached && cached.counter){
-    let total=0;
-    for(let i=1;i<=12;i++){
-      const v=cached.counter[`s${i}`]||0;
-      document.getElementById(`s${i}`).innerText=v;
-      total+=v;
-    }
-    document.getElementById("total").innerText=total;
-  }
-}
+// Expose functions to global scope for onclick
+window.doLogin = doLogin;
+window.logout = logout;
+window.showDashboard = showDashboard;
+window.showHistory = showHistory;
+window.showSensorHistory = showSensorHistory;
+window.saveData = saveData;
+window.resetCounter = resetCounter;
 </script>
 
 </body>
