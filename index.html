@@ -4,22 +4,26 @@
 <meta charset="UTF-8">
 <title>ESP32 IoT Dashboard</title>
 <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"> <!-- Tambahan untuk ikon -->
 
 <style>
-/* CSS tetap sama */
+/* CSS diperbarui untuk UI/UX lebih menarik */
 :root {
-  --bg:#0f172a;
-  --card:#1e293b;
-  --dark:#020617;
-  --primary:#38bdf8;
-  --success:#22c55e;
+  --bg: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+  --card: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+  --dark: linear-gradient(135deg, #020617 0%, #0f172a 100%);
+  --primary: #38bdf8;
+  --success: #22c55e;
+  --accent: #f59e0b;
+  --text: #e5e7eb;
+  --shadow: 0 8px 32px rgba(0,0,0,0.3);
 }
-*{box-sizing:border-box}
+*{box-sizing:border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;}
 body{
   margin:0;
-  font-family:"Segoe UI",Arial;
-  background:var(--bg);
-  color:#e5e7eb;
+  background: var(--bg);
+  color: var(--text);
+  overflow-x: hidden;
 }
 
 /* LOGIN */
@@ -28,104 +32,269 @@ body{
   display:flex;
   justify-content:center;
   align-items:center;
+  background: var(--bg);
+  position: relative;
 }
 .login-box{
-  background:var(--card);
+  background: var(--card);
   padding:40px;
-  width:340px;
-  border-radius:16px;
-  box-shadow:0 0 25px rgba(0,0,0,.5);
+  width:380px;
+  border-radius:20px;
+  box-shadow: var(--shadow);
+  text-align:center;
+  animation: slideIn 0.5s ease-out;
 }
-.login-box h2{text-align:center}
+@keyframes slideIn {
+  from { opacity: 0; transform: translateY(-20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.login-box .logo {
+  width: 80px;
+  height: 80px;
+  margin-bottom: 20px;
+  background: var(--primary);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 36px;
+  font-weight: bold;
+  box-shadow: var(--shadow);
+}
+.login-box h2{
+  margin-bottom: 30px;
+  color: var(--primary);
+  font-size: 28px;
+}
+.login-box .input-group {
+  position: relative;
+  margin-bottom: 20px;
+}
+.login-box .input-group i {
+  position: absolute;
+  left: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #94a3b8;
+}
 .login-box input{
   width:100%;
-  padding:12px;
-  margin-bottom:12px;
-  border-radius:8px;
-  border:none;
+  padding:15px 15px 15px 45px;
+  border-radius:12px;
+  border: 2px solid #334155;
+  background: #0f172a;
+  color: var(--text);
+  font-size: 16px;
+  transition: border-color 0.3s, box-shadow 0.3s;
+}
+.login-box input:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 10px rgba(56, 189, 248, 0.5);
+  outline: none;
 }
 .login-box button{
   width:100%;
-  padding:12px;
-  background:var(--primary);
-  border:none;
-  border-radius:8px;
+  padding:15px;
+  background: linear-gradient(135deg, var(--primary) 0%, #06b6d4 100%);
+  border: none;
+  border-radius:12px;
   font-weight:bold;
+  font-size: 16px;
   cursor:pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+  color: white;
 }
-#error{color:#f87171;text-align:center}
+.login-box button:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow);
+}
+#error{
+  color:#f87171;
+  margin-top: 15px;
+  font-size: 14px;
+}
 
 /* DASHBOARD */
-#dashboardPage{display:none;animation:fade .4s ease}
+#dashboardPage{
+  display:none;
+  animation:fade 0.4s ease;
+}
 @keyframes fade{
   from{opacity:0;transform:translateY(8px)}
   to{opacity:1;transform:translateY(0)}
 }
 
 header{
-  background:var(--dark);
-  padding:14px 25px;
+  background: var(--dark);
+  padding:20px 30px;
   display:flex;
   justify-content:space-between;
   align-items:center;
+  box-shadow: var(--shadow);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+header .logo {
+  width: 50px;
+  height: 50px;
+  background: var(--primary);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 24px;
+  font-weight: bold;
+  margin-right: 15px;
+}
+header b {
+  font-size: 24px;
+  color: var(--primary);
+}
+nav {
+  display: flex;
+  align-items: center;
+}
+nav select {
+  padding: 10px 15px;
+  border-radius: 8px;
+  border: none;
+  background: #334155;
+  color: white;
+  margin-right: 10px;
+  font-size: 14px;
 }
 nav button{
-  margin-left:6px;
-  padding:8px 14px;
-  border-radius:6px;
+  margin-left:8px;
+  padding:10px 16px;
+  border-radius:8px;
   border:none;
-  background:#334155;
+  background: linear-gradient(135deg, #334155 0%, #475569 100%);
   color:white;
   cursor:pointer;
+  transition: background 0.3s, transform 0.2s;
+  font-size: 14px;
+}
+nav button:hover {
+  background: linear-gradient(135deg, #475569 0%, #64748b 100%);
+  transform: translateY(-1px);
 }
 
-.container{padding:25px}
+.container{
+  padding:30px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
 
 .total-box{
-  background:var(--dark);
-  padding:22px;
-  border-radius:18px;
+  background: var(--dark);
+  padding:30px;
+  border-radius:20px;
   text-align:center;
-  margin-bottom:25px;
+  margin-bottom:30px;
+  box-shadow: var(--shadow);
+  position: relative;
+  overflow: hidden;
+}
+.total-box::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(45deg, rgba(56,189,248,0.1) 0%, transparent 100%);
+  pointer-events: none;
 }
 .total-box h1{
-  margin:5px 0 0;
-  font-size:48px;
-  color:var(--primary);
+  margin:10px 0 0;
+  font-size:56px;
+  color: var(--primary);
+  font-weight: bold;
 }
 
 .grid{
   display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(160px,1fr));
-  gap:18px;
+  grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+  gap:20px;
 }
 .card{
-  background:var(--card);
-  padding:18px;
-  border-radius:14px;
+  background: var(--card);
+  padding:20px;
+  border-radius:16px;
   text-align:center;
   cursor:pointer;
+  transition: transform 0.3s, box-shadow 0.3s;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+  position: relative;
+  overflow: hidden;
+}
+.card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(56,189,248,0.05) 0%, transparent 100%);
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow: var(--shadow);
+}
+.card:hover::before {
+  opacity: 1;
+}
+.card i {
+  font-size: 24px;
+  color: var(--accent);
+  margin-bottom: 10px;
 }
 .count{
-  font-size:30px;
-  color:var(--success);
+  font-size:32px;
+  color: var(--success);
+  font-weight: bold;
 }
 
 table{
   width:100%;
   border-collapse:collapse;
+  background: var(--card);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: var(--shadow);
 }
 th,td{
-  padding:10px;
+  padding:15px;
   border-bottom:1px solid #334155;
   font-size:14px;
+}
+th {
+  background: var(--dark);
+  color: var(--primary);
+  font-weight: bold;
 }
 
 footer{
   text-align:center;
-  padding:10px;
-  font-size:13px;
+  padding:20px;
+  font-size:14px;
   color:#94a3b8;
+  background: var(--dark);
+  margin-top: 30px;
+}
+
+/* Responsif */
+@media (max-width: 768px) {
+  .login-box { width: 90%; padding: 30px; }
+  header { flex-direction: column; text-align: center; }
+  nav { margin-top: 10px; }
+  .grid { grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); }
+  .total-box h1 { font-size: 40px; }
 }
 </style>
 </head>
@@ -135,9 +304,19 @@ footer{
 <!-- LOGIN -->
 <div id="loginPage">
   <div class="login-box">
+    <div class="logo">
+      <!-- Placeholder logo, ganti dengan gambar asli jika ada -->
+      <i class="fas fa-cogs"></i> <!-- Ikon gear untuk representasi mesin -->
+    </div>
     <h2>USER LOGIN</h2>
-    <input id="username" placeholder="Username">
-    <input id="password" type="password" placeholder="Password">
+    <div class="input-group">
+      <i class="fas fa-user"></i>
+      <input id="username" placeholder="Username">
+    </div>
+    <div class="input-group">
+      <i class="fas fa-lock"></i>
+      <input id="password" type="password" placeholder="Password">
+    </div>
     <button onclick="doLogin()">LOGIN</button>
     <p id="error"></p>
   </div>
@@ -147,17 +326,21 @@ footer{
 <div id="dashboardPage">
 
 <header>
-  <b>Total Hasil Produksi Sardines PHI</b>
+  <div style="display: flex; align-items: center;">
+    <div class="logo">
+      <i class="fas fa-cogs"></i>
+    </div>
+    <b>Total Hasil Produksi Sardines PHI</b>
+  </div>
   <nav>
-<select id="machineSelect">
-  <option value="machine01">Machine 01</option>
-  <option value="machine02">Machine 02</option>
-  <option value="machine03">Machine 03</option>
-  <option value="machine04">Machine 04</option>
-  <option value="machine05">Machine 05</option>
-  <option value="machine06">Machine 06</option>
-</select>
-
+    <select id="machineSelect">
+      <option value="machine01">Machine 01</option>
+      <option value="machine02">Machine 02</option>
+      <option value="machine03">Machine 03</option>
+      <option value="machine04">Machine 04</option>
+      <option value="machine05">Machine 05</option>
+      <option value="machine06">Machine 06</option>
+    </select>
     <span id="clock"></span>
     <button onclick="showDashboard()">Dashboard</button>
     <button onclick="showHistory()">History</button>
@@ -269,6 +452,7 @@ function generateAllCards(){
   for(let i=1;i<=14;i++){
     cards.innerHTML += `
       <div class="card" onclick="showSensorHistory(${i})">
+        <i class="fas fa-tachometer-alt"></i>
         LINE ${i}
         <div class="count" id="L${i}">0</div>
       </div>`;
@@ -380,12 +564,7 @@ function loadHistoryFromFirebase(){
     const history = snapshot.val();
     if(history){
       Object.values(history).forEach(h => {
-        historyTable.innerHTML += `
-          <tr>
-            <td>${h.time}</td>
-            <td>${h.total}</td>
-            <td>${JSON.stringify(h.counter)}</td>
-          </tr>`;
+      historyable.innerHTML += `<tr><td>${h.time}</td><td>${h.total}</td><td>${JSON.stringify(h.counter)}</td></tr>`;
       });
     }
   }).catch((error) => {
@@ -395,17 +574,12 @@ function loadHistoryFromFirebase(){
 
 function loadSensorHistoryFromFirebase(sensorId){
   sensorHistoryTable.innerHTML = "<tr><th>Waktu</th><th>Nilai Sensor</th></tr>";
-  const historyRef = ref(database, 'history');
-  get(historyRef).then((snapshot) => {
-    const history = snapshot.val();
-    if(history){
-      Object.values(history).forEach(h => {
-        const sensorValue = h.counter[`L${sensorId}`] || 0;
-        sensorHistoryTable.innerHTML += `
-          <tr>
-            <td>${h.time}</td>
-            <td>${sensorValue}</td>
-          </tr>`;
+  const sensorHistoryRef = ref(database, `sensorHistory/L${sensorId}`);
+  get(sensorHistoryRef).then((snapshot) => {
+    const sensorHistory = snapshot.val();
+    if(sensorHistory){
+      Object.values(sensorHistory).forEach(entry => {
+        sensorHistoryTable.innerHTML += `<tr><td>${entry.time}</td><td>${entry.value}</td></tr>`;
       });
     }
   }).catch((error) => {
@@ -413,22 +587,13 @@ function loadSensorHistoryFromFirebase(sensorId){
   });
 }
 
-/* ================= RESET ================= */
 function resetCounter(){
-  const selectedMachine = document.getElementById("machineSelect").value;
-  const targetCmd = `iot/esp32/${selectedMachine}/cmd`;
-  client.publish(targetCmd, "RESET");
+  // Reset counter via MQTT ke semua mesin
+  for(let i=1; i<=6; i++){
+    const machine = `machine${i.toString().padStart(2,'0')}`;
+    client.publish(`iot/esp32/${machine}/reset`, JSON.stringify({reset_source: "web"}));
+  }
+  // Reset local counter
+  latestCounter = {};
+  updateUI();
 }
-
-// Expose functions to global scope for onclick
-window.doLogin = doLogin;
-window.logout = logout;
-window.showDashboard = showDashboard;
-window.showHistory = showHistory;
-window.showSensorHistory = showSensorHistory;
-window.saveData = saveData;
-window.resetCounter = resetCounter;
-</script>
-
-</body>
-</html>
