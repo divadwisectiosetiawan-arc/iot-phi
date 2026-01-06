@@ -250,11 +250,11 @@ function showSensorHistory(sensorId){
 /* ================= GENERATE SEMUA SENSOR CARDS ================= */
 function generateAllCards(){
   cards.innerHTML = '';
-  for(let i=1;i<=12;i++){
+  for(let i=1;i<=14;i++){
     cards.innerHTML += `
       <div class="card" onclick="showSensorHistory(${i})">
         LINE ${i}
-        <div class="count" id="s${i}">0</div>
+        <div class="count" id="L${i}">0</div>
       </div>`;
   }
 }
@@ -294,11 +294,11 @@ client.on("message", (topic, msg) => {
   // ===== TAMBAHAN: HANYA UPDATE JIKA NILAI BARU >= NILAI LAMA (COUNTER HANYA NAIK) =====
   let total = parseInt(document.getElementById("total").innerText) || 0;
   let updated = false;
-  for (let i = 1; i <= 12; i++) {
-    const currentVal = parseInt(document.getElementById(`s${i}`).innerText) || 0;
-    const newVal = data.counter[`s${i}`] || 0;
+  for (let i = 1; i <= 14; i++) {
+    const currentVal = parseInt(document.getElementById(`L${i}`).innerText) || 0;
+    const newVal = data.counter[`L${i}`] || 0;
     if (newVal >= currentVal) {
-      document.getElementById(`s${i}`).innerText = newVal;
+      document.getElementById(`L${i}`).innerText = newVal;
       total += (newVal - currentVal);
       updated = true;
     }
@@ -306,8 +306,8 @@ client.on("message", (topic, msg) => {
   if (updated) {
     document.getElementById("total").innerText = total;
     latestCounter = {};
-    for (let i = 1; i <= 12; i++) {
-      latestCounter[`s${i}`] = parseInt(document.getElementById(`s${i}`).innerText) || 0;
+    for (let i = 1; i <= 14; i++) {
+      latestCounter[`L${i}`] = parseInt(document.getElementById(`L${i}`).innerText) || 0;
     }
   }
   // ==============================================
@@ -343,7 +343,7 @@ function loadSensorHistory(sensorId){
   sensorHistoryTable.innerHTML="<tr><th>Waktu</th><th>Nilai Sensor</th></tr>";
   const history=JSON.parse(localStorage.getItem("history")||"[]");
   history.forEach(h=>{
-    const sensorValue = h.counter[`s${sensorId}`] || 0;
+    const sensorValue = h.counter[`L${sensorId}`] || 0;
     sensorHistoryTable.innerHTML+=`
       <tr>
         <td>${h.time}</td>
@@ -371,9 +371,9 @@ function loadLastCache(){
   const cached = JSON.parse(raw);
   if(cached && cached.counter){
     let total=0;
-    for(let i=1;i<=12;i++){
-      const v=cached.counter[`s${i}`]||0;
-      document.getElementById(`s${i}`).innerText=v;
+    for(let i=1;i<=14;i++){
+      const v=cached.counter[`L${i}`]||0;
+      document.getElementById(`L${i}`).innerText=v;
       total+=v;
     }
     document.getElementById("total").innerText=total;
