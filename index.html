@@ -103,6 +103,7 @@ nav button{
   padding:18px;
   border-radius:14px;
   text-align:center;
+  cursor:pointer; /* Tambahan untuk menunjukkan bisa diklik */
 }
 .count{
   font-size:30px;
@@ -186,6 +187,15 @@ footer{
   </table>
 </div>
 
+<!-- TAMBAHAN: VIEW UNTUK HISTORY PER SENSOR -->
+<div class="container" id="sensorHistoryView" style="display:none">
+  <h2>History Sensor <span id="sensorTitle"></span></h2>
+  <button onclick="showDashboard()">Kembali ke Dashboard</button>
+  <table id="sensorHistoryTable">
+    <tr><th>Waktu</th><th>Nilai Sensor</th></tr>
+  </table>
+</div>
+
 <footer>Status MQTT: <span id="status">Initializing...</span></footer>
 </div>
 
@@ -235,17 +245,28 @@ setInterval(()=>{
 function showDashboard(){
   dashboardView.style.display="block";
   historyView.style.display="none";
+  sensorHistoryView.style.display="none"; // Sembunyikan view sensor history
 }
 function showHistory(){
   dashboardView.style.display="none";
   historyView.style.display="block";
+  sensorHistoryView.style.display="none";
   loadHistory();
+}
+
+// TAMBAHAN: FUNGSI UNTUK TAMPILKAN HISTORY PER SENSOR
+function showSensorHistory(sensorId){
+  dashboardView.style.display="none";
+  historyView.style.display="none";
+  sensorHistoryView.style.display="block";
+  document.getElementById("sensorTitle").innerText = `LINE ${sensorId}`;
+  loadSensorHistory(sensorId);
 }
 
 /* ================= SENSOR CARDS ================= */
 for(let i=1;i<=12;i++){
   cards.innerHTML+=`
-    <div class="card">
+    <div class="card" onclick="showSensorHistory(${i})">
       LINE ${i}
       <div class="count" id="s${i}">0</div>
     </div>`;
@@ -339,6 +360,20 @@ function loadHistory(){
         <td>${h.time}</td>
         <td>${h.total}</td>
         <td>${JSON.stringify(h.counter)}</td>
+      </tr>`;
+  });
+}
+
+// TAMBAHAN: LOAD HISTORY UNTUK SENSOR TERTENTU
+function loadSensorHistory(sensorId){
+  sensorHistoryTable.innerHTML="<tr><th>Waktu</th><th>Nilai Sensor</th></tr>";
+  const history=JSON.parse(localStorage.getItem("history")||"[]");
+  history.forEach(h=>{
+    const sensorValue = h.counter[`s${sensorId}`] || 0;
+    sensorHistoryTable.innerHTML+=`
+      <tr>
+        <td>${h.time}</td>
+        <td>${sensorValue}</td>
       </tr>`;
   });
 }
