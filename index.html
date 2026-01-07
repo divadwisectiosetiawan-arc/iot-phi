@@ -277,6 +277,11 @@ function generateAllCards(){
 
 /* ================= MQTT ================= */
 let latestCounter = {};  // Gabungan counter dari semua mesin
+
+// Tambahan untuk throttling update UI
+let updateTimeout = null;
+const UPDATE_INTERVAL = 500;  // Update UI setiap 500ms (sesuaikan jika perlu)
+
 const client = mqtt.connect(
   "wss://c836c913dd894d7db71ce06137b51f4e.s1.eu.hivemq.cloud:8884/mqtt",
   {
@@ -315,11 +320,17 @@ client.on("message", (topic, msg) => {
     latestCounter[key] = data.counter[key];
   });
 
-  // Update UI
-  updateUI();
+  // Throttle update UI: Jadwalkan update hanya jika belum dijadwalkan
+  if (!updateTimeout) {
+    updateTimeout = setTimeout(() => {
+      updateUI();
+      updateTimeout = null;  // Reset setelah update
+    }, UPDATE_INTERVAL);
+  }
 });
 
 function updateUI(){
+  console.time('updateUI');  // Untuk monitoring performa
   let total = 0;
   for (let i = 1; i <= 14; i++) {
     const val = latestCounter[`L${i}`] || 0;
@@ -327,6 +338,7 @@ function updateUI(){
     total += val;
   }
   document.getElementById("total").innerText = total;
+  console.timeEnd('updateUI');  // Akhiri monitoring
 }
 
 /* ================= SAVE DATA KE FIREBASE ================= */
@@ -346,10 +358,19 @@ function saveData(){
 
 function saveCacheToFirebase(machine, data){
   const cacheRef = ref(database, `lastCache/${machine}`);
-  set(cacheRef, data).then(() => {
-    document.getElementById("firebaseStatus").innerText = "Synced";
+  // Cek apakah data berubah sebelum save (untuk mengurangi beban)
+  get(cacheRef).then((snapshot) => {
+    const existing = snapshot.val();
+    if (JSON.stringify(existing) !== JSON.stringify(data)) {
+      set(cacheRef, data).then(() => {
+        document.getElementById("firebaseStatus").innerText = "Synced";
+      }).catch((error) => {
+        console.error("Error saving cache:", error);
+        document.getElementById("firebaseStatus").innerText = "Error";
+      });
+    }
   }).catch((error) => {
-    console.error("Error saving cache:", error);
+    console.error("Error checking cache:", error);
   });
 }
 
