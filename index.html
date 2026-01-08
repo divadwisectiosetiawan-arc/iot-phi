@@ -26,25 +26,25 @@
             overflow-x: hidden;
         }
 
-        /* --- LOGO STYLES (BARU) --- */
+        /* --- LOGO STYLES --- */
         .login-logo {
-            max-width: 150px; /* Ukuran max logo login */
+            max-width: 150px;
             height: auto;
             display: block;
-            margin: 0 auto 20px auto; /* Tengah & ada jarak bawah */
+            margin: 0 auto 20px auto;
         }
 
         .header-brand {
             display: flex;
             align-items: center;
-            gap: 15px; /* Jarak antara logo dan teks */
+            gap: 15px;
         }
 
         .header-logo {
-            height: 45px; /* Tinggi logo di header */
+            height: 45px;
             width: auto;
         }
-        /* -------------------------- */
+        /* ------------------- */
 
         /* LOGIN PAGE */
         #loginPage {
@@ -389,7 +389,7 @@
     function checkAutoReset() {
         const now = new Date();
         const TARGET_HOUR = 15; 
-        const TARGET_MINUTE = 39;
+        const TARGET_MINUTE = 39; // Sesuaikan jam reset Anda
 
         if (now.getHours() === TARGET_HOUR && now.getMinutes() === TARGET_MINUTE) {
             console.log("⏰ WAKTUNYA AUTO RESET!");
@@ -406,17 +406,43 @@
         };
 
         try {
+            // 1. Simpan ke History
             await push(ref(database, 'history'), entry);
+            
+            // 2. Kirim Perintah Reset ke MQTT (Hardware)
             for (let i = 1; i <= 6; i++) {
                 const topic = `iot/esp32/machine0${i}/cmd`;
                 const payload = JSON.stringify({ cmd: "RESET", reset_source: "web" });
                 client.publish(topic, payload);
             }
+
+            // 3. Reset Start Time di Firebase
             const newStartTime = Date.now();
             await set(ref(database, 'config/productionStartTime'), newStartTime);
+
+            // 4. [FIX] PAKSA NILAI AKTUAL MENJADI 0 DI UI DAN DATABASE
+            // Ini agar angka langsung 0 tanpa menunggu balasan alat
+            
+            // Reset Variable Lokal
             latestCounter = {}; 
+            for(let i=1; i<=14; i++) {
+                latestCounter[`L${i}`] = 0;
+            }
+
+            // Reset Cache di Firebase (Agar kalau direfresh tetap 0)
+            for(let i=1; i<=6; i++) {
+                const zeroData = {};
+                // Buat dummy data counter 0 (L1-L14) untuk setiap cache mesin
+                for(let j=1; j<=14; j++) zeroData[`L${j}`] = 0;
+                
+                // Update node counter mesin dengan 0
+                set(ref(database, `lastCache/machine0${i}/counter`), zeroData);
+            }
+
+            // Update UI segera
             updateUI();
-            alert("Auto Reset Berhasil Dilakukan!");
+            
+            alert("Auto Reset Berhasil & Nilai dikembalikan ke 0!");
         } catch (error) {
             console.error("GAGAL AUTO RESET:", error);
             alert("Gagal melakukan Auto Reset: " + error.message);
@@ -516,4 +542,4 @@
 </script>
 
 </body>
-</html>
+</html> 
