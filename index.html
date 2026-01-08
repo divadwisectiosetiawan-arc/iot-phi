@@ -245,17 +245,30 @@ function logout(){
 // Rates produksi per menit untuk setiap line (cup/menit)
 const rates = Array(14).fill(70); // Semua line diasumsikan 70 cup/menit, sesuaikan jika berbeda
 
-let startTime = null; // Waktu mulai untuk perhitungan prediction
+// Mapping mesin ke line
+const machineLines = {
+  machine01: [1, 2, 3],
+  machine02: [4, 5, 6],
+  machine03: [7, 8, 9],
+  machine04: [10, 11, 12],
+  machine05: [13],
+  machine06: [14]
+};
+
+let startTime = {}; // Waktu mulai per mesin untuk perhitungan prediction
 
 window.onload=()=>{
   if(sessionStorage.getItem("login")==="1"){
     loginPage.style.display="none";
     dashboardPage.style.display="block";
-    startTime = Date.now(); // Set start time saat dashboard load
+    // Set start time untuk semua mesin saat dashboard load
+    Object.keys(machineLines).forEach(machine => {
+      startTime[machine] = Date.now();
+    });
     generateAllCards();
     loadLastCacheFromFirebase();  // Load dari Firebase
-    // Start daily scheduler untuk autosave + reset pada jam 08:20
-    scheduleDailyAt(14,10, saveAndResetAuto);
+    // Start daily scheduler untuk autosave + reset pada jam 14:10 (ubah jika perlu untuk testing)
+    scheduleDailyAt(14,20, saveAndResetAuto);
     // Update prediction dan efficiency setiap 3 detik
     setInterval(updateUI, 3000);
   }
@@ -364,9 +377,11 @@ function updateUI(){
   console.time('updateUI');  // Untuk monitoring performa
   let total = 0;
   const now = Date.now();
-  const minutesElapsed = (now - startTime) / 60000; // Menit yang telah berlalu sejak start
   for (let i = 1; i <= 14; i++) {
     const actual = latestCounter[`L${i}`] || 0;
+    // Cari mesin yang mengontrol line ini
+    const machine = Object.keys(machineLines).find(m => machineLines[m].includes(i));
+    const minutesElapsed = machine ? (now - startTime[machine]) / 60000 : 0;
     const prediction = rates[i-1] * minutesElapsed; // Prediction berdasarkan rate * waktu
     const eff = prediction > 0 ? ((actual / prediction) * 100).toFixed(2) + '%' : '0%';
     document.getElementById(`L${i}`).innerText = actual;
@@ -389,8 +404,10 @@ function saveData(){
   // Return the push promise so callers can chain (used by auto-save)
   return push(historyRef, entry).then(() => {
     alert("Data disimpan ke Firebase");
+    console.log("Data saved successfully");
   }).catch((error) => {
     console.error("Error saving data:", error);
+    alert("Gagal menyimpan data: " + error.message);
     throw error;
   });
 }
@@ -406,9 +423,16 @@ function resetAllMachines(){
 }
 
 function saveAndResetAuto(){
+  console.log("Auto save and reset triggered at", new Date().toLocaleString());
   saveData().then(()=>{
+    console.log("Save successful, now resetting machines");
     // setelah berhasil menyimpan, kirim perintah reset ke semua mesin
     resetAllMachines();
+    // Reset startTime untuk semua mesin
+    Object.keys(machineLines).forEach(machine => {
+      startTime[machine] = Date.now();
+    });
+    console.log("Auto reset completed");
   }).catch((err)=>{
     console.error('Auto save failed, skip reset:', err);
   });
@@ -420,6 +444,7 @@ function scheduleDailyAt(hour, minute, action){
   let next = new Date(now.getFullYear(), now.getMonth(), now.getDate(), hour, minute, 0, 0);
   if(next <= now) next.setDate(next.getDate() + 1);
   const msUntilNext = next - now;
+  console.log(`Scheduling next auto action at ${next.toLocaleString()}, in ${msUntilNext / 1000} seconds`);
   setTimeout(() => {
     try{ action(); }catch(e){ console.error('Scheduled action error:', e); }
     // set interval every 24h after first run
@@ -427,7 +452,7 @@ function scheduleDailyAt(hour, minute, action){
   }, msUntilNext);
 }
 
-// Integrate scheduler: jalankan setiap hari jam 08:20 ketika user sudah login
+// Integrate scheduler: jalankan setiap hari jam 14:10 ketika user sudah login
 // Dipanggil pada window.onload setelah dashboard ditampilkan
 
 function saveCacheToFirebase(machine, data){
