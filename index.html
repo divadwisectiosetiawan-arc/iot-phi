@@ -111,6 +111,31 @@ nav button{
   color:var(--success);
 }
 
+/* New lane layout */
+.lane{
+  display:flex;
+  flex-direction:column;
+  height:150px;
+  justify-content:space-between;
+}
+.lane .top{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+.lane .title{font-weight:700; text-align:left}
+.lane .avg{font-weight:700; text-align:center}
+.lane .eff{font-weight:700; text-align:right}
+.lane .target-box{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:8px;
+  border-radius:8px;
+  background:rgba(255,255,255,0.03);
+}
+.lane .bottom{font-weight:700; text-align:left}
+
 table{
   width:100%;
   border-collapse:collapse;
@@ -234,7 +259,9 @@ window.onload=()=>{
     dashboardPage.style.display="block";
     generateAllCards();
     loadLastCacheFromFirebase();  // Load dari Firebase
-    scheduleDailyAutoSave(); // Jadwalkan auto-save setiap hari pukul 08:20
+    loadLastResetTime(); // initialize last reset time (from storage or fallback)
+    // Start daily scheduler untuk autosave + reset pada jam 08:20
+    scheduleDailyAt(8,20, saveAndResetAuto);
   }
 };
 
@@ -270,8 +297,21 @@ function generateAllCards(){
   for(let i=1;i<=14;i++){
     cards.innerHTML += `
       <div class="card" onclick="showSensorHistory(${i})">
-        LINE ${i}
-        <div class="count" id="L${i}">0</div>
+        <div class="lane">
+          <div class="top">
+            <div class="title">LINE ${i}</div>
+            <div class="avg" id="avgL${i}">0</div>
+            <div class="eff" id="effL${i}">0%</div>
+          </div>
+          <div class="target-box">
+            <div>TARGET</div>
+            <div id="targetL${i}">0</div>
+          </div>
+          <div class="bottom">
+            SPEED MACHINE : <span id="speedL${i}">0 /min</span>
+            <div style="display:none" id="L${i}">0</div>
+          </div>
+        </div>
       </div>`;
   }
 }
@@ -319,6 +359,8 @@ client.on("message", (topic, msg) => {
   // Update counter untuk mesin ini
   Object.keys(data.counter).forEach(key => {
     latestCounter[key] = data.counter[key];
+    // push sample untuk per-line history (used to compute speed/avg)
+    pushLineSample(key, data.counter[key]);
   });
 
   // Throttle update UI: Jadwalkan update hanya jika belum dijadwalkan
@@ -335,35 +377,140 @@ function updateUI(){
   let total = 0;
   for (let i = 1; i <= 14; i++) {
     const val = latestCounter[`L${i}`] || 0;
-    document.getElementById(`L${i}`).innerText = val;
+    // update hidden count (keperluan lain)
+    const countEl = document.getElementById(`L${i}`);
+    if(countEl) countEl.innerText = val;
     total += val;
+
+    // compute per-line metrics
+    const key = `L${i}`;
+    const avg = Math.round(computeAvgValue(key) || 0);
+    const speed = Math.round(computeSpeedPerMin(key) || 0);
+    const target = computeTargetForLine(key);
+    const eff = target > 0 ? Math.round((val / target) * 100) : 0;
+
+    const avgEl = document.getElementById(`avgL${i}`);
+    const speedEl = document.getElementById(`speedL${i}`);
+    const targetEl = document.getElementById(`targetL${i}`);
+    const effEl = document.getElementById(`effL${i}`);
+    if(avgEl) avgEl.innerText = avg;
+    if(speedEl) speedEl.innerText = `${speed} /min`;
+    if(targetEl) targetEl.innerText = target;
+    if(effEl) effEl.innerText = `${eff}%`;
   }
   document.getElementById("total").innerText = total;
   console.timeEnd('updateUI');  // Akhiri monitoring
 }
 
 /* ================= SAVE DATA KE FIREBASE ================= */
-// Ubah: dukung silent auto-save (untuk menekan alert saat auto-save)
-function saveData(silent = false){
+function saveData(){
   const entry = {
     time: new Date().toLocaleString(),
     total: total.innerText,
     counter: latestCounter
   };
   const historyRef = ref(database, 'history');
-  push(historyRef, entry).then(() => {
-    if(!silent) {
-      alert("Data disimpan ke Firebase");
-    } else {
-      console.log("Auto-saved data to Firebase at", new Date().toLocaleString());
-      document.getElementById("firebaseStatus").innerText = "Auto-saved";
-    }
+  // Return the push promise so callers can chain (used by auto-save)
+  return push(historyRef, entry).then(() => {
+    alert("Data disimpan ke Firebase");
   }).catch((error) => {
     console.error("Error saving data:", error);
-    if(!silent) alert("Error saving data: " + error);
-    document.getElementById("firebaseStatus").innerText = "Error";
+    throw error;
   });
 }
+
+// Per-line history + scheduling helpers
+let lineHistory = {}; // e.g. { L1: [{t:ts, v:val}, ...] }
+let lastResetTime = null;
+
+function setLastResetTime(d){
+  lastResetTime = d instanceof Date ? d : new Date(d);
+  localStorage.setItem('lastResetTime', lastResetTime.toISOString());
+}
+
+function loadLastResetTime(){
+  const s = localStorage.getItem('lastResetTime');
+  if(s){ lastResetTime = new Date(s); return; }
+  // fallback: compute most recent 08:20
+  const now = new Date();
+  let cand = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 8, 20, 0, 0);
+  if(cand > now) cand.setDate(cand.getDate() - 1);
+  lastResetTime = cand;
+  localStorage.setItem('lastResetTime', lastResetTime.toISOString());
+}
+
+function pushLineSample(key, value){
+  if(!lineHistory[key]) lineHistory[key]=[];
+  const t = Date.now();
+  const arr = lineHistory[key];
+  arr.push({t, v: value});
+  // prune older than 10 minutes
+  const tenMin = 10*60*1000;
+  while(arr.length && (t - arr[0].t) > tenMin) arr.shift();
+}
+
+function computeSpeedPerMin(key){
+  const arr = lineHistory[key] || [];
+  if(arr.length < 2) return 0;
+  const first = arr[0];
+  const last = arr[arr.length-1];
+  const delta = last.v - first.v;
+  const minutes = (last.t - first.t) / 60000;
+  if(minutes <= 0) return 0;
+  return delta / minutes; // per minute
+}
+
+function computeAvgValue(key){
+  const arr = lineHistory[key] || [];
+  if(!arr.length) return 0;
+  const sum = arr.reduce((s,x)=>s + x.v,0);
+  return sum / arr.length;
+}
+
+function computeTargetForLine(key){
+  // target = speedPerMin * elapsedMinutes since lastResetTime
+  if(!lastResetTime) loadLastResetTime();
+  const speed = computeSpeedPerMin(key);
+  const now = Date.now();
+  const elapsedMin = Math.max(0, (now - lastResetTime.getTime())/60000);
+  return Math.round(speed * elapsedMin);
+}
+
+// Save then reset helpers for automatic daily run
+function resetAllMachines(){
+  for(let i=1;i<=6;i++){
+    const machine = `machine${i.toString().padStart(2,'0')}`;
+    const targetCmd = `iot/esp32/${machine}/cmd`;
+    const payload = JSON.stringify({ cmd: "RESET", reset_source: "web" });
+    client.publish(targetCmd, payload);
+  }
+  setLastResetTime(new Date());
+}
+
+function saveAndResetAuto(){
+  saveData().then(()=>{
+    // setelah berhasil menyimpan, kirim perintah reset ke semua mesin
+    resetAllMachines();
+  }).catch((err)=>{
+    console.error('Auto save failed, skip reset:', err);
+  });
+}
+
+// Schedule a daily action at specific hour/minute (local time)
+function scheduleDailyAt(hour, minute, action){
+  const now = new Date();
+  let next = new Date(now.getFullYear(), now.getMonth(), now.getDate(), hour, minute, 0, 0);
+  if(next <= now) next.setDate(next.getDate() + 1);
+  const msUntilNext = next - now;
+  setTimeout(() => {
+    try{ action(); }catch(e){ console.error('Scheduled action error:', e); }
+    // set interval every 24h after first run
+    setInterval(() => { try{ action(); }catch(e){ console.error('Scheduled action error:', e); } }, 24*60*60*1000);
+  }, msUntilNext);
+}
+
+// Integrate scheduler: jalankan setiap hari jam 08:20 ketika user sudah login
+// Dipanggil pada window.onload setelah dashboard ditampilkan
 
 function saveCacheToFirebase(machine, data){
   const cacheRef = ref(database, `lastCache/${machine}`);
@@ -393,6 +540,8 @@ function loadLastCacheFromFirebase(){
         if(data && data.counter){
           Object.keys(data.counter).forEach(key => {
             latestCounter[key] = data.counter[key];
+            // initialize history with cached value
+            pushLineSample(key, data.counter[key]);
           });
         }
       });
@@ -447,27 +596,9 @@ function loadSensorHistoryFromFirebase(sensorId){
 function resetCounter(){
   const selectedMachine = document.getElementById("machineSelect").value;
   const targetCmd = `iot/esp32/${selectedMachine}/cmd`;
-  client.publish(targetCmd, "RESET");
-}
-
-// Schedule a daily auto-save at specified hour/minute (default 08:20)
-function scheduleDailyAutoSave(hour = 8, minute = 20){
-  function scheduleNext(){
-    const now = new Date();
-    let next = new Date(now.getFullYear(), now.getMonth(), now.getDate(), hour, minute, 0, 0);
-    if(next <= now) next.setDate(next.getDate() + 1);
-    const delay = next - now;
-    console.log('Scheduling auto-save in ms:', delay);
-    setTimeout(() => {
-      try{
-        saveData(true); // silent auto-save
-      }catch(e){
-        console.error('Auto-save failed', e);
-      }
-      scheduleNext(); // schedule for the following day
-    }, delay);
-  }
-  scheduleNext();
+  const payload = JSON.stringify({ cmd: "RESET", reset_source: "web" });
+  client.publish(targetCmd, payload);
+  setLastResetTime(new Date());
 }
 
 // Expose functions to global scope for onclick
