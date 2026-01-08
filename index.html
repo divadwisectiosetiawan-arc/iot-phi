@@ -259,14 +259,8 @@ window.onload=()=>{
     dashboardPage.style.display="block";
     generateAllCards();
     loadLastCacheFromFirebase();  // Load dari Firebase
-    loadLastResetTime(); // initialize last reset time (from storage or fallback)
     // Start daily scheduler untuk autosave + reset pada jam 08:20
-    scheduleDailyAt(10,20, saveAndResetAuto);
-    // Start continuous target updater (every second)
-    updateTargetsOnly();
-    setInterval(updateTargetsOnly, 1000);
-    // Start 5-second target ticker (increments target counters)
-    startTargetTicker();
+    scheduleDailyAt(8,20, saveAndResetAuto);
   }
 };
 
@@ -407,27 +401,6 @@ function updateUI(){
   console.timeEnd('updateUI');  // Akhiri monitoring
 }
 
-// Update only targets/efficiency/avg/speed without recalculating totals
-function updateTargetsOnly(){
-  for (let i = 1; i <= 14; i++) {
-    const val = latestCounter[`L${i}`] || 0;
-    const key = `L${i}`;
-    const avg = Math.round(computeAvgValue(key) || 0);
-    const speed = Math.round(computeSpeedPerMin(key) || 0);
-    const target = computeTargetForLine(key);
-    const eff = target > 0 ? Math.round((val / target) * 100) : 0;
-
-    const avgEl = document.getElementById(`avgL${i}`);
-    const speedEl = document.getElementById(`speedL${i}`);
-    const targetEl = document.getElementById(`targetL${i}`);
-    const effEl = document.getElementById(`effL${i}`);
-    if(avgEl) avgEl.innerText = avg;
-    if(speedEl) speedEl.innerText = `${speed} /min`;
-    if(targetEl) targetEl.innerText = target;
-    if(effEl) effEl.innerText = `${eff}%`;
-  }
-}
-
 /* ================= SAVE DATA KE FIREBASE ================= */
 function saveData(){
   const entry = {
@@ -448,20 +421,10 @@ function saveData(){
 // Per-line history + scheduling helpers
 let lineHistory = {}; // e.g. { L1: [{t:ts, v:val}, ...] }
 let lastResetTime = null;
-// Target counters (behaves like counters) updated every 5 seconds
-const PRED_SPEED_PER_MIN = 45; // produk per menit (fixed as requested)
-let targetCounters = {}; // e.g. { L1: 0 }
-let targetAccumulator = {}; // fractional accumulator per line
 
 function setLastResetTime(d){
   lastResetTime = d instanceof Date ? d : new Date(d);
   localStorage.setItem('lastResetTime', lastResetTime.toISOString());
-  // reset target counters when reset occurs
-  for(let i=1;i<=14;i++){
-    const key = `L${i}`;
-    targetCounters[key] = 0;
-    targetAccumulator[key] = 0;
-  }
 }
 
 function loadLastResetTime(){
@@ -475,19 +438,6 @@ function loadLastResetTime(){
   localStorage.setItem('lastResetTime', lastResetTime.toISOString());
 }
 
-function initTargetCounters(){
-  // initialize target counters based on elapsed minutes since lastResetTime
-  if(!lastResetTime) loadLastResetTime();
-  const now = Date.now();
-  const elapsedMin = Math.max(0, (now - lastResetTime.getTime())/60000);
-  for(let i=1;i<=14;i++){
-    const key = `L${i}`;
-    const initial = Math.floor(PRED_SPEED_PER_MIN * elapsedMin);
-    targetCounters[key] = initial;
-    targetAccumulator[key] = (PRED_SPEED_PER_MIN * elapsedMin) - initial;
-  }
-}
-
 function pushLineSample(key, value){
   if(!lineHistory[key]) lineHistory[key]=[];
   const t = Date.now();
@@ -496,30 +446,6 @@ function pushLineSample(key, value){
   // prune older than 10 minutes
   const tenMin = 10*60*1000;
   while(arr.length && (t - arr[0].t) > tenMin) arr.shift();
-}
-
-// tick targets every 5 seconds using fixed speed PRED_SPEED_PER_MIN
-function startTargetTicker(){
-  // ensure initialized
-  initTargetCounters();
-  const intervalMs = 5000; // 5 seconds
-  const incrementPerInterval = PRED_SPEED_PER_MIN * (intervalMs/60000); // e.g. 70 * 5/60
-  setInterval(()=>{
-    for(let i=1;i<=14;i++){
-      const key = `L${i}`;
-      if(typeof targetCounters[key] === 'undefined'){
-        targetCounters[key] = 0; targetAccumulator[key]=0;
-      }
-      targetAccumulator[key] = (targetAccumulator[key] || 0) + incrementPerInterval;
-      const add = Math.floor(targetAccumulator[key]);
-      if(add>0){
-        targetCounters[key] += add;
-        targetAccumulator[key] -= add;
-        const el = document.getElementById(`target${key}`) || document.getElementById(`targetL${i}`);
-        if(el) el.innerText = targetCounters[key];
-      }
-    }
-  }, intervalMs);
 }
 
 function computeSpeedPerMin(key){
@@ -541,11 +467,9 @@ function computeAvgValue(key){
 }
 
 function computeTargetForLine(key){
-  // Prefer the ticking counter if available (behaves as a counter)
-  if(targetCounters[key] !== undefined) return targetCounters[key];
-  // Fallback: target = speedPerMin * elapsedMinutes since lastResetTime
+  // target = speedPerMin * elapsedMinutes since lastResetTime
   if(!lastResetTime) loadLastResetTime();
-  const speed = computeSpeedPerMin(key) || PRED_SPEED_PER_MIN;
+  const speed = computeSpeedPerMin(key);
   const now = Date.now();
   const elapsedMin = Math.max(0, (now - lastResetTime.getTime())/60000);
   return Math.round(speed * elapsedMin);
