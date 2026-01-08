@@ -221,6 +221,7 @@
         <div class="total-box">
             <div>TOTAL PRODUKSI HARI INI</div>
             <h1 id="totalCount">0</h1>
+            <div id="nextResetInfo" style="font-size: 10px; margin-top:5px; color: #64748b;">Waiting next reset...</div>
         </div>
         <div class="grid" id="cardsContainer"></div>
     </div>
@@ -321,7 +322,11 @@
             generateCards();
             syncGlobalStartTime();
             loadCache();
-            setInterval(checkAutoReset, 60000); 
+            
+            // --- PERBAIKAN PENTING: Pengecekan setiap 1 DETIK (1000ms) ---
+            setInterval(checkAutoReset, 1000); 
+            // -------------------------------------------------------------
+
             setInterval(updateUI, 2000); 
             setInterval(() => {
                 document.getElementById("clock").innerText = new Date().toLocaleTimeString();
@@ -385,15 +390,32 @@
         document.getElementById("totalCount").innerText = grandTotal.toLocaleString();
     }
 
-    // --- 7. AUTO RESET LOGIC ---
+    // --- 7. AUTO RESET LOGIC (PERBAIKAN) ---
+    // Gunakan flag agar tidak reset berkali-kali dalam 1 menit
+    let resetDone = false; 
+
     function checkAutoReset() {
         const now = new Date();
+        
+        // --- ATUR WAKTU RESET DI SINI ---
         const TARGET_HOUR = 16; 
-        const TARGET_MINUTE = 9; // Sesuaikan jam reset Anda
+        const TARGET_MINUTE = 15; // Set 2-3 menit dari waktu sekarang untuk tes
+        
+        // Tampilkan info kapan reset selanjutnya di layar (untuk debug)
+        const infoEl = document.getElementById("nextResetInfo");
+        if(infoEl) infoEl.innerText = `Next Auto Reset at ${TARGET_HOUR}:${TARGET_MINUTE < 10 ? '0'+TARGET_MINUTE : TARGET_MINUTE}`;
 
+        // Jika jam dan menit cocok
         if (now.getHours() === TARGET_HOUR && now.getMinutes() === TARGET_MINUTE) {
-            console.log("⏰ WAKTUNYA AUTO RESET!");
-            executeSaveAndReset();
+            // Jika belum dilakukan reset hari ini
+            if (!resetDone) {
+                console.log("⏰ TRIGGER AUTO RESET...");
+                executeSaveAndReset();
+                resetDone = true; // Kunci agar tidak dijalankan lagi menit ini
+            }
+        } else {
+            // Jika menit sudah lewat, buka kunci agar besok bisa reset lagi
+            resetDone = false;
         }
     }
 
@@ -406,46 +428,41 @@
         };
 
         try {
-            // 1. Simpan ke History
+            console.log("1. Saving to Firebase History...");
             await push(ref(database, 'history'), entry);
             
-            // 2. Kirim Perintah Reset ke MQTT (Hardware)
+            console.log("2. Sending MQTT Reset Commands...");
             for (let i = 1; i <= 6; i++) {
                 const topic = `iot/esp32/machine0${i}/cmd`;
                 const payload = JSON.stringify({ cmd: "RESET", reset_source: "web" });
                 client.publish(topic, payload);
             }
 
-            // 3. Reset Start Time di Firebase
+            console.log("3. Resetting Global Timer...");
             const newStartTime = Date.now();
             await set(ref(database, 'config/productionStartTime'), newStartTime);
 
-            // 4. [FIX] PAKSA NILAI AKTUAL MENJADI 0 DI UI DAN DATABASE
-            // Ini agar angka langsung 0 tanpa menunggu balasan alat
-            
-            // Reset Variable Lokal
+            console.log("4. Forcing UI to 0...");
             latestCounter = {}; 
             for(let i=1; i<=14; i++) {
                 latestCounter[`L${i}`] = 0;
             }
 
-            // Reset Cache di Firebase (Agar kalau direfresh tetap 0)
             for(let i=1; i<=6; i++) {
                 const zeroData = {};
-                // Buat dummy data counter 0 (L1-L14) untuk setiap cache mesin
                 for(let j=1; j<=14; j++) zeroData[`L${j}`] = 0;
-                
-                // Update node counter mesin dengan 0
                 set(ref(database, `lastCache/machine0${i}/counter`), zeroData);
             }
 
-            // Update UI segera
             updateUI();
             
-            alert("Auto Reset Berhasil & Nilai dikembalikan ke 0!");
+            // Beri notifikasi visual (Alert)
+            // alert("AUTO RESET BERHASIL DILAKUKAN!"); 
+            console.log("AUTO RESET COMPLETE SUCCESS.");
+
         } catch (error) {
             console.error("GAGAL AUTO RESET:", error);
-            alert("Gagal melakukan Auto Reset: " + error.message);
+            alert("Error Auto Reset: " + error.message);
         }
     }
 
@@ -542,4 +559,4 @@
 </script>
 
 </body>
-</html> 
+</html>
