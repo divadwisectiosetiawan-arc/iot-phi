@@ -268,7 +268,7 @@ window.onload=()=>{
     generateAllCards();
     loadLastCacheFromFirebase();  // Load dari Firebase
     // Start daily scheduler untuk autosave + reset pada jam 14:10 (ubah jika perlu untuk testing)
-    scheduleDailyAt(14,39, saveAndResetAuto);
+    scheduleDailyAt(14,10, saveAndResetAuto);
     // Update prediction dan efficiency setiap 3 detik
     setInterval(updateUI, 3000);
   }
@@ -322,9 +322,6 @@ function generateAllCards(){
 /* ================= MQTT ================= */
 let latestCounter = {};  // Gabungan counter dari semua mesin
 
-// Track resets initiated by web per machine so incoming zero messages are accepted
-let expectedResetForMachine = {}; // e.g. { machine01: true }
-
 // Tambahan untuk throttling update UI
 let updateTimeout = null;
 const UPDATE_INTERVAL = 500;  // Update UI setiap 500ms (sesuaikan jika perlu)
@@ -356,18 +353,9 @@ client.on("message", (topic, msg) => {
 
   // ===== PROTEKSI DATA RESET AKIBAT ESP MATI =====
   const isAllZero = Object.values(data.counter).every(v => v === 0);
-  if(isAllZero){
-    const fromWeb = data.reset_source === "web";
-    const expected = !!expectedResetForMachine[machine];
-    if(!fromWeb && !expected){
-      console.warn("IGNORE ESP REBOOT RESET for " + machine);
-      return;
-    }
-    // consume expected flag if present
-    if(expectedResetForMachine[machine]){
-      // clear flag after accepting reset
-      expectedResetForMachine[machine] = false;
-    }
+  if(isAllZero && data.reset_source !== "web"){
+    console.warn("IGNORE ESP REBOOT RESET for " + machine);
+    return;
   }
   // ==============================================
 
@@ -431,10 +419,6 @@ function resetAllMachines(){
     const targetCmd = `iot/esp32/${machine}/cmd`;
     const payload = JSON.stringify({ cmd: "RESET", reset_source: "web" });
     client.publish(targetCmd, payload);
-    // mark that we expect a reset message from this machine
-    expectedResetForMachine[machine] = true;
-    // clear the flag automatically after 15s to avoid stale expected state
-    setTimeout(()=>{ expectedResetForMachine[machine]=false; }, 15000);
   }
 }
 
@@ -509,26 +493,6 @@ function loadLastCacheFromFirebase(){
   });
 }
 
-function clearLocalCountersForMachine(machine){
-  const lines = machineLines[machine] || [];
-  lines.forEach(i => {
-    const key = `L${i}`;
-    latestCounter[key] = 0;
-    const el = document.getElementById(`L${i}`);
-    if(el) el.innerText = '0';
-    const pEl = document.getElementById(`P${i}`);
-    if(pEl) pEl.innerText = '0';
-    const eEl = document.getElementById(`E${i}`);
-    if(eEl) eEl.innerText = '0%';
-  });
-  // update total
-  updateUI();
-}
-
-function clearAllLocalCounters(){
-  Object.keys(machineLines).forEach(machine => clearLocalCountersForMachine(machine));
-}
-
 function loadHistoryFromFirebase(){
   historyTable.innerHTML = "<tr><th>Waktu</th><th>Total</th><th>Detail</th></tr>";
   const historyRef = ref(database, 'history');
@@ -573,7 +537,6 @@ function loadSensorHistoryFromFirebase(sensorId){
 function resetCounter(){
   const selectedMachine = document.getElementById("machineSelect").value;
   const targetCmd = `iot/esp32/${selectedMachine}/cmd`;
-  const payload = JSON.stringify({ cmd: "RESET", reset_source: "web" });
   client.publish(targetCmd, payload);
   // mark expectation and clear local counters immediately for responsiveness
   expectedResetForMachine[selectedMachine] = true;
