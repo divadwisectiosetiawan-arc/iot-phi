@@ -321,10 +321,7 @@
             generateCards();
             syncGlobalStartTime();
             loadCache();
-            
-            // PERBAIKAN: Cek setiap 1 detik agar tidak terlewat
-            setInterval(checkAutoReset, 1000); 
-
+            setInterval(checkAutoReset, 60000); 
             setInterval(updateUI, 2000); 
             setInterval(() => {
                 document.getElementById("clock").innerText = new Date().toLocaleTimeString();
@@ -351,14 +348,10 @@
         try {
             const data = JSON.parse(msg.toString());
             const machine = topic.split('/')[2];
-            
-            // Proteksi: Jika semua data 0, pastikan itu karena reset web, bukan error alat
             const isZero = Object.values(data.counter).every(v => v === 0);
             if(isZero && data.reset_source !== "web") return;
-            
             Object.assign(latestCounter, data.counter);
             set(ref(database, `lastCache/${machine}`), data);
-            
             document.getElementById("firebaseStatus").innerText = "Synced";
             document.getElementById("firebaseStatus").style.color = "#22c55e";
             updateUI();
@@ -392,31 +385,14 @@
         document.getElementById("totalCount").innerText = grandTotal.toLocaleString();
     }
 
-    // --- 7. AUTO RESET LOGIC (DIPERBAIKI) ---
-    let hasResetToday = false; // Flag agar tidak reset berkali-kali dalam 1 menit
-
+    // --- 7. AUTO RESET LOGIC ---
     function checkAutoReset() {
         const now = new Date();
-        
-        // --- ATUR JADWAL DI SINI ---
-        // Contoh: Jam 16:30:00
-        const TARGET_HOUR = 16; 
-        const TARGET_MINUTE = 6;
-        const TARGET_SECOND = 0;
+        const TARGET_HOUR = 15; 
+        const TARGET_MINUTE = 47; // Sesuaikan jam reset Anda
 
-        // Reset flag jika menit sudah lewat
-        if (now.getMinutes() !== TARGET_MINUTE) {
-            hasResetToday = false;
-        }
-
-        // Jalankan HANYA jika jam, menit, detik cocok DAN belum pernah reset
-        if (now.getHours() === TARGET_HOUR && 
-            now.getMinutes() === TARGET_MINUTE && 
-            now.getSeconds() === TARGET_SECOND && 
-            !hasResetToday) {
-            
+        if (now.getHours() === TARGET_HOUR && now.getMinutes() === TARGET_MINUTE) {
             console.log("⏰ WAKTUNYA AUTO RESET!");
-            hasResetToday = true; // Kunci
             executeSaveAndReset();
         }
     }
@@ -433,7 +409,7 @@
             // 1. Simpan ke History
             await push(ref(database, 'history'), entry);
             
-            // 2. Kirim Reset ke MQTT
+            // 2. Kirim Perintah Reset ke MQTT (Hardware)
             for (let i = 1; i <= 6; i++) {
                 const topic = `iot/esp32/machine0${i}/cmd`;
                 const payload = JSON.stringify({ cmd: "RESET", reset_source: "web" });
@@ -444,25 +420,32 @@
             const newStartTime = Date.now();
             await set(ref(database, 'config/productionStartTime'), newStartTime);
 
-            // 4. [PENTING] PAKSA NILAI MENJADI 0 DI DATABASE & UI
-            // Ini memastikan angka 0 muncul meskipun alat belum merespon
+            // 4. [FIX] PAKSA NILAI AKTUAL MENJADI 0 DI UI DAN DATABASE
+            // Ini agar angka langsung 0 tanpa menunggu balasan alat
+            
+            // Reset Variable Lokal
             latestCounter = {}; 
-            for(let i=1; i<=14; i++) latestCounter[`L${i}`] = 0;
+            for(let i=1; i<=14; i++) {
+                latestCounter[`L${i}`] = 0;
+            }
 
-            // Reset cache database per mesin
+            // Reset Cache di Firebase (Agar kalau direfresh tetap 0)
             for(let i=1; i<=6; i++) {
                 const zeroData = {};
+                // Buat dummy data counter 0 (L1-L14) untuk setiap cache mesin
                 for(let j=1; j<=14; j++) zeroData[`L${j}`] = 0;
-                // Timpa cache lama dengan 0
+                
+                // Update node counter mesin dengan 0
                 set(ref(database, `lastCache/machine0${i}/counter`), zeroData);
             }
 
+            // Update UI segera
             updateUI();
             
-            // Opsional: Bunyikan notifikasi atau log
-            console.log("Auto Reset Berhasil & Nilai 0 dipaksakan.");
+            alert("Auto Reset Berhasil & Nilai dikembalikan ke 0!");
         } catch (error) {
             console.error("GAGAL AUTO RESET:", error);
+            alert("Gagal melakukan Auto Reset: " + error.message);
         }
     }
 
@@ -559,4 +542,4 @@
 </script>
 
 </body>
-</html>
+</html> 
