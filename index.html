@@ -6,7 +6,7 @@
 <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
 
 <style>
-/* CSS tetap sama */
+/* CSS VARIABLES & RESET */
 :root {
   --bg:#0f172a;
   --card:#1e293b;
@@ -96,7 +96,7 @@ nav button{
 
 .grid{
   display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(160px,1fr));
+  grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); /* Adjusted for table content */
   gap:18px;
 }
 .card{
@@ -106,6 +106,20 @@ nav button{
   text-align:center;
   cursor:pointer;
 }
+.card table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+}
+.card th, .card td {
+  padding: 5px;
+  border: 1px solid #334155;
+  font-size: 12px;
+}
+.card th {
+  background: var(--dark);
+}
+
 .count{
   font-size:30px;
   color:var(--success);
@@ -157,7 +171,6 @@ footer{
   <option value="machine05">Machine 05</option>
   <option value="machine06">Machine 06</option>
 </select>
-
     <span id="clock"></span>
     <button onclick="showDashboard()">Dashboard</button>
     <button onclick="showHistory()">History</button>
@@ -165,16 +178,16 @@ footer{
     <button onclick="resetCounter()">Reset</button>
     <button onclick="logout()">Logout</button>
   </nav>
-</header>
 
+</header>
 <div class="container" id="dashboardView">
   <div class="total-box">
     <div>Total Produksi</div>
     <h1 id="total">0</h1>
   </div>
   <div class="grid" id="cards"></div>
-</div>
 
+</div>
 <div class="container" id="historyView" style="display:none">
   <h2>Data Tersimpan</h2>
   <table id="historyTable">
@@ -228,14 +241,23 @@ function logout(){
   sessionStorage.clear();
   location.reload();
 }
+
+// Rates produksi per menit untuk setiap line (cup/menit)
+const rates = Array(14).fill(70); // Semua line diasumsikan 70 cup/menit, sesuaikan jika berbeda
+
+let startTime = null; // Waktu mulai untuk perhitungan prediction
+
 window.onload=()=>{
   if(sessionStorage.getItem("login")==="1"){
     loginPage.style.display="none";
     dashboardPage.style.display="block";
+    startTime = Date.now(); // Set start time saat dashboard load
     generateAllCards();
     loadLastCacheFromFirebase();  // Load dari Firebase
     // Start daily scheduler untuk autosave + reset pada jam 08:20
     scheduleDailyAt(13,12, saveAndResetAuto);
+    // Update prediction dan efficiency setiap 3 detik
+    setInterval(updateUI, 3000);
   }
 };
 
@@ -272,7 +294,14 @@ function generateAllCards(){
     cards.innerHTML += `
       <div class="card" onclick="showSensorHistory(${i})">
         LINE ${i}
-        <div class="count" id="L${i}">0</div>
+        <table>
+          <tr><th>Actual</th><th>Prediction</th><th>Efficiency</th></tr>
+          <tr>
+            <td class="count" id="L${i}">0</td>
+            <td id="P${i}">0</td>
+            <td id="E${i}">0%</td>
+          </tr>
+        </table>
       </div>`;
   }
 }
@@ -334,10 +363,16 @@ client.on("message", (topic, msg) => {
 function updateUI(){
   console.time('updateUI');  // Untuk monitoring performa
   let total = 0;
+  const now = Date.now();
+  const minutesElapsed = (now - startTime) / 60000; // Menit yang telah berlalu sejak start
   for (let i = 1; i <= 14; i++) {
-    const val = latestCounter[`L${i}`] || 0;
-    document.getElementById(`L${i}`).innerText = val;
-    total += val;
+    const actual = latestCounter[`L${i}`] || 0;
+    const prediction = rates[i-1] * minutesElapsed; // Prediction berdasarkan rate * waktu
+    const eff = prediction > 0 ? ((actual / prediction) * 100).toFixed(2) + '%' : '0%';
+    document.getElementById(`L${i}`).innerText = actual;
+    document.getElementById(`P${i}`).innerText = Math.round(prediction);
+    document.getElementById(`E${i}`).innerText = eff;
+    total += actual;
   }
   document.getElementById("total").innerText = total;
   console.timeEnd('updateUI');  // Akhiri monitoring
