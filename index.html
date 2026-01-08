@@ -234,6 +234,7 @@ window.onload=()=>{
     dashboardPage.style.display="block";
     generateAllCards();
     loadLastCacheFromFirebase();  // Load dari Firebase
+    scheduleDailyAutoSave(); // Jadwalkan auto-save setiap hari pukul 08:20
   }
 };
 
@@ -342,7 +343,8 @@ function updateUI(){
 }
 
 /* ================= SAVE DATA KE FIREBASE ================= */
-function saveData(){
+// Ubah: dukung silent auto-save (untuk menekan alert saat auto-save)
+function saveData(silent = false){
   const entry = {
     time: new Date().toLocaleString(),
     total: total.innerText,
@@ -350,9 +352,16 @@ function saveData(){
   };
   const historyRef = ref(database, 'history');
   push(historyRef, entry).then(() => {
-    alert("Data disimpan ke Firebase");
+    if(!silent) {
+      alert("Data disimpan ke Firebase");
+    } else {
+      console.log("Auto-saved data to Firebase at", new Date().toLocaleString());
+      document.getElementById("firebaseStatus").innerText = "Auto-saved";
+    }
   }).catch((error) => {
     console.error("Error saving data:", error);
+    if(!silent) alert("Error saving data: " + error);
+    document.getElementById("firebaseStatus").innerText = "Error";
   });
 }
 
@@ -439,6 +448,26 @@ function resetCounter(){
   const selectedMachine = document.getElementById("machineSelect").value;
   const targetCmd = `iot/esp32/${selectedMachine}/cmd`;
   client.publish(targetCmd, "RESET");
+}
+
+// Schedule a daily auto-save at specified hour/minute (default 08:20)
+function scheduleDailyAutoSave(hour = 8, minute = 20){
+  function scheduleNext(){
+    const now = new Date();
+    let next = new Date(now.getFullYear(), now.getMonth(), now.getDate(), hour, minute, 0, 0);
+    if(next <= now) next.setDate(next.getDate() + 1);
+    const delay = next - now;
+    console.log('Scheduling auto-save in ms:', delay);
+    setTimeout(() => {
+      try{
+        saveData(true); // silent auto-save
+      }catch(e){
+        console.error('Auto-save failed', e);
+      }
+      scheduleNext(); // schedule for the following day
+    }, delay);
+  }
+  scheduleNext();
 }
 
 // Expose functions to global scope for onclick
