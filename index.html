@@ -267,8 +267,9 @@ window.onload=()=>{
     });
     generateAllCards();
     loadLastCacheFromFirebase();  // Load dari Firebase
-    // Start daily scheduler untuk autosave + reset pada jam 08:20
-    scheduleDailyAt(14,30, saveAndResetAuto);
+      // Start daily scheduler untuk autosave + reset pada jam 08:20
+      scheduleDailyAt(14,35, saveAndResetAuto);
+      console.log('Auto-save/reset scheduled for 08:20 daily');
     // Update prediction dan efficiency setiap 3 detik
     setInterval(updateUI, 3000);
   }
@@ -453,6 +454,12 @@ function saveAndResetAuto(){
     console.error('Auto save failed, skip reset:', err);
   });
 }
+
+  // Expose quick test helper to trigger autosave/reset immediately from console
+  window.testAutoSaveReset = function(){
+    console.log('Manual trigger: saveAndResetAuto');
+    saveAndResetAuto();
+  }
 
 // Schedule a daily action at specific hour/minute (local time)
 function scheduleDailyAt(hour, minute, action){
