@@ -409,6 +409,8 @@ function saveAndResetAuto(){
   saveData().then(()=>{
     // setelah berhasil menyimpan, kirim perintah reset ke semua mesin
     resetAllMachines();
+    // Reset startTime untuk prediction dan efficiency
+    startTime = Date.now();
   }).catch((err)=>{
     console.error('Auto save failed, skip reset:', err);
   });
@@ -513,6 +515,10 @@ function resetCounter(){
   const selectedMachine = document.getElementById("machineSelect").value;
   const targetCmd = `iot/esp32/${selectedMachine}/cmd`;
   client.publish(targetCmd, "RESET");
+  // Reset startTime untuk prediction dan efficiency
+  startTime = Date.now();
+  // Update UI immediately to reflect reset
+  updateUI();
 }
 
 // Expose functions to global scope for onclick
