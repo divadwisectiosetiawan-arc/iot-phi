@@ -376,26 +376,8 @@ function updateUI(){
   let total = 0;
   for (let i = 1; i <= 14; i++) {
     const val = latestCounter[`L${i}`] || 0;
-    // update hidden count (keperluan lain)
-    const countEl = document.getElementById(`L${i}`);
-    if(countEl) countEl.innerText = val;
+    document.getElementById(`L${i}`).innerText = val;
     total += val;
-
-    // compute per-line metrics
-    const key = `L${i}`;
-    const avg = Math.round(computeAvgValue(key) || 0);
-    const speed = Math.round(computeSpeedPerMin(key) || 0);
-    const target = computeTargetForLine(key);
-    const eff = target > 0 ? Math.round((val / target) * 100) : 0;
-
-    const avgEl = document.getElementById(`avgL${i}`);
-    const speedEl = document.getElementById(`speedL${i}`);
-    const targetEl = document.getElementById(`targetL${i}`);
-    const effEl = document.getElementById(`effL${i}`);
-    if(avgEl) avgEl.innerText = avg;
-    if(speedEl) speedEl.innerText = `${speed} /min`;
-    if(targetEl) targetEl.innerText = target;
-    if(effEl) effEl.innerText = `${eff}%`;
   }
   document.getElementById("total").innerText = total;
   console.timeEnd('updateUI');  // Akhiri monitoring
@@ -595,9 +577,7 @@ function loadSensorHistoryFromFirebase(sensorId){
 function resetCounter(){
   const selectedMachine = document.getElementById("machineSelect").value;
   const targetCmd = `iot/esp32/${selectedMachine}/cmd`;
-  const payload = JSON.stringify({ cmd: "RESET", reset_source: "web" });
-  client.publish(targetCmd, payload);
-  setLastResetTime(new Date());
+  client.publish(targetCmd, "RESET");
 }
 
 // Expose functions to global scope for onclick
