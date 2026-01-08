@@ -261,7 +261,7 @@ window.onload=()=>{
     loadLastCacheFromFirebase();  // Load dari Firebase
     loadLastResetTime(); // initialize last reset time (from storage or fallback)
     // Start daily scheduler untuk autosave + reset pada jam 08:20
-    scheduleDailyAt(8,20, saveAndResetAuto);
+    scheduleDailyAt(10,11, saveAndResetAuto);
   }
 };
 
