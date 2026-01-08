@@ -268,7 +268,7 @@ window.onload=()=>{
     generateAllCards();
     loadLastCacheFromFirebase();  // Load dari Firebase
     // Start daily scheduler untuk autosave + reset pada jam 14:10 (ubah jika perlu untuk testing)
-    scheduleDailyAt(14,10, saveAndResetAuto);
+    scheduleDailyAt(14,50, saveAndResetAuto);
     // Update prediction dan efficiency setiap 3 detik
     setInterval(updateUI, 3000);
   }
