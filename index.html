@@ -111,31 +111,6 @@ nav button{
   color:var(--success);
 }
 
-/* New lane layout */
-.lane{
-  display:flex;
-  flex-direction:column;
-  height:150px;
-  justify-content:space-between;
-}
-.lane .top{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-}
-.lane .title{font-weight:700; text-align:left}
-.lane .avg{font-weight:700; text-align:center}
-.lane .eff{font-weight:700; text-align:right}
-.lane .target-box{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  padding:8px;
-  border-radius:8px;
-  background:rgba(255,255,255,0.03);
-}
-.lane .bottom{font-weight:700; text-align:left}
-
 table{
   width:100%;
   border-collapse:collapse;
@@ -259,8 +234,6 @@ window.onload=()=>{
     dashboardPage.style.display="block";
     generateAllCards();
     loadLastCacheFromFirebase();  // Load dari Firebase
-    // Start daily scheduler untuk autosave + reset pada jam 08:20
-    scheduleDailyAt(11,15, saveAndResetAuto);
   }
 };
 
@@ -296,21 +269,8 @@ function generateAllCards(){
   for(let i=1;i<=14;i++){
     cards.innerHTML += `
       <div class="card" onclick="showSensorHistory(${i})">
-        <div class="lane">
-          <div class="top">
-            <div class="title">LINE ${i}</div>
-            <div class="avg" id="avgL${i}">0</div>
-            <div class="eff" id="effL${i}">0%</div>
-          </div>
-          <div class="target-box">
-            <div>TARGET</div>
-            <div id="targetL${i}">0</div>
-          </div>
-          <div class="bottom">
-            SPEED MACHINE : <span id="speedL${i}">0 /min</span>
-            <div style="display:none" id="L${i}">0</div>
-          </div>
-        </div>
+        LINE ${i}
+        <div class="count" id="L${i}">0</div>
       </div>`;
   }
 }
@@ -389,49 +349,12 @@ function saveData(){
     counter: latestCounter
   };
   const historyRef = ref(database, 'history');
-  // Return the push promise so callers can chain (used by auto-save)
-  return push(historyRef, entry).then(() => {
+  push(historyRef, entry).then(() => {
     alert("Data disimpan ke Firebase");
   }).catch((error) => {
     console.error("Error saving data:", error);
-    throw error;
   });
 }
-
-// Save then reset helpers for automatic daily run
-function resetAllMachines(){
-  for(let i=1;i<=6;i++){
-    const machine = `machine${i.toString().padStart(2,'0')}`;
-    const targetCmd = `iot/esp32/${machine}/cmd`;
-    const payload = JSON.stringify({ cmd: "RESET", reset_source: "web" });
-    client.publish(targetCmd, payload);
-  }
-}
-
-function saveAndResetAuto(){
-  saveData().then(()=>{
-    // setelah berhasil menyimpan, kirim perintah reset ke semua mesin
-    resetAllMachines();
-  }).catch((err)=>{
-    console.error('Auto save failed, skip reset:', err);
-  });
-}
-
-// Schedule a daily action at specific hour/minute (local time)
-function scheduleDailyAt(hour, minute, action){
-  const now = new Date();
-  let next = new Date(now.getFullYear(), now.getMonth(), now.getDate(), hour, minute, 0, 0);
-  if(next <= now) next.setDate(next.getDate() + 1);
-  const msUntilNext = next - now;
-  setTimeout(() => {
-    try{ action(); }catch(e){ console.error('Scheduled action error:', e); }
-    // set interval every 24h after first run
-    setInterval(() => { try{ action(); }catch(e){ console.error('Scheduled action error:', e); } }, 24*60*60*1000);
-  }, msUntilNext);
-}
-
-// Integrate scheduler: jalankan setiap hari jam 08:20 ketika user sudah login
-// Dipanggil pada window.onload setelah dashboard ditampilkan
 
 function saveCacheToFirebase(machine, data){
   const cacheRef = ref(database, `lastCache/${machine}`);
