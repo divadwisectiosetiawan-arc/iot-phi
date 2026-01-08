@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sardines PHI - IoT Dashboard</title>
+    <title>Pasific Harvest Indonesia</title>
     <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
 
     <style>
@@ -26,6 +26,26 @@
             overflow-x: hidden;
         }
 
+        /* --- LOGO STYLES (BARU) --- */
+        .login-logo {
+            max-width: 150px; /* Ukuran max logo login */
+            height: auto;
+            display: block;
+            margin: 0 auto 20px auto; /* Tengah & ada jarak bawah */
+        }
+
+        .header-brand {
+            display: flex;
+            align-items: center;
+            gap: 15px; /* Jarak antara logo dan teks */
+        }
+
+        .header-logo {
+            height: 45px; /* Tinggi logo di header */
+            width: auto;
+        }
+        /* -------------------------- */
+
         /* LOGIN PAGE */
         #loginPage {
             height: 100vh;
@@ -46,7 +66,7 @@
             border: 1px solid var(--border);
             text-align: center;
         }
-        .login-box h2 { color: var(--primary); margin-bottom: 25px; }
+        .login-box h2 { color: var(--primary); margin-bottom: 25px; margin-top: 0; }
         .login-box input {
             width: 100%;
             padding: 12px;
@@ -156,9 +176,6 @@
             color: #64748b;
             border-top: 1px solid var(--border);
         }
-        .status-badge { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #ccc; margin-right: 5px; }
-        .status-ok { background: var(--success); }
-        .status-err { background: var(--danger); }
     </style>
 </head>
 
@@ -166,7 +183,9 @@
 
 <div id="loginPage">
     <div class="login-box">
-        <h2>SARDINES PHI</h2>
+        <img src="phi.png" alt="Logo Perusahaan" class="login-logo">
+        
+        <h2>USER LOGIN</h2>
         <input id="username" type="text" placeholder="Username">
         <input id="password" type="password" placeholder="Password">
         <button onclick="doLogin()">LOGIN</button>
@@ -176,7 +195,10 @@
 
 <div id="dashboardPage">
     <header>
-        <b>MONITORING PRODUKSI</b>
+        <div class="header-brand">
+            <img src="phi.png" alt="Logo Kecil" class="header-logo">
+            <b>TOTAL PRODUKSI SARDINES PHI</b>
+        </div>
         <nav>
             <span id="clock" style="font-family: monospace; color: #fbbf24; margin-right: 10px;">--:--:--</span>
             <select id="machineSelect">
@@ -200,8 +222,7 @@
             <div>TOTAL PRODUKSI HARI INI</div>
             <h1 id="totalCount">0</h1>
         </div>
-        <div class="grid" id="cardsContainer">
-            </div>
+        <div class="grid" id="cardsContainer"></div>
     </div>
 
     <div class="container" id="viewHistory" style="display:none">
@@ -257,8 +278,8 @@
 
     // --- 2. GLOBAL VARIABLES ---
     let latestCounter = {};
-    let globalStartTime = null; // Waktu mulai produksi yang disinkronkan dari Cloud
-    const targetCPM = 70; // Target Cup Per Menit (Bisa diubah)
+    let globalStartTime = null; 
+    const targetCPM = 70; 
     const rates = Array(14).fill(targetCPM); 
 
     // --- 3. LOGIKA UTAMA: SINKRONISASI WAKTU ---
@@ -270,12 +291,11 @@
                 globalStartTime = val;
                 console.log("Global Start Time ter-update:", new Date(val).toLocaleTimeString());
             } else {
-                // Jika database kosong (pertama kali run), set waktu sekarang
                 const now = Date.now();
                 set(startRef, now);
                 globalStartTime = now;
             }
-            updateUI(); // Update tampilan segera setelah waktu sinkron
+            updateUI(); 
         });
     }
 
@@ -298,18 +318,11 @@
             document.getElementById("loginPage").style.display = "none";
             document.getElementById("dashboardPage").style.display = "block";
             
-            // Inisialisasi
             generateCards();
             syncGlobalStartTime();
             loadCache();
-            
-            // Auto Reset Schedule (Cek setiap menit)
             setInterval(checkAutoReset, 60000); 
-
-            // Update UI loop (Animasi angka real-time)
             setInterval(updateUI, 2000); 
-
-            // Jam Digital
             setInterval(() => {
                 document.getElementById("clock").innerText = new Date().toLocaleTimeString();
             }, 1000);
@@ -326,7 +339,6 @@
     client.on("connect", () => {
         document.getElementById("mqttStatus").innerText = "Connected";
         document.getElementById("mqttStatus").style.color = "#22c55e";
-        // Subscribe semua mesin
         for(let i=1; i<=6; i++) {
             client.subscribe(`iot/esp32/machine0${i}/counter`);
         }
@@ -336,60 +348,46 @@
         try {
             const data = JSON.parse(msg.toString());
             const machine = topic.split('/')[2];
-
-            // Filter data kosong akibat restart alat (bukan reset web)
             const isZero = Object.values(data.counter).every(v => v === 0);
             if(isZero && data.reset_source !== "web") return;
-
-            // Update local state
             Object.assign(latestCounter, data.counter);
-
-            // Simpan cache ke Firebase (agar saat refresh data tidak hilang)
             set(ref(database, `lastCache/${machine}`), data);
             document.getElementById("firebaseStatus").innerText = "Synced";
             document.getElementById("firebaseStatus").style.color = "#22c55e";
-            
             updateUI();
         } catch(e) { console.error("MQTT Error:", e); }
     });
 
-    // --- 6. CORE LOGIC: UPDATE UI & PREDICTION ---
+    // --- 6. CORE LOGIC ---
     function updateUI() {
-        if (!globalStartTime) return; // Tunggu sync waktu selesai
+        if (!globalStartTime) return; 
 
         let grandTotal = 0;
         const now = Date.now();
-        // Hitung menit berlalu sejak Reset terakhir (Global)
         const minutesElapsed = (now - globalStartTime) / 60000;
 
         for (let i = 1; i <= 14; i++) {
             const actual = latestCounter[`L${i}`] || 0;
-            // Rumus Prediksi: Rate * Menit Berlalu
             const prediction = Math.max(0, Math.round(rates[i-1] * minutesElapsed));
             const eff = prediction > 0 ? ((actual / prediction) * 100).toFixed(1) + '%' : '0%';
 
-            // Update DOM jika elemen ada
             const elActual = document.getElementById(`L${i}`);
             if (elActual) {
                 elActual.innerText = actual;
                 document.getElementById(`P${i}`).innerText = prediction;
                 document.getElementById(`E${i}`).innerText = eff;
-                
-                // Warnai efficiency
                 const elEff = document.getElementById(`E${i}`);
-                if(parseFloat(eff) < 80) elEff.style.color = "#f87171"; // Merah jika < 80%
-                else elEff.style.color = "#22c55e"; // Hijau jika bagus
+                if(parseFloat(eff) < 80) elEff.style.color = "#f87171"; 
+                else elEff.style.color = "#22c55e"; 
             }
             grandTotal += actual;
         }
         document.getElementById("totalCount").innerText = grandTotal.toLocaleString();
     }
 
-    // --- 7. AUTO RESET LOGIC (PENTING) ---
+    // --- 7. AUTO RESET LOGIC ---
     function checkAutoReset() {
         const now = new Date();
-        // Contoh: Auto Reset jam 14:50
-        // Ubah angka ini sesuai kebutuhan jadwal shift
         const TARGET_HOUR = 15; 
         const TARGET_MINUTE = 17;
 
@@ -399,7 +397,6 @@
         }
     }
 
-    // Fungsi Gabungan: Simpan -> Reset Alat -> Reset Waktu Prediksi
     async function executeSaveAndReset() {
         const entry = {
             time: new Date().toLocaleString(),
@@ -409,28 +406,16 @@
         };
 
         try {
-            // 1. Simpan data ke History
             await push(ref(database, 'history'), entry);
-            console.log("1. History Saved");
-
-            // 2. Kirim Perintah Reset ke MQTT (Semua Mesin)
             for (let i = 1; i <= 6; i++) {
                 const topic = `iot/esp32/machine0${i}/cmd`;
                 const payload = JSON.stringify({ cmd: "RESET", reset_source: "web" });
                 client.publish(topic, payload);
             }
-            console.log("2. MQTT Reset Command Sent");
-
-            // 3. Update 'productionStartTime' di Firebase ke Waktu Sekarang
-            // Ini akan membuat PREDICTION kembali ke 0 di semua HP/Laptop secara otomatis
             const newStartTime = Date.now();
             await set(ref(database, 'config/productionStartTime'), newStartTime);
-            console.log("3. Global Timer Reset");
-
-            // 4. Bersihkan counter lokal sementara
             latestCounter = {}; 
             updateUI();
-            
             alert("Auto Reset Berhasil Dilakukan!");
         } catch (error) {
             console.error("GAGAL AUTO RESET:", error);
@@ -480,7 +465,7 @@
         const snap = await get(ref(database, 'history'));
         tbody.innerHTML = "";
         if(snap.exists()) {
-            const data = Object.values(snap.val()).reverse(); // Terbalik biar yang baru diatas
+            const data = Object.values(snap.val()).reverse(); 
             data.forEach(h => {
                 const val = h.counter ? (h.counter[`L${lineId}`] || 0) : 0;
                 tbody.innerHTML += `<tr><td>${h.time}</td><td style="font-weight:bold; color:var(--primary)">${val}</td></tr>`;
@@ -515,7 +500,7 @@
             <div class="card" onclick="showSensorHistory(${i})">
                 <div class="card-header">
                     <span>LINE ${i.toString().padStart(2,'0')}</span>
-                    <span style="font-size:12px">🎯 Target: 70/mnt</span>
+                    <span style="font-size:12px"> SPEED: 70cpm</span>
                 </div>
                 <table class="mini-table">
                     <tr><th>Actual</th><th>Predict</th><th>Eff %</th></tr>
