@@ -245,26 +245,13 @@ function logout(){
 // Rates produksi per menit untuk setiap line (cup/menit)
 const rates = Array(14).fill(70); // Semua line diasumsikan 70 cup/menit, sesuaikan jika berbeda
 
-// Mapping mesin ke line
-const machineLines = {
-  machine01: [1, 2, 3],
-  machine02: [4, 5, 6],
-  machine03: [7, 8, 9],
-  machine04: [10, 11, 12],
-  machine05: [13],
-  machine06: [14]
-};
-
-let startTime = {}; // Waktu mulai per mesin untuk perhitungan prediction
+let startTime = null; // Waktu mulai untuk perhitungan prediction
 
 window.onload=()=>{
   if(sessionStorage.getItem("login")==="1"){
     loginPage.style.display="none";
     dashboardPage.style.display="block";
-    // Set start time untuk semua mesin saat dashboard load
-    Object.keys(machineLines).forEach(machine => {
-      startTime[machine] = Date.now();
-    });
+    startTime = Date.now(); // Set start time saat dashboard load
     generateAllCards();
     loadLastCacheFromFirebase();  // Load dari Firebase
     // Start daily scheduler untuk autosave + reset pada jam 08:20
@@ -377,11 +364,9 @@ function updateUI(){
   console.time('updateUI');  // Untuk monitoring performa
   let total = 0;
   const now = Date.now();
+  const minutesElapsed = (now - startTime) / 60000; // Menit yang telah berlalu sejak start
   for (let i = 1; i <= 14; i++) {
     const actual = latestCounter[`L${i}`] || 0;
-    // Cari mesin yang mengontrol line ini
-    const machine = Object.keys(machineLines).find(m => machineLines[m].includes(i));
-    const minutesElapsed = machine ? (now - startTime[machine]) / 60000 : 0;
     const prediction = rates[i-1] * minutesElapsed; // Prediction berdasarkan rate * waktu
     const eff = prediction > 0 ? ((actual / prediction) * 100).toFixed(2) + '%' : '0%';
     document.getElementById(`L${i}`).innerText = actual;
@@ -424,10 +409,6 @@ function saveAndResetAuto(){
   saveData().then(()=>{
     // setelah berhasil menyimpan, kirim perintah reset ke semua mesin
     resetAllMachines();
-    // Reset startTime untuk semua mesin
-    Object.keys(machineLines).forEach(machine => {
-      startTime[machine] = Date.now();
-    });
   }).catch((err)=>{
     console.error('Auto save failed, skip reset:', err);
   });
@@ -532,10 +513,6 @@ function resetCounter(){
   const selectedMachine = document.getElementById("machineSelect").value;
   const targetCmd = `iot/esp32/${selectedMachine}/cmd`;
   client.publish(targetCmd, "RESET");
-  // Reset startTime untuk mesin yang dipilih
-  startTime[selectedMachine] = Date.now();
-  // Update UI immediately to reflect reset
-  updateUI();
 }
 
 // Expose functions to global scope for onclick
