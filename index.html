@@ -260,7 +260,7 @@ window.onload=()=>{
     generateAllCards();
     loadLastCacheFromFirebase();  // Load dari Firebase
     // Start daily scheduler untuk autosave + reset pada jam 08:20
-    scheduleDailyAt(8,20, saveAndResetAuto);
+    scheduleDailyAt(11,15, saveAndResetAuto);
   }
 };
 
@@ -358,8 +358,6 @@ client.on("message", (topic, msg) => {
   // Update counter untuk mesin ini
   Object.keys(data.counter).forEach(key => {
     latestCounter[key] = data.counter[key];
-    // push sample untuk per-line history (used to compute speed/avg)
-    pushLineSample(key, data.counter[key]);
   });
 
   // Throttle update UI: Jadwalkan update hanya jika belum dijadwalkan
@@ -400,63 +398,6 @@ function saveData(){
   });
 }
 
-// Per-line history + scheduling helpers
-let lineHistory = {}; // e.g. { L1: [{t:ts, v:val}, ...] }
-let lastResetTime = null;
-
-function setLastResetTime(d){
-  lastResetTime = d instanceof Date ? d : new Date(d);
-  localStorage.setItem('lastResetTime', lastResetTime.toISOString());
-}
-
-function loadLastResetTime(){
-  const s = localStorage.getItem('lastResetTime');
-  if(s){ lastResetTime = new Date(s); return; }
-  // fallback: compute most recent 08:20
-  const now = new Date();
-  let cand = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 8, 20, 0, 0);
-  if(cand > now) cand.setDate(cand.getDate() - 1);
-  lastResetTime = cand;
-  localStorage.setItem('lastResetTime', lastResetTime.toISOString());
-}
-
-function pushLineSample(key, value){
-  if(!lineHistory[key]) lineHistory[key]=[];
-  const t = Date.now();
-  const arr = lineHistory[key];
-  arr.push({t, v: value});
-  // prune older than 10 minutes
-  const tenMin = 10*60*1000;
-  while(arr.length && (t - arr[0].t) > tenMin) arr.shift();
-}
-
-function computeSpeedPerMin(key){
-  const arr = lineHistory[key] || [];
-  if(arr.length < 2) return 0;
-  const first = arr[0];
-  const last = arr[arr.length-1];
-  const delta = last.v - first.v;
-  const minutes = (last.t - first.t) / 60000;
-  if(minutes <= 0) return 0;
-  return delta / minutes; // per minute
-}
-
-function computeAvgValue(key){
-  const arr = lineHistory[key] || [];
-  if(!arr.length) return 0;
-  const sum = arr.reduce((s,x)=>s + x.v,0);
-  return sum / arr.length;
-}
-
-function computeTargetForLine(key){
-  // target = speedPerMin * elapsedMinutes since lastResetTime
-  if(!lastResetTime) loadLastResetTime();
-  const speed = computeSpeedPerMin(key);
-  const now = Date.now();
-  const elapsedMin = Math.max(0, (now - lastResetTime.getTime())/60000);
-  return Math.round(speed * elapsedMin);
-}
-
 // Save then reset helpers for automatic daily run
 function resetAllMachines(){
   for(let i=1;i<=6;i++){
@@ -465,7 +406,6 @@ function resetAllMachines(){
     const payload = JSON.stringify({ cmd: "RESET", reset_source: "web" });
     client.publish(targetCmd, payload);
   }
-  setLastResetTime(new Date());
 }
 
 function saveAndResetAuto(){
@@ -521,8 +461,6 @@ function loadLastCacheFromFirebase(){
         if(data && data.counter){
           Object.keys(data.counter).forEach(key => {
             latestCounter[key] = data.counter[key];
-            // initialize history with cached value
-            pushLineSample(key, data.counter[key]);
           });
         }
       });
