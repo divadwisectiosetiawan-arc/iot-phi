@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sardines PHI - IoT Dashboard</title>
+    <title>PASIFIC HARVEST INDONESIA</title>
     
     <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -223,7 +223,7 @@
 <div id="loginPage">
     <div class="login-box">
         <img src="phi.png" alt="Logo" class="login-logo">
-        <h2>SARDINES PHI</h2>
+        <h2>USER LOGIN</h2>
         <p style="color: var(--text-muted); margin-bottom: 20px; font-size: 14px;">Production Monitoring System</p>
         <input id="username" placeholder="Username" type="text" autocomplete="off">
         <input id="password" type="password" placeholder="Password">
@@ -236,23 +236,23 @@
     <header>
         <div class="header-left">
             <img src="phi.png" alt="Logo" class="header-logo">
-            <span class="header-title">PRODUCTION MONITORING</span>
+            <span class="header-title">COUNTER PRODUCTION PHI</span>
         </div>
         
         <nav>
             <span id="clock" style="font-family: monospace; font-weight:600; color:var(--text-main)"></span>
             
             <select id="machineSelect">
-                <option value="machine01|L1">Line 01</option>
-                <option value="machine02|L2">Line 02</option>
-                <option value="machine03|L3">Line 03</option>
-                <option value="machine04|L4">Line 04</option>
-                <option value="machine05|L5">Line 05</option>
-                <option value="machine06|L6">Line 06</option>
+                <option value="machine01|L1">Machine 01</option>
+                <option value="machine02|L2">Machine 02</option>
+                <option value="machine03|L3">Machine 03</option>
+                <option value="machine04|L4">Machine 04</option>
+                <option value="machine05|L5">Machine 05</option>
+                <option value="machine06|L6">Machine 06</option>
             </select>
 
-            <button onclick="showDashboard()" title="Dashboard">Dash</button>
-            <button onclick="showHistory()" title="History">Hist</button>
+            <button onclick="showDashboard()" title="Dashboard">Dashboard</button>
+            <button onclick="showHistory()" title="History">History</button>
             <button onclick="manualSave()" style="color:var(--success); border-color:var(--success)">Save</button>
             <button onclick="resetCounter()" style="color:var(--danger); border-color:var(--danger)">Reset</button>
             <button onclick="toggleTheme()" class="btn-theme" title="Switch Theme">◑</button>
@@ -273,7 +273,7 @@
         
         <div class="layout-row">
             <div class="summary-card" style="border-left: 4px solid var(--primary);">
-                <div class="summary-header" style="color: var(--primary)">TOTAL CLUB</div>
+                <div class="summary-header" style="color: var(--primary)">OVERALL CLUB</div>
                 <div class="summary-row">
                     <div class="summary-label">Total Actual</div>
                     <div class="summary-value" id="totalClubActual" style="color: var(--text-main)">0</div>
@@ -297,7 +297,7 @@
 
         <div class="layout-row">
             <div class="summary-card" style="border-left: 4px solid var(--warning);">
-                <div class="summary-header" style="color: var(--warning)">TOTAL POUCH</div>
+                <div class="summary-header" style="color: var(--warning)">OVERALL POUCH</div>
                 <div class="summary-row">
                     <div class="summary-label">Total Actual</div>
                     <div class="summary-value" id="totalPouchActual" style="color: var(--text-main)">0</div>
@@ -321,13 +321,13 @@
         
         <div class="layout-row">
             <div class="summary-card" style="border-left: 4px solid var(--purple);">
-                <div class="summary-header" style="color: var(--purple)">TOTAL PERFORMANCE</div>
+                <div class="summary-header" style="color: var(--purple)">OVERALL PERFORMANCE</div>
                 <div class="summary-row">
-                    <div class="summary-label">Grand Total Actual</div>
+                    <div class="summary-label">Overall Actual</div>
                     <div class="summary-value" id="grandTotalActual" style="color: var(--purple)">0</div>
                 </div>
                 <div class="summary-row">
-                    <div class="summary-label">Grand Total Prediction</div>
+                    <div class="summary-label">Overall Prediction</div>
                     <div class="summary-value" id="grandTotalPrediction" style="color: var(--text-main)">0</div>
                 </div>
                 <div class="summary-row">
@@ -339,9 +339,9 @@
             <div class="chart-container">
                 <div class="chart-header">
                     <div class="chart-legend-custom">
-                        <div class="legend-item"><span class="dot" style="background:var(--success)"></span> Target OK</div>
-                        <div class="legend-item"><span class="dot" style="background:var(--danger)"></span> Under Target</div>
-                        <div class="legend-item"><span class="dot" style="background:var(--warning); height: 3px; border-radius:0"></span> Prediksi</div>
+                        <div class="legend-item"><span class="dot" style="background:var(--success)"></span> GRAFIK</div>
+                        <div class="legend-item"><span class="dot" style="background:var(--danger)"></span> TOTAL PRODUCTION</div>
+                        <div class="legend-item"><span class="dot" style="background:var(--warning); height: 3px; border-radius:0"></span> PASIFIC HARVEST INDONESIA</div>
                     </div>
                     <div class="chart-controls">
                         <button class="btn-chart active" onclick="updateChartPeriod('daily', this)">Hari</button>
@@ -359,7 +359,7 @@
     <div class="container" id="historyView" style="display:none">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
             <div>
-                <h2 style="margin:0; color:var(--text-main)">Data Logger History</h2>
+                <h2 style="margin:0; color:var(--text-main)">Data Logger </h2>
                 <span style="font-size:13px; color:var(--text-muted)">Riwayat data penyimpanan akhir shift</span>
             </div>
             <div style="display:flex; gap:10px">
@@ -401,7 +401,7 @@
     <footer>
         System: <span id="status" style="color:var(--success)">Connecting...</span> | 
         Cloud: <span id="firebaseStatus" style="color:var(--primary)">Syncing...</span> | 
-        Sardines PHI &copy; 2024
+        PASIFIC HARVEST INDONESIA &copy; 2026
     </footer>
 </div>
 
@@ -651,8 +651,8 @@
 
     function checkAutoSchedule() {
         const d = new Date();
-        if(d.getHours()===15 && d.getMinutes()===10) { if(!hasAutoSaved){ executeSaveAndReset(); hasAutoSaved=true; } }
-        else if(d.getMinutes()!==10) hasAutoSaved=false;
+        if(d.getHours()===6 && d.getMinutes()===0) { if(!hasAutoSaved){ executeSaveAndReset(); hasAutoSaved=true; } }
+        else if(d.getMinutes()!==0) hasAutoSaved=false;
     }
 
     async function executeSaveAndReset() {
