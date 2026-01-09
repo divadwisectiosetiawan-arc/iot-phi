@@ -13,6 +13,7 @@
             --dark: #020617;
             --primary: #38bdf8;
             --success: #22c55e;
+            --warning: #f59e0b; /* Warna untuk Pouch Can */
             --text: #e5e7eb;
         }
         * { box-sizing: border-box; }
@@ -96,6 +97,26 @@
         }
         .total-box h1 { margin: 10px 0 0; font-size: 56px; color: var(--primary); }
 
+        /* Section Title Styles */
+        .section-title {
+            margin-top: 30px;
+            margin-bottom: 15px;
+            font-size: 18px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .badge {
+            font-size: 12px;
+            padding: 4px 8px;
+            border-radius: 4px;
+            color: #000;
+            font-weight: bold;
+        }
+        .badge-club { background: var(--primary); }
+        .badge-pouch { background: var(--warning); }
+
         .grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -117,9 +138,9 @@
         .card td { font-size: 18px; font-weight: bold; }
         .count { color: var(--success); font-size: 24px !important; }
 
-        /* === DATA LOGGER TABLE STYLES (REVISI BARU) === */
+        /* TABLE STYLES */
         .table-responsive {
-            overflow-x: auto; /* Agar bisa digeser ke samping di HP/Layar kecil */
+            overflow-x: auto;
             border-radius: 12px;
             border: 1px solid #334155;
         }
@@ -128,12 +149,12 @@
             width: 100%; 
             border-collapse: collapse; 
             background: var(--card); 
-            min-width: 800px; /* Lebar minimum agar kolom tidak gepeng */
+            min-width: 800px; 
         }
         
         .full-table th, .full-table td { 
             padding: 10px 8px; 
-            text-align: center; /* Center align untuk angka */
+            text-align: center; 
             border-bottom: 1px solid #334155; 
             border-right: 1px solid #334155;
             font-size: 13px;
@@ -147,9 +168,8 @@
             z-index: 10;
         }
         
-        /* Warna khusus angka */
         .val-active { color: var(--success); font-weight: bold; }
-        .val-zero { color: #475569; font-size: 12px; } /* Abu-abu redup untuk angka 0 */
+        .val-zero { color: #475569; font-size: 12px; }
 
         footer { text-align: center; padding: 20px; font-size: 12px; color: #64748b; }
     </style>
@@ -193,7 +213,16 @@
             <div style="color: #94a3b8; letter-spacing: 2px;">TOTAL PRODUCTION TODAY</div>
             <h1 id="total">0</h1>
         </div>
-        <div class="grid" id="cards"></div>
+        
+        <div class="section-title" style="color: var(--primary);">
+            <span class="badge badge-club">CLUB CAN</span> LINE 1-4 & 7-14
+        </div>
+        <div class="grid" id="clubCanContainer"></div>
+
+        <div class="section-title" style="color: var(--warning);">
+            <span class="badge badge-pouch">POUCH CAN</span> LINE 5-6
+        </div>
+        <div class="grid" id="pouchCanContainer"></div>
     </div>
 
     <div class="container" id="historyView" style="display:none">
@@ -208,8 +237,10 @@
                     <tr>
                         <th style="min-width: 150px; text-align:left; padding-left:15px">Waktu</th>
                         <th style="min-width: 80px;">Total</th>
-                        <th>L1</th><th>L2</th><th>L3</th><th>L4</th><th>L5</th>
-                        <th>L6</th><th>L7</th><th>L8</th><th>L9</th><th>L10</th>
+                        <th>L1</th><th>L2</th><th>L3</th><th>L4</th>
+                        <th style="background:#332D00; color:#fbbf24">L5</th>
+                        <th style="background:#332D00; color:#fbbf24">L6</th>
+                        <th>L7</th><th>L8</th><th>L9</th><th>L10</th>
                         <th>L11</th><th>L12</th><th>L13</th><th>L14</th>
                     </tr>
                 </thead>
@@ -253,7 +284,7 @@
     // Global State
     let latestCounter = {};
     let globalStartTime = null; 
-    let hasAutoSaved = false; // PENGAMAN: Agar tidak save berkali-kali
+    let hasAutoSaved = false; 
     const rates = Array(14).fill(70); 
 
     /* ================= SYNC START TIME ================= */
@@ -293,14 +324,11 @@
             document.getElementById("loginPage").style.display = "none";
             document.getElementById("dashboardPage").style.display = "block";
             
-            generateAllCards();
+            generateAllCards(); // Generate dengan pemisahan Club/Pouch
             syncGlobalStartTime();       
             loadLastCacheFromFirebase(); 
             
-            // Cek jadwal auto save setiap 10 detik
             setInterval(checkAutoSchedule, 10000);
-            
-            // Update tampilan setiap detik
             setInterval(updateUI, 1000); 
         }
     };
@@ -324,7 +352,6 @@
             const data = JSON.parse(msg.toString());
             const machine = topic.split('/')[2];
             
-            // Abaikan data 0 jika bukan karena reset web, tapi tetap simpan di memory
             const isAllZero = Object.values(data.counter).every(v => v === 0);
             if(isAllZero && data.reset_source !== "web") {
                 // do nothing specific
@@ -338,23 +365,40 @@
         } catch(e) { console.error("MQTT Error", e); }
     });
 
-    /* ================= UI FUNCTIONS ================= */
+    /* ================= UI FUNCTIONS (MODIFIED) ================= */
     function generateAllCards() {
-        const container = document.getElementById("cards");
-        container.innerHTML = "";
+        // Ambil container terpisah
+        const clubContainer = document.getElementById("clubCanContainer");
+        const pouchContainer = document.getElementById("pouchCanContainer");
+
+        // Kosongkan container
+        clubContainer.innerHTML = "";
+        pouchContainer.innerHTML = "";
+
         for(let i=1; i<=14; i++) {
-            container.innerHTML += `
-                <div class="card" onclick="showSensorHistory(${i})">
-                    <h3>LINE ${i.toString().padStart(2,'0')}</h3>
+            const isPouch = (i === 5 || i === 6);
+            const typeLabel = isPouch ? "POUCH" : "CLUB";
+            const colorStyle = isPouch ? "color:var(--warning)" : "color:var(--primary)";
+
+            const cardHTML = `
+                <div class="card" onclick="showSensorHistory(${i})" style="${isPouch ? 'border-color: #451a03;' : ''}">
+                    <h3 style="${colorStyle}">LINE ${i.toString().padStart(2,'0')} <span style="font-size:10px; opacity:0.7">(${typeLabel})</span></h3>
                     <table>
                         <tr><th>Actual</th><th>Prediction</th><th>Eff.</th></tr>
                         <tr>
                             <td class="count" id="L${i}">0</td>
-                            <td id="P${i}" style="color:var(--primary)">0</td>
+                            <td id="P${i}" style="${colorStyle}">0</td>
                             <td id="E${i}">0%</td>
                         </tr>
                     </table>
                 </div>`;
+
+            // Logika Klasifikasi
+            if (isPouch) {
+                pouchContainer.innerHTML += cardHTML;
+            } else {
+                clubContainer.innerHTML += cardHTML;
+            }
         }
     }
 
@@ -387,50 +431,43 @@
         document.getElementById("clock").innerText = new Date().toLocaleString('id-ID');
     }
 
-    /* ================= AUTO SAVE & RESET (FIXED) ================= */
+    /* ================= AUTO SAVE & RESET ================= */
     function checkAutoSchedule() {
         const now = new Date();
         const hours = now.getHours();
         const minutes = now.getMinutes();
 
-        // JIKA JAM 15:10 DAN BELUM PERNAH SAVE HARI INI
         if(hours === 15 && minutes === 10) {
             if (!hasAutoSaved) {
                 console.log("Jadwal Auto Save Tercapai!");
                 executeSaveAndReset();
-                hasAutoSaved = true; // Kunci agar tidak save berulang
+                hasAutoSaved = true; 
             }
         } else {
-            // Jika sudah lewat menit ke 10, buka kuncinya untuk besok
             if(minutes !== 10) hasAutoSaved = false;
         }
     }
 
     async function executeSaveAndReset() {
-        // PERBAIKAN: Hitung total manual dari data, JANGAN ambil dari HTML innerText
-        // Ini mencegah nilai "undefined"
         let calculatedTotal = 0;
         for(let i=1; i<=14; i++) {
             calculatedTotal += (latestCounter[`L${i}`] || 0);
         }
 
         const entry = {
-            time: new Date().toLocaleString('id-ID'), // Format tanggal Indonesia
-            total: calculatedTotal, // Pakai hasil hitungan manual
+            time: new Date().toLocaleString('id-ID'), 
+            total: calculatedTotal,
             counter: { ...latestCounter }
         };
 
         try {
-            // 1. Simpan History
             await push(ref(database, 'history'), entry);
             
-            // 2. Reset Hardware
             for(let i=1; i<=6; i++) {
                 const machine = `machine0${i}`;
                 client.publish(`iot/esp32/${machine}/cmd`, JSON.stringify({ cmd: "RESET", reset_source: "web" }));
             }
             
-            // 3. Reset Start Time (Agar prediksi kembali ke 0)
             await set(ref(database, 'config/productionStartTime'), Date.now());
             
             latestCounter = {}; 
@@ -459,7 +496,6 @@
         if(snap.exists()) {
             const data = Object.values(snap.val()).reverse(); 
             data.forEach(h => {
-                // Cegah tampilan undefined di tabel history juga
                 const safeTotal = h.total !== undefined ? h.total : 0;
                 
                 let rowHtml = `
@@ -470,7 +506,10 @@
                 for(let i = 1; i <= 14; i++) {
                     let val = h.counter ? (h.counter[`L${i}`] || 0) : 0;
                     let styleClass = val > 0 ? "val-active" : "val-zero";
-                    rowHtml += `<td class="${styleClass}">${val}</td>`;
+                    // Highlight Pouch Can di History juga (kolom 5 & 6)
+                    let tdStyle = (i === 5 || i === 6) ? "background:#1d1902;" : "";
+                    
+                    rowHtml += `<td class="${styleClass}" style="${tdStyle}">${val}</td>`;
                 }
                 rowHtml += `</tr>`;
                 body.innerHTML += rowHtml;
@@ -492,7 +531,10 @@
     window.showSensorHistory = async (id) => {
         document.getElementById("dashboardView").style.display = "none";
         document.getElementById("sensorHistoryView").style.display = "block";
-        document.getElementById("sensorTitle").innerText = "LINE " + id + " HISTORY";
+        
+        // Tentukan judul berdasarkan tipe
+        let type = (id === 5 || id === 6) ? " (POUCH)" : " (CLUB)";
+        document.getElementById("sensorTitle").innerText = "LINE " + id + type + " HISTORY";
         
         const snap = await get(ref(database, 'history'));
         const table = document.getElementById("sensorHistoryTable");
@@ -516,3 +558,5 @@
         }
     }
 </script>
+</body>
+</html>
