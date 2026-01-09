@@ -253,20 +253,18 @@
     // Global State
     let latestCounter = {};
     let globalStartTime = null; 
-    const rates = Array(14).fill(70); // Target 70 per menit
+    let hasAutoSaved = false; // PENGAMAN: Agar tidak save berkali-kali
+    const rates = Array(14).fill(70); 
 
-    /* ================= SYNC START TIME (KUNCI AGAR PREDIKSI SINKRON) ================= */
+    /* ================= SYNC START TIME ================= */
     function syncGlobalStartTime() {
         const startRef = ref(database, 'config/productionStartTime');
         onValue(startRef, (snapshot) => {
             const val = snapshot.val();
             if (val) {
                 globalStartTime = val;
-                console.log("Global Start Time Updated:", new Date(val).toLocaleTimeString());
-                // Paksa update UI segera setelah waktu berubah
                 updateUI(); 
             } else {
-                // Jika belum ada data di database, set waktu sekarang
                 const now = Date.now();
                 set(startRef, now);
             }
@@ -296,13 +294,13 @@
             document.getElementById("dashboardPage").style.display = "block";
             
             generateAllCards();
-            syncGlobalStartTime();       // Load waktu mulai dari Firebase
-            loadLastCacheFromFirebase(); // Load nilai counter terakhir
+            syncGlobalStartTime();       
+            loadLastCacheFromFirebase(); 
             
-            // Auto Save jam 15:10
-            setInterval(checkAutoSchedule, 60000);
+            // Cek jadwal auto save setiap 10 detik
+            setInterval(checkAutoSchedule, 10000);
             
-            // Update UI setiap detik agar prediksi berjalan halus
+            // Update tampilan setiap detik
             setInterval(updateUI, 1000); 
         }
     };
@@ -326,24 +324,21 @@
             const data = JSON.parse(msg.toString());
             const machine = topic.split('/')[2];
             
-            // Filter: Jangan update cache lokal jika data 0 tapi bukan dari reset web
-            // Namun, tetap terima data real-time
+            // Abaikan data 0 jika bukan karena reset web, tapi tetap simpan di memory
             const isAllZero = Object.values(data.counter).every(v => v === 0);
             if(isAllZero && data.reset_source !== "web") {
-                // Opsional: bisa di-ignore atau tetap diproses
+                // do nothing specific
             }
 
             Object.assign(latestCounter, data.counter);
-            
-            // Simpan cache ke Firebase agar saat refresh data tidak hilang
             set(ref(database, `lastCache/${machine}`), data);
             
             document.getElementById("firebaseStatus").innerText = "Synced";
             updateUI();
-        } catch(e) { console.error("MQTT Data Error", e); }
+        } catch(e) { console.error("MQTT Error", e); }
     });
 
-    /* ================= UI FUNCTIONS (LOGIKA PREDIKSI DIPERBAIKI) ================= */
+    /* ================= UI FUNCTIONS ================= */
     function generateAllCards() {
         const container = document.getElementById("cards");
         container.innerHTML = "";
@@ -364,25 +359,16 @@
     }
 
     function updateUI() {
-        // Jika globalStartTime belum ditarik dari Firebase, jangan hitung dulu
         if(!globalStartTime) return;
         
         let grandTotal = 0;
         const now = Date.now();
-        
-        // Hitung selisih waktu (menit)
-        // Math.max(0, ...) mencegah nilai negatif jika jam device user telat sedikit dibanding server
         const diffMs = Math.max(0, now - globalStartTime);
         const minutesElapsed = diffMs / 60000;
 
         for(let i=1; i<=14; i++) {
             const actual = latestCounter[`L${i}`] || 0;
-            
-            // Rumus Prediksi: Rate per Menit * Menit Berjalan
-            // Math.floor agar angkanya bulat dan stabil
             const prediction = Math.floor(rates[i-1] * minutesElapsed);
-            
-            // Hitung Efisiensi
             const eff = prediction > 0 ? ((actual / prediction) * 100).toFixed(1) + '%' : '0%';
 
             const elL = document.getElementById(`L${i}`);
@@ -391,7 +377,6 @@
                 document.getElementById(`P${i}`).innerText = prediction;
                 document.getElementById(`E${i}`).innerText = eff;
                 
-                // Styling dinamis
                 document.getElementById(`E${i}`).style.color = 
                     parseFloat(eff) >= 90 ? 'var(--success)' : 
                     parseFloat(eff) >= 70 ? '#facc15' : '#ef4444';
@@ -399,54 +384,64 @@
             grandTotal += actual;
         }
         document.getElementById("total").innerText = grandTotal.toLocaleString();
-        document.getElementById("clock").innerText = new Date().toLocaleString();
+        document.getElementById("clock").innerText = new Date().toLocaleString('id-ID');
     }
 
-    /* ================= AUTO SAVE & RESET (DIPERBAIKI) ================= */
+    /* ================= AUTO SAVE & RESET (FIXED) ================= */
     function checkAutoSchedule() {
         const now = new Date();
-        // Cek jam 15:10
-        if(now.getHours() === 15 && now.getMinutes() === 10) {
-            console.log("Triggering Auto Save & Reset...");
-            executeSaveAndReset();
+        const hours = now.getHours();
+        const minutes = now.getMinutes();
+
+        // JIKA JAM 15:10 DAN BELUM PERNAH SAVE HARI INI
+        if(hours === 15 && minutes === 10) {
+            if (!hasAutoSaved) {
+                console.log("Jadwal Auto Save Tercapai!");
+                executeSaveAndReset();
+                hasAutoSaved = true; // Kunci agar tidak save berulang
+            }
+        } else {
+            // Jika sudah lewat menit ke 10, buka kuncinya untuk besok
+            if(minutes !== 10) hasAutoSaved = false;
         }
     }
 
     async function executeSaveAndReset() {
+        // PERBAIKAN: Hitung total manual dari data, JANGAN ambil dari HTML innerText
+        // Ini mencegah nilai "undefined"
+        let calculatedTotal = 0;
+        for(let i=1; i<=14; i++) {
+            calculatedTotal += (latestCounter[`L${i}`] || 0);
+        }
+
         const entry = {
-            time: new Date().toLocaleString(),
-            total: document.getElementById("total").innerText,
-            counter: { ...latestCounter } // Simpan snapshot counter terakhir
+            time: new Date().toLocaleString('id-ID'), // Format tanggal Indonesia
+            total: calculatedTotal, // Pakai hasil hitungan manual
+            counter: { ...latestCounter }
         };
 
         try {
-            // 1. Simpan ke History Firebase
+            // 1. Simpan History
             await push(ref(database, 'history'), entry);
             
-            // 2. Reset Alat (Hardware) via MQTT
+            // 2. Reset Hardware
             for(let i=1; i<=6; i++) {
                 const machine = `machine0${i}`;
                 client.publish(`iot/esp32/${machine}/cmd`, JSON.stringify({ cmd: "RESET", reset_source: "web" }));
             }
             
-            // 3. Reset Start Time di Firebase (INI YANG MERESET PREDIKSI)
-            // Dengan mengupdate ini, semua device yang sedang membuka web akan
-            // menerima update via 'syncGlobalStartTime' dan reset prediksi ke 0.
-            const newStart = Date.now();
-            await set(ref(database, 'config/productionStartTime'), newStart);
+            // 3. Reset Start Time (Agar prediksi kembali ke 0)
+            await set(ref(database, 'config/productionStartTime'), Date.now());
             
-            // 4. Reset counter lokal sementara sampai update dari MQTT datang
             latestCounter = {}; 
             updateUI();
-            
-            console.log("Auto Reset Success");
+            console.log("Reset Success");
         } catch(e) {
-            console.error("Auto Reset Failed", e);
-            alert("Gagal melakukan reset: " + e.message);
+            console.error("Reset Failed", e);
         }
     }
 
-    /* ================= NAVIGATION & ACTIONS ================= */
+    /* ================= NAVIGATION & HISTORY VIEW ================= */
     window.showDashboard = () => {
         document.getElementById("dashboardView").style.display = "block";
         document.getElementById("historyView").style.display = "none";
@@ -464,13 +459,16 @@
         if(snap.exists()) {
             const data = Object.values(snap.val()).reverse(); 
             data.forEach(h => {
+                // Cegah tampilan undefined di tabel history juga
+                const safeTotal = h.total !== undefined ? h.total : 0;
+                
                 let rowHtml = `
                     <tr>
                         <td style="text-align:left; padding-left:15px">${h.time}</td>
-                        <td style="font-weight:bold; color:white">${h.total}</td>
+                        <td style="font-weight:bold; color:white">${safeTotal}</td>
                 `;
                 for(let i = 1; i <= 14; i++) {
-                    let val = h.counter[`L${i}`] || 0;
+                    let val = h.counter ? (h.counter[`L${i}`] || 0) : 0;
                     let styleClass = val > 0 ? "val-active" : "val-zero";
                     rowHtml += `<td class="${styleClass}">${val}</td>`;
                 }
@@ -481,22 +479,15 @@
     };
 
     window.manualSave = () => {
-        if(confirm("Simpan data sekarang dan RESET hitungan?")) executeSaveAndReset();
+        if(confirm("Simpan data & RESET hitungan sekarang?")) executeSaveAndReset();
     };
 
-    window.resetCounter = async () => {
-        // Fungsi ini hanya mereset alat spesifik, tapi tidak mereset Global Start Time
-        // Jika ingin mereset Prediksi juga, harus update config/productionStartTime
+    window.resetCounter = () => {
         const selected = document.getElementById("machineSelect").value;
-        if(confirm(`Reset Counter pada ${selected}? (Prediksi tidak direset)`)) {
+        if(confirm(`Reset Counter pada ${selected}?`)) {
             client.publish(`iot/esp32/${selected}/cmd`, JSON.stringify({ cmd: "RESET", reset_source: "web" }));
         }
     };
-    
-    // Tambahan: Tombol "Reset All" manual jika diperlukan
-    window.resetAllAndPrediction = () => {
-        if(confirm("Reset SEMUA Counter dan Waktu Prediksi?")) executeSaveAndReset();
-    }
 
     window.showSensorHistory = async (id) => {
         document.getElementById("dashboardView").style.display = "none";
@@ -508,7 +499,7 @@
         table.innerHTML = "";
         if(snap.exists()) {
             Object.values(snap.val()).reverse().forEach(h => {
-                const val = h.counter[`L${id}`] || 0;
+                const val = h.counter ? (h.counter[`L${id}`] || 0) : 0;
                 table.innerHTML += `<tr><td style="text-align:left">${h.time}</td><td style="text-align:left; color:${val>0?'var(--success)':'#aaa'}">${val}</td></tr>`;
             });
         }
