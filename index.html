@@ -674,17 +674,33 @@
             const isPouch = (i === 5 || i === 6);
             const typeLabel = isPouch ? "POUCH" : "CLUB";
             const colorStyle = isPouch ? "color:var(--warning)" : "color:var(--primary)";
+            
+            // Ambil nilai rate per menit untuk line ini
+            const currentRate = rates[i-1]; 
+
             const cardHTML = `
                 <div class="card" onclick="showSensorHistory(${i})" style="${isPouch ? 'border-color: #451a03;' : ''}">
-                    <h3 style="${colorStyle}">LINE ${i.toString().padStart(2,'0')} <span style="font-size:10px; opacity:0.7">(${typeLabel})</span></h3>
-                    <table><tr><th>Actual</th><th>Prediction</th><th>Eff.</th></tr>
-                        <tr><td class="count" id="L${i}">0</td><td id="P${i}" style="${colorStyle}">0</td><td id="E${i}">0%</td></tr>
+                    <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:10px;">
+                        <h3 style="${colorStyle}; margin:0;">LINE ${i.toString().padStart(2,'0')} <span style="font-size:10px; opacity:0.7">(${typeLabel})</span></h3>
+                        
+                        <span style="font-size:10px; background:#334155; padding:2px 6px; border-radius:4px; color:#94a3b8;">
+                            Target: ${currentRate}/min
+                        </span>
+                    </div>
+
+                    <table>
+                        <tr><th>Actual</th><th>Prediction</th><th>Eff.</th></tr>
+                        <tr>
+                            <td class="count" id="L${i}">0</td>
+                            <td id="P${i}" style="${colorStyle}">0</td>
+                            <td id="E${i}">0%</td>
+                        </tr>
                     </table>
                 </div>`;
+                
             if (isPouch) pouchContainer.innerHTML += cardHTML; else clubContainer.innerHTML += cardHTML;
         }
     }
-
     function updateUI() {
         if(!globalStartTime) return;
         const now = Date.now();
