@@ -13,7 +13,7 @@
             --dark: #020617;
             --primary: #38bdf8;
             --success: #22c55e;
-            --warning: #f59e0b; /* Warna untuk Pouch Can */
+            --warning: #f59e0b;
             --text: #e5e7eb;
         }
         * { box-sizing: border-box; }
@@ -85,7 +85,7 @@
         }
         nav button:hover { background: #475569; }
 
-        .container { padding: 20px; max-width: 1200px; margin: auto; }
+        .container { padding: 20px; max-width: 1300px; margin: auto; } /* Lebar container diperbesar sedikit */
         
         .total-box {
             background: linear-gradient(135deg, var(--dark), var(--card));
@@ -106,6 +106,8 @@
             display: flex;
             align-items: center;
             gap: 10px;
+            border-bottom: 1px solid #334155;
+            padding-bottom: 10px;
         }
         .badge {
             font-size: 12px;
@@ -117,11 +119,39 @@
         .badge-club { background: var(--primary); }
         .badge-pouch { background: var(--warning); }
 
+        /* --- LAYOUT BARU (KIRI-KANAN) --- */
+        .layout-row {
+            display: flex;
+            gap: 25px;
+            align-items: flex-start; /* Rata atas */
+        }
+
+        /* Summary Card (Sidebar Kiri) */
+        .summary-card {
+            background: linear-gradient(to bottom right, #1e293b, #0f172a);
+            border: 2px solid; 
+            padding: 20px;
+            border-radius: 14px;
+            min-width: 260px; /* Lebar tetap */
+            width: 260px;
+            flex-shrink: 0; /* Jangan mengecil */
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+
+        /* Grid (Konten Kanan) */
         .grid {
+            flex-grow: 1; /* Mengisi sisa ruang */
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
             gap: 20px;
         }
+
+        /* Responsive Mobile: Balik ke atas-bawah */
+        @media (max-width: 768px) {
+            .layout-row { flex-direction: column; }
+            .summary-card { width: 100%; }
+        }
+
         .card {
             background: var(--card);
             padding: 20px;
@@ -132,16 +162,6 @@
         }
         .card:hover { transform: translateY(-5px); border-color: var(--primary); }
         .card h3 { margin-top: 0; font-size: 16px; color: #94a3b8; }
-
-        /* SUMMARY CARD SPECIAL STYLE */
-        .summary-card {
-            background: linear-gradient(to bottom right, #1e293b, #0f172a);
-            border: 2px solid; 
-            margin-bottom: 20px;
-            max-width: 400px; /* Lebar dibatasi agar mirip kartu Line tapi lebih lebar dikit */
-            margin-left: auto;
-            margin-right: auto;
-        }
 
         .card table { width: 100%; border-collapse: collapse; margin-top: 15px; }
         .card th { font-size: 11px; text-transform: uppercase; color: #64748b; padding-bottom: 8px; }
@@ -228,37 +248,46 @@
             <span class="badge badge-club">CLUB CAN</span> LINE 1-4 & 7-14
         </div>
         
-        <div class="card summary-card" style="border-color: var(--primary);">
-            <h3 style="color: var(--primary); font-size: 18px;">TOTAL CLUB CAN</h3>
-            <table>
-                <tr><th>Total Actual</th><th>Total Prediction</th><th>Avg Eff.</th></tr>
-                <tr>
-                    <td class="count" id="totalClubActual">0</td>
-                    <td id="totalClubPrediction" style="color:var(--primary)">0</td>
-                    <td id="totalClubEff">0%</td>
-                </tr>
-            </table>
+        <div class="layout-row">
+            <div class="summary-card" style="border-color: var(--primary);">
+                <h3 style="color: var(--primary); font-size: 18px; border-bottom:1px solid #334155; padding-bottom:10px; margin-bottom:15px">TOTAL CLUB</h3>
+                <table>
+                    <tr><td style="font-size:12px; color:#94a3b8; text-align:left;">Actual</td></tr>
+                    <tr><td class="count" id="totalClubActual" style="text-align:left; font-size:32px; padding-bottom:15px">0</td></tr>
+                    
+                    <tr><td style="font-size:12px; color:#94a3b8; text-align:left;">Prediction</td></tr>
+                    <tr><td id="totalClubPrediction" style="color:var(--primary); text-align:left; font-size:24px; padding-bottom:15px">0</td></tr>
+                    
+                    <tr><td style="font-size:12px; color:#94a3b8; text-align:left;">Efficiency</td></tr>
+                    <tr><td id="totalClubEff" style="text-align:left; font-size:24px; color:#e5e7eb">0%</td></tr>
+                </table>
+            </div>
+            
+            <div class="grid" id="clubCanContainer"></div>
         </div>
 
-        <div class="grid" id="clubCanContainer"></div>
 
-        <div class="section-title" style="color: var(--warning);">
+        <div class="section-title" style="color: var(--warning); margin-top: 40px;">
             <span class="badge badge-pouch">POUCH CAN</span> LINE 5-6
         </div>
 
-        <div class="card summary-card" style="border-color: var(--warning);">
-            <h3 style="color: var(--warning); font-size: 18px;">TOTAL POUCH CAN</h3>
-            <table>
-                <tr><th>Total Actual</th><th>Total Prediction</th><th>Avg Eff.</th></tr>
-                <tr>
-                    <td class="count" id="totalPouchActual" style="color: var(--warning)">0</td>
-                    <td id="totalPouchPrediction" style="color:var(--warning)">0</td>
-                    <td id="totalPouchEff">0%</td>
-                </tr>
-            </table>
-        </div>
+        <div class="layout-row">
+            <div class="summary-card" style="border-color: var(--warning);">
+                <h3 style="color: var(--warning); font-size: 18px; border-bottom:1px solid #334155; padding-bottom:10px; margin-bottom:15px">TOTAL POUCH</h3>
+                <table>
+                    <tr><td style="font-size:12px; color:#94a3b8; text-align:left;">Actual</td></tr>
+                    <tr><td class="count" id="totalPouchActual" style="color: var(--warning); text-align:left; font-size:32px; padding-bottom:15px">0</td></tr>
+                    
+                    <tr><td style="font-size:12px; color:#94a3b8; text-align:left;">Prediction</td></tr>
+                    <tr><td id="totalPouchPrediction" style="color:var(--warning); text-align:left; font-size:24px; padding-bottom:15px">0</td></tr>
+                    
+                    <tr><td style="font-size:12px; color:#94a3b8; text-align:left;">Efficiency</td></tr>
+                    <tr><td id="totalPouchEff" style="text-align:left; font-size:24px; color:#e5e7eb">0%</td></tr>
+                </table>
+            </div>
 
-        <div class="grid" id="pouchCanContainer"></div>
+            <div class="grid" id="pouchCanContainer"></div>
+        </div>
     </div>
 
     <div class="container" id="historyView" style="display:none">
