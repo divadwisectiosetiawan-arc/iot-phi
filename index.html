@@ -133,6 +133,16 @@
         .card:hover { transform: translateY(-5px); border-color: var(--primary); }
         .card h3 { margin-top: 0; font-size: 16px; color: #94a3b8; }
 
+        /* SUMMARY CARD SPECIAL STYLE */
+        .summary-card {
+            background: linear-gradient(to bottom right, #1e293b, #0f172a);
+            border: 2px solid; 
+            margin-bottom: 20px;
+            max-width: 400px; /* Lebar dibatasi agar mirip kartu Line tapi lebih lebar dikit */
+            margin-left: auto;
+            margin-right: auto;
+        }
+
         .card table { width: 100%; border-collapse: collapse; margin-top: 15px; }
         .card th { font-size: 11px; text-transform: uppercase; color: #64748b; padding-bottom: 8px; }
         .card td { font-size: 18px; font-weight: bold; }
@@ -217,11 +227,37 @@
         <div class="section-title" style="color: var(--primary);">
             <span class="badge badge-club">CLUB CAN</span> LINE 1-4 & 7-14
         </div>
+        
+        <div class="card summary-card" style="border-color: var(--primary);">
+            <h3 style="color: var(--primary); font-size: 18px;">TOTAL CLUB CAN</h3>
+            <table>
+                <tr><th>Total Actual</th><th>Total Prediction</th><th>Avg Eff.</th></tr>
+                <tr>
+                    <td class="count" id="totalClubActual">0</td>
+                    <td id="totalClubPrediction" style="color:var(--primary)">0</td>
+                    <td id="totalClubEff">0%</td>
+                </tr>
+            </table>
+        </div>
+
         <div class="grid" id="clubCanContainer"></div>
 
         <div class="section-title" style="color: var(--warning);">
             <span class="badge badge-pouch">POUCH CAN</span> LINE 5-6
         </div>
+
+        <div class="card summary-card" style="border-color: var(--warning);">
+            <h3 style="color: var(--warning); font-size: 18px;">TOTAL POUCH CAN</h3>
+            <table>
+                <tr><th>Total Actual</th><th>Total Prediction</th><th>Avg Eff.</th></tr>
+                <tr>
+                    <td class="count" id="totalPouchActual" style="color: var(--warning)">0</td>
+                    <td id="totalPouchPrediction" style="color:var(--warning)">0</td>
+                    <td id="totalPouchEff">0%</td>
+                </tr>
+            </table>
+        </div>
+
         <div class="grid" id="pouchCanContainer"></div>
     </div>
 
@@ -324,7 +360,7 @@
             document.getElementById("loginPage").style.display = "none";
             document.getElementById("dashboardPage").style.display = "block";
             
-            generateAllCards(); // Generate dengan pemisahan Club/Pouch
+            generateAllCards(); 
             syncGlobalStartTime();       
             loadLastCacheFromFirebase(); 
             
@@ -365,13 +401,11 @@
         } catch(e) { console.error("MQTT Error", e); }
     });
 
-    /* ================= UI FUNCTIONS (MODIFIED) ================= */
+    /* ================= UI FUNCTIONS ================= */
     function generateAllCards() {
-        // Ambil container terpisah
         const clubContainer = document.getElementById("clubCanContainer");
         const pouchContainer = document.getElementById("pouchCanContainer");
 
-        // Kosongkan container
         clubContainer.innerHTML = "";
         pouchContainer.innerHTML = "";
 
@@ -393,7 +427,6 @@
                     </table>
                 </div>`;
 
-            // Logika Klasifikasi
             if (isPouch) {
                 pouchContainer.innerHTML += cardHTML;
             } else {
@@ -405,15 +438,31 @@
     function updateUI() {
         if(!globalStartTime) return;
         
-        let grandTotal = 0;
         const now = Date.now();
         const diffMs = Math.max(0, now - globalStartTime);
         const minutesElapsed = diffMs / 60000;
+
+        let grandTotal = 0;
+        
+        // Variables for Classification Totals
+        let clubActual = 0, clubPrediction = 0;
+        let pouchActual = 0, pouchPrediction = 0;
 
         for(let i=1; i<=14; i++) {
             const actual = latestCounter[`L${i}`] || 0;
             const prediction = Math.floor(rates[i-1] * minutesElapsed);
             const eff = prediction > 0 ? ((actual / prediction) * 100).toFixed(1) + '%' : '0%';
+            
+            // Check Classification
+            const isPouch = (i === 5 || i === 6);
+
+            if (isPouch) {
+                pouchActual += actual;
+                pouchPrediction += prediction;
+            } else {
+                clubActual += actual;
+                clubPrediction += prediction;
+            }
 
             const elL = document.getElementById(`L${i}`);
             if(elL) {
@@ -427,8 +476,22 @@
             }
             grandTotal += actual;
         }
+
+        // UPDATE GRAND TOTAL
         document.getElementById("total").innerText = grandTotal.toLocaleString();
         document.getElementById("clock").innerText = new Date().toLocaleString('id-ID');
+
+        // UPDATE CLUB CAN TOTAL CARD
+        const clubEff = clubPrediction > 0 ? ((clubActual / clubPrediction) * 100).toFixed(1) + '%' : '0%';
+        document.getElementById("totalClubActual").innerText = clubActual.toLocaleString();
+        document.getElementById("totalClubPrediction").innerText = clubPrediction.toLocaleString();
+        document.getElementById("totalClubEff").innerText = clubEff;
+        
+        // UPDATE POUCH CAN TOTAL CARD
+        const pouchEff = pouchPrediction > 0 ? ((pouchActual / pouchPrediction) * 100).toFixed(1) + '%' : '0%';
+        document.getElementById("totalPouchActual").innerText = pouchActual.toLocaleString();
+        document.getElementById("totalPouchPrediction").innerText = pouchPrediction.toLocaleString();
+        document.getElementById("totalPouchEff").innerText = pouchEff;
     }
 
     /* ================= AUTO SAVE & RESET ================= */
@@ -439,7 +502,6 @@
 
         if(hours === 15 && minutes === 10) {
             if (!hasAutoSaved) {
-                console.log("Jadwal Auto Save Tercapai!");
                 executeSaveAndReset();
                 hasAutoSaved = true; 
             }
@@ -472,7 +534,6 @@
             
             latestCounter = {}; 
             updateUI();
-            console.log("Reset Success");
         } catch(e) {
             console.error("Reset Failed", e);
         }
@@ -506,7 +567,6 @@
                 for(let i = 1; i <= 14; i++) {
                     let val = h.counter ? (h.counter[`L${i}`] || 0) : 0;
                     let styleClass = val > 0 ? "val-active" : "val-zero";
-                    // Highlight Pouch Can di History juga (kolom 5 & 6)
                     let tdStyle = (i === 5 || i === 6) ? "background:#1d1902;" : "";
                     
                     rowHtml += `<td class="${styleClass}" style="${tdStyle}">${val}</td>`;
@@ -532,7 +592,6 @@
         document.getElementById("dashboardView").style.display = "none";
         document.getElementById("sensorHistoryView").style.display = "block";
         
-        // Tentukan judul berdasarkan tipe
         let type = (id === 5 || id === 6) ? " (POUCH)" : " (CLUB)";
         document.getElementById("sensorTitle").innerText = "LINE " + id + type + " HISTORY";
         
