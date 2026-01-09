@@ -117,13 +117,41 @@
         .card td { font-size: 18px; font-weight: bold; }
         .count { color: var(--success); font-size: 24px !important; }
 
-        /* HISTORY TABLE */
-        table.full-table { width: 100%; border-collapse: collapse; background: var(--card); border-radius: 12px; overflow: hidden; }
-        .full-table th, .full-table td { padding: 12px; text-align: left; border-bottom: 1px solid #334155; }
-        .full-table th { background: var(--dark); color: var(--primary); }
+        /* === DATA LOGGER TABLE STYLES (REVISI BARU) === */
+        .table-responsive {
+            overflow-x: auto; /* Agar bisa digeser ke samping di HP/Layar kecil */
+            border-radius: 12px;
+            border: 1px solid #334155;
+        }
+        
+        table.full-table { 
+            width: 100%; 
+            border-collapse: collapse; 
+            background: var(--card); 
+            min-width: 800px; /* Lebar minimum agar kolom tidak gepeng */
+        }
+        
+        .full-table th, .full-table td { 
+            padding: 10px 8px; 
+            text-align: center; /* Center align untuk angka */
+            border-bottom: 1px solid #334155; 
+            border-right: 1px solid #334155;
+            font-size: 13px;
+        }
+
+        .full-table th { 
+            background: var(--dark); 
+            color: var(--primary); 
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        
+        /* Warna khusus angka */
+        .val-active { color: var(--success); font-weight: bold; }
+        .val-zero { color: #475569; font-size: 12px; } /* Abu-abu redup untuk angka 0 */
 
         footer { text-align: center; padding: 20px; font-size: 12px; color: #64748b; }
-        .status-dot { height: 8px; width: 8px; border-radius: 50%; display: inline-block; margin-right: 5px; }
     </style>
 </head>
 
@@ -170,22 +198,31 @@
 
     <div class="container" id="historyView" style="display:none">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-            <h2>Data History</h2>
+            <h2>Data Logger History</h2>
             <button onclick="showDashboard()">Back to Dashboard</button>
         </div>
-        <table class="full-table" id="historyTable">
-            <thead>
-                <tr><th>Waktu</th><th>Total</th><th>Detail Per Line</th></tr>
-            </thead>
-            <tbody id="historyBody"></tbody>
-        </table>
+        
+        <div class="table-responsive">
+            <table class="full-table" id="historyTable">
+                <thead>
+                    <tr>
+                        <th style="min-width: 150px; text-align:left; padding-left:15px">Waktu</th>
+                        <th style="min-width: 80px;">Total</th>
+                        <th>L1</th><th>L2</th><th>L3</th><th>L4</th><th>L5</th>
+                        <th>L6</th><th>L7</th><th>L8</th><th>L9</th><th>L10</th>
+                        <th>L11</th><th>L12</th><th>L13</th><th>L14</th>
+                    </tr>
+                </thead>
+                <tbody id="historyBody"></tbody>
+            </table>
+        </div>
     </div>
 
     <div class="container" id="sensorHistoryView" style="display:none">
         <h2 id="sensorTitle">Line Detail</h2>
         <button onclick="showDashboard()" style="margin-bottom:20px">Back</button>
         <table class="full-table">
-            <thead><tr><th>Waktu</th><th>Nilai</th></tr></thead>
+            <thead><tr><th style="text-align:left">Waktu</th><th style="text-align:left">Nilai</th></tr></thead>
             <tbody id="sensorHistoryTable"></tbody>
         </table>
     </div>
@@ -222,8 +259,7 @@
         machine04: [8, 9], machine05: [9, 10], machine06: [11, 12]
     };
 
-    /* ================= SYNC START TIME (PREDICTION FIX) ================= */
-    // Mengambil waktu mulai dari Firebase agar semua device SAMA
+    /* ================= SYNC START TIME ================= */
     function syncGlobalStartTime() {
         const startRef = ref(database, 'config/productionStartTime');
         onValue(startRef, (snapshot) => {
@@ -232,7 +268,6 @@
                 globalStartTime = val;
                 console.log("Global Start Time Synced:", new Date(val).toLocaleTimeString());
             } else {
-                // Jika data kosong di Firebase (pertama kali), buat baru
                 const now = Date.now();
                 set(startRef, now);
                 globalStartTime = now;
@@ -266,10 +301,9 @@
             syncGlobalStartTime();
             loadLastCacheFromFirebase();
             
-            // Scheduler: Cek setiap menit untuk Auto Save & Reset jam 14:50
+            // Auto Save jam 15:10 sesuai kode terakhir
             setInterval(checkAutoSchedule, 60000);
             
-            // Update UI rutin
             setInterval(updateUI, 3000);
         }
     };
@@ -292,18 +326,12 @@
         try {
             const data = JSON.parse(msg.toString());
             const machine = topic.split('/')[2];
-
-            // Proteksi data nol akibat ESP restart (bukan reset resmi)
             const isAllZero = Object.values(data.counter).every(v => v === 0);
             if(isAllZero && data.reset_source !== "web") return;
 
-            // Merge counter baru ke global state
             Object.assign(latestCounter, data.counter);
-            
-            // Simpan cache terakhir ke Firebase
             set(ref(database, `lastCache/${machine}`), data);
             document.getElementById("firebaseStatus").innerText = "Synced";
-            
             updateUI();
         } catch(e) { console.error("MQTT Data Error", e); }
     });
@@ -355,8 +383,7 @@
     /* ================= AUTO SAVE & RESET ================= */
     function checkAutoSchedule() {
         const now = new Date();
-        // Set ke jam 14:50
-        if(now.getHours() === 14 && now.getMinutes() === 50) {
+        if(now.getHours() === 15 && now.getMinutes() === 10) {
             console.log("Triggering Auto Save & Reset...");
             executeSaveAndReset();
         }
@@ -370,19 +397,13 @@
         };
 
         try {
-            // 1. Simpan ke History Firebase
             await push(ref(database, 'history'), entry);
-            
-            // 2. Kirim Reset ke semua ESP via MQTT
             for(let i=1; i<=6; i++) {
                 const machine = `machine0${i}`;
                 client.publish(`iot/esp32/${machine}/cmd`, JSON.stringify({ cmd: "RESET", reset_source: "web" }));
             }
-
-            // 3. Reset Global Start Time di Firebase (Semua device akan mulai dari 0 menit lagi)
             const newStart = Date.now();
             await set(ref(database, 'config/productionStartTime'), newStart);
-            
             console.log("Auto Reset Success");
         } catch(e) {
             console.error("Auto Reset Failed", e);
@@ -396,6 +417,7 @@
         document.getElementById("sensorHistoryView").style.display = "none";
     };
 
+    /* REVISI: Fungsi History Data Logger */
     window.showHistory = async () => {
         document.getElementById("dashboardView").style.display = "none";
         document.getElementById("historyView").style.display = "block";
@@ -403,9 +425,31 @@
         const snap = await get(ref(database, 'history'));
         const body = document.getElementById("historyBody");
         body.innerHTML = "";
+        
         if(snap.exists()) {
-            Object.values(snap.val()).reverse().forEach(h => {
-                body.innerHTML += `<tr><td>${h.time}</td><td>${h.total}</td><td style="font-size:10px">${JSON.stringify(h.counter)}</td></tr>`;
+            // Ambil data dan balik urutannya (terbaru di atas)
+            const data = Object.values(snap.val()).reverse(); 
+            
+            data.forEach(h => {
+                // Kolom 1: Waktu, Kolom 2: Total
+                let rowHtml = `
+                    <tr>
+                        <td style="text-align:left; padding-left:15px">${h.time}</td>
+                        <td style="font-weight:bold; color:white">${h.total}</td>
+                `;
+
+                // Loop L1 sampai L14 untuk membuat kolom dinamis
+                for(let i = 1; i <= 14; i++) {
+                    let val = h.counter[`L${i}`] || 0;
+                    
+                    // Logic warna: Hijau jika ada nilai, Abu-abu jika 0
+                    let styleClass = val > 0 ? "val-active" : "val-zero";
+                    
+                    rowHtml += `<td class="${styleClass}">${val}</td>`;
+                }
+
+                rowHtml += `</tr>`;
+                body.innerHTML += rowHtml;
             });
         }
     };
@@ -432,7 +476,7 @@
         if(snap.exists()) {
             Object.values(snap.val()).reverse().forEach(h => {
                 const val = h.counter[`L${id}`] || 0;
-                table.innerHTML += `<tr><td>${h.time}</td><td>${val}</td></tr>`;
+                table.innerHTML += `<tr><td style="text-align:left">${h.time}</td><td style="text-align:left; color:${val>0?'var(--success)':'#aaa'}">${val}</td></tr>`;
             });
         }
     };
