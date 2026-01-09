@@ -102,7 +102,29 @@
             border: 1px solid #334155;
         }
         .total-box h1 { margin: 5px 0 0; font-size: 48px; color: var(--primary); }
+/* --- TAMBAHAN STYLE UNTUK LOGO --- */
+        
+        /* 1. Mengatur Logo di Halaman Login */
+        .login-logo {
+            display: block;
+            margin: 0 auto 15px auto; /* Tengah horizontal, jarak bawah 15px */
+            height: 80px; /* Tinggi logo, sesuaikan kebutuhan */
+            width: auto;
+            filter: drop-shadow(0 0 5px rgba(56, 189, 248, 0.5)); /* Efek glow biru tipis (opsional) */
+        }
 
+        /* 2. Mengatur Wrapper Header (Logo + Judul) */
+        .header-brand {
+            display: flex;
+            align-items: center;
+            gap: 15px; /* Jarak antara logo dan tulisan */
+        }
+
+        /* 3. Mengatur Logo di Header Dashboard */
+        .header-logo {
+            height: 40px; /* Ukuran logo lebih kecil di header */
+            width: auto;
+        }
         /* SECTION STYLES */
         .section-title {
             margin-top: 30px;
@@ -219,6 +241,7 @@
 
 <div id="loginPage">
     <div class="login-box">
+        <img src="phi.png" alt="Logo" class="login-logo">
         <h2>SARDINES PHI</h2>
         <input id="username" placeholder="Username" type="text">
         <input id="password" type="password" placeholder="Password">
@@ -229,6 +252,7 @@
 
 <div id="dashboardPage">
     <header>
+        <img src="phi.png" alt="Logo" class="header-logo">
         <b>PRODUCTION MONITORING</b>
         <nav>
             <span id="clock" style="margin-right:15px; font-family: monospace;"></span>
