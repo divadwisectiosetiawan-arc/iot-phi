@@ -233,13 +233,13 @@
         <nav>
             <span id="clock" style="margin-right:15px; font-family: monospace;"></span>
             <select id="machineSelect">
-                <option value="machine01">Machine 01</option>
-                <option value="machine02">Machine 02</option>
-                <option value="machine03">Machine 03</option>
-                <option value="machine04">Machine 04</option>
-                <option value="machine05">Machine 05</option>
-                <option value="machine06">Machine 06</option>
-            </select>
+                <option value="machine01|L1">Line 01</option>
+                <option value="machine02|L2">Line 02</option>
+                <option value="machine03|L3">Line 03</option>
+                <option value="machine04|L4">Line 04</option>
+                <option value="machine05|L5">Line 05</option>
+                <option value="machine06|L6">Line 06</option>
+                </select>
             <button onclick="showDashboard()">Dashboard</button>
             <button onclick="showHistory()">History</button>
             <button onclick="manualSave()" style="background:var(--success)">Simpan</button>
@@ -251,7 +251,7 @@
     <div class="container" id="dashboardView">
         
         <div class="total-box">
-            <div style="color: var(--muted); letter-spacing: 2px; font-size: 12px;">REALTIME COUNTER</div>
+            <div style="color: var(--muted); letter-spacing: 2px; font-size: 12px;">REALTIME COUNTER (TODAY)</div>
             <h1 id="total">0</h1>
         </div>
 
@@ -303,10 +303,8 @@
                 <table>
                     <tr><td style="font-size:12px; color:var(--muted); text-align:left;">Total Actual</td></tr>
                     <tr><td class="count" id="grandTotalActual" style="color: var(--purple); text-align:left; font-size:32px; padding-bottom:15px">0</td></tr>
-                    
                     <tr><td style="font-size:12px; color:var(--muted); text-align:left;">Total Prediction</td></tr>
                     <tr><td id="grandTotalPrediction" style="color:white; text-align:left; font-size:24px; padding-bottom:15px">0</td></tr>
-                    
                     <tr><td style="font-size:12px; color:var(--muted); text-align:left;">Avg Efficiency</td></tr>
                     <tr><td id="grandTotalEff" style="text-align:left; font-size:24px; color:var(--text)">0%</td></tr>
                 </table>
@@ -325,20 +323,18 @@
                         <button class="btn-chart" onclick="updateChartPeriod('monthly', this)">Bulan</button>
                     </div>
                 </div>
-                
                 <div style="height: 320px; width: 100%;">
                     <canvas id="productionChart"></canvas>
                 </div>
             </div>
         </div>
-
     </div>
 
     <div class="container" id="historyView" style="display:none">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
             <h2>Data Logger History</h2>
             <div style="display:flex; gap:10px">
-                <button onclick="exportToExcel()" style="background:#10b981; border:none; color:white; padding:8px 15px; border-radius:6px; cursor:pointer;">Export Excel</button>
+                <button onclick="exportToExcel()" style="background:#10b981; border:none; color:white; padding:8px 15px; border-radius:6px; cursor:pointer; font-weight:bold;">Export Excel (.csv)</button>
                 <button onclick="showDashboard()">Back to Dashboard</button>
             </div>
         </div>
@@ -390,12 +386,13 @@
     // Global State
     let latestCounter = {};
     let globalStartTime = null; 
+    let manualOffset = 0; // PENYIMPANAN DATA SEMENTARA SAAT RESET MANUAL
     let hasAutoSaved = false; 
     const rates = Array(14).fill(70); 
     
     // Chart Variables
     let myChart = null;
-    let historyDataCache = []; // Data ini akan digunakan juga untuk Export Excel
+    let historyDataCache = [];
 
     // Get CSS Colors
     const rootStyle = getComputedStyle(document.documentElement);
@@ -404,8 +401,9 @@
     const colorWarning = rootStyle.getPropertyValue('--warning').trim();
     const colorMuted = rootStyle.getPropertyValue('--muted').trim();
 
-    /* ================= SYNC START TIME ================= */
-    function syncGlobalStartTime() {
+    /* ================= SYNC CONFIG (START TIME & OFFSET) ================= */
+    function syncConfig() {
+        // Sync Start Time
         const startRef = ref(database, 'config/productionStartTime');
         onValue(startRef, (snapshot) => {
             const val = snapshot.val();
@@ -416,6 +414,13 @@
                 const now = Date.now();
                 set(startRef, now);
             }
+        });
+
+        // Sync Manual Offset (Agar total tidak hilang saat refresh)
+        const offsetRef = ref(database, 'config/manualOffset');
+        onValue(offsetRef, (snapshot) => {
+            manualOffset = snapshot.val() || 0;
+            updateUI();
         });
     }
 
@@ -439,7 +444,7 @@
             document.getElementById("dashboardPage").style.display = "block";
             
             generateAllCards(); 
-            syncGlobalStartTime();       
+            syncConfig();       
             loadLastCacheFromFirebase(); 
             fetchHistoryForChart(); 
             
@@ -448,49 +453,48 @@
         }
     };
 
-    /* ================= EXPORT TO EXCEL FUNCTION ================= */
+    /* ================= EXPORT TO EXCEL (FIXED: SEMICOLON) ================= */
     window.exportToExcel = () => {
         if (historyDataCache.length === 0) {
             alert("Tidak ada data history untuk di-export.");
             return;
         }
 
-        // Header CSV
-        let csvContent = "Waktu,Total Actual,Total Prediction";
-        for (let i = 1; i <= 14; i++) csvContent += `,Line ${i}`;
+        // BOM agar Excel baca UTF-8 (Mengatasi karakter aneh)
+        let csvContent = "\uFEFF"; 
+        // Gunakan TITIK KOMA (;) sebagai pemisah untuk Excel Indonesia/Eropa
+        csvContent += "Waktu;Total Actual;Total Prediction";
+        for (let i = 1; i <= 14; i++) csvContent += `;Line ${i}`;
         csvContent += "\n";
 
-        // Isi Data (Urutkan dari yang terbaru ke terlama sesuai tampilan tabel)
-        // Kita copy array agar tidak mengubah urutan asli cache
         const dataToExport = [...historyDataCache].reverse();
 
         dataToExport.forEach(item => {
-            const time = `"${item.time}"`; // Quote time string to handle commas
+            // Bersihkan koma dari tanggal jika ada agar tidak merusak CSV
+            const time = `"${item.time.replace(/,/g, '')}"`; 
             const total = item.total || 0;
             const pred = item.totalPrediction || 0;
             
-            let row = `${time},${total},${pred}`;
+            let row = `${time};${total};${pred}`;
             
             for (let i = 1; i <= 14; i++) {
                 const val = item.counter ? (item.counter[`L${i}`] || 0) : 0;
-                row += `,${val}`;
+                row += `;${val}`;
             }
             csvContent += row + "\n";
         });
 
-        // Download Trigger
         const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
         const url = URL.createObjectURL(blob);
         const link = document.createElement("a");
         link.setAttribute("href", url);
         link.setAttribute("download", `production_history_${new Date().toISOString().slice(0,10)}.csv`);
-        link.style.visibility = 'hidden';
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
     };
 
-    /* ================= CHART FUNCTIONS ================= */
+    /* ================= CHART FUNCTIONS (IMPROVED LABELS) ================= */
     window.updateChartPeriod = (period, btn) => {
         document.querySelectorAll('.btn-chart').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
@@ -509,22 +513,32 @@
         if(historyDataCache.length === 0) return;
 
         const groupedData = {};
+        const monthNames = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
         
         historyDataCache.forEach(entry => {
             let date;
             if(entry.timestamp) date = new Date(entry.timestamp);
             else {
+                // Fallback parser
                 const parts = entry.time.split(',')[0].split('/');
                 date = (parts.length === 3) ? new Date(`${parts[2]}-${parts[1]}-${parts[0]}`) : new Date();
             }
 
             let key;
-            if (period === 'daily') key = date.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' });
-            else if (period === 'weekly') {
-                const oneJan = new Date(date.getFullYear(), 0, 1);
-                const week = Math.ceil((((date - oneJan) / 86400000) + oneJan.getDay() + 1) / 7);
-                key = `W${week}-${date.getFullYear()}`;
-            } else if (period === 'monthly') key = date.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' });
+            if (period === 'daily') {
+                key = date.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' }); // Contoh: 10 Jan
+            } else if (period === 'weekly') {
+                // Hitung Minggu ke berapa dalam bulan tersebut
+                const startOfMonth = new Date(date.getFullYear(), date.getMonth(), 1);
+                const dayOfMonth = date.getDate();
+                const dayOfWeek = startOfMonth.getDay(); 
+                // Rumus perkiraan minggu
+                const weekNum = Math.ceil((dayOfMonth + dayOfWeek) / 7);
+                const monthName = monthNames[date.getMonth()].substring(0,3); // Jan, Feb
+                key = `Minggu ${weekNum} (${monthName})`;
+            } else if (period === 'monthly') {
+                key = `${monthNames[date.getMonth()]} ${date.getFullYear()}`; // Januari 2026
+            }
 
             if(!groupedData[key]) groupedData[key] = { actual: 0, prediction: 0 };
             groupedData[key].actual += (entry.total || 0);
@@ -699,15 +713,18 @@
             grandTotal += actual;
         }
 
-        document.getElementById("total").innerText = grandTotal.toLocaleString();
+        // --- LOGIKA TOTAL ---
+        // Total Dashboard = (Total dari Line Aktif) + (Simpanan Reset Manual/Offset)
+        const finalGrandTotal = grandTotal + manualOffset;
+        document.getElementById("total").innerText = finalGrandTotal.toLocaleString();
+        
         document.getElementById("clock").innerText = new Date().toLocaleString('id-ID');
 
         updateSummaryCard("totalClub", clubActual, clubPrediction);
         updateSummaryCard("totalPouch", pouchActual, pouchPrediction);
-
-        const totalActual = clubActual + pouchActual;
-        const totalPred = clubPrediction + pouchPrediction;
-        updateSummaryCard("grandTotal", totalActual, totalPred);
+        
+        // Update Card Overall dengan memasukkan Manual Offset juga
+        updateSummaryCard("grandTotal", finalGrandTotal, clubPrediction + pouchPrediction);
     }
 
     function updateSummaryCard(prefix, actual, prediction) {
@@ -719,7 +736,25 @@
         elEff.style.color = parseFloat(eff) >= 90 ? colorSuccess : parseFloat(eff) >= 70 ? colorWarning : colorDanger;
     }
 
-    /* ================= AUTO SAVE & RESET ================= */
+    /* ================= MANUAL RESET LOGIC (PENTING) ================= */
+    window.resetCounter = async () => {
+        const selectedValue = document.getElementById("machineSelect").value;
+        const [machine, lineCode] = selectedValue.split("|"); // machine01|L1
+        
+        if(confirm(`Reset Counter pada ${lineCode} (${machine})? Total produksi hari ini akan TETAP.`)) {
+            // 1. Ambil nilai counter saat ini dari mesin tersebut
+            const currentValue = latestCounter[lineCode] || 0;
+
+            // 2. Tambahkan ke Manual Offset di Firebase agar Total Dashboard tidak turun
+            const newOffset = manualOffset + currentValue;
+            await set(ref(database, 'config/manualOffset'), newOffset);
+
+            // 3. Reset Hardware ke 0
+            client.publish(`iot/esp32/${machine}/cmd`, JSON.stringify({ cmd: "RESET", reset_source: "web" }));
+        }
+    };
+
+    /* ================= AUTO SAVE & RESET (CLEARS EVERYTHING) ================= */
     function checkAutoSchedule() {
         const now = new Date();
         if(now.getHours() === 15 && now.getMinutes() === 10) {
@@ -728,7 +763,8 @@
     }
 
     async function executeSaveAndReset() {
-        let calculatedTotalActual = 0;
+        // Hitung total final (Line Aktif + Offset Manual)
+        let calculatedTotalActual = manualOffset;
         let calculatedTotalPrediction = 0;
         
         if(globalStartTime) {
@@ -749,15 +785,24 @@
 
         try {
             await push(ref(database, 'history'), entry);
+            
+            // RESET TOTAL: Kirim perintah reset ke semua mesin
             for(let i=1; i<=6; i++) {
+                const machine = `machine0${i}`;
                 client.publish(`iot/esp32/${machine}/cmd`, JSON.stringify({ cmd: "RESET", reset_source: "web" }));
             }
+            
+            // RESET START TIME & MANUAL OFFSET (Kembali ke 0 bersih untuk besok)
             await set(ref(database, 'config/productionStartTime'), Date.now());
+            await set(ref(database, 'config/manualOffset'), 0);
+            
             latestCounter = {}; 
             fetchHistoryForChart(); 
             updateUI();
         } catch(e) { console.error("Reset Failed", e); }
     }
+
+    window.manualSave = () => { if(confirm("Simpan data & RESET SEMUA hitungan (Akhir Shift)?")) executeSaveAndReset(); };
 
     /* ================= NAVIGATION & HISTORY VIEW ================= */
     window.showDashboard = () => {
@@ -773,9 +818,8 @@
         const body = document.getElementById("historyBody");
         body.innerHTML = "";
         if(snap.exists()) {
-            // Gunakan Object.values(snap.val()) agar konsisten dengan cache
             const rawData = Object.values(snap.val());
-            historyDataCache = rawData; // Update Cache untuk Export
+            historyDataCache = rawData; 
             
             rawData.reverse().forEach(h => {
                 const safeTotal = h.total !== undefined ? h.total : 0;
@@ -796,11 +840,6 @@
         }
     };
 
-    window.manualSave = () => { if(confirm("Simpan data & RESET hitungan sekarang?")) executeSaveAndReset(); };
-    window.resetCounter = () => {
-        const selected = document.getElementById("machineSelect").value;
-        if(confirm(`Reset Counter pada ${selected}?`)) client.publish(`iot/esp32/${selected}/cmd`, JSON.stringify({ cmd: "RESET", reset_source: "web" }));
-    };
     window.showSensorHistory = async (id) => {
         document.getElementById("dashboardView").style.display = "none";
         document.getElementById("sensorHistoryView").style.display = "block";
