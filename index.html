@@ -10,210 +10,199 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
 
     <style>
-        /* --- 1. VARIABLES & THEMING --- */
+        /* --- 1. ORIGINAL CSS (UNTUK DESKTOP - TIDAK DIUBAH) --- */
         :root {
             --bg-body: #0f172a;
             --bg-card: #1e293b;
-            --bg-header: rgba(15, 23, 42, 0.95);
-            --bg-nav-mobile: #1e293b;
+            --bg-header: rgba(15, 23, 42, 0.9);
             --border-color: #334155;
-            
             --text-main: #f8fafc;
             --text-muted: #94a3b8;
-            
             --primary: #38bdf8;
             --primary-bg: rgba(56, 189, 248, 0.1);
             --success: #22c55e;
             --warning: #f59e0b;
             --danger: #ef4444;
             --purple: #a855f7;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --radius: 12px;
             
-            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            /* Mobile Variables */
             --nav-height: 60px;
+            --whatsapp-header: #1f2c34; /* Warna Header WA Dark */
+            --whatsapp-bg: #111b21;    /* Warna Body WA Dark */
         }
 
         [data-theme="light"] {
             --bg-body: #f1f5f9;
             --bg-card: #ffffff;
-            --bg-header: rgba(255, 255, 255, 0.95);
-            --bg-nav-mobile: #ffffff;
+            --bg-header: rgba(255, 255, 255, 0.9);
             --border-color: #e2e8f0;
-            
             --text-main: #0f172a;
             --text-muted: #64748b;
-            
             --primary: #0284c7;
             --primary-bg: rgba(2, 132, 199, 0.1);
             --success: #16a34a;
             --warning: #d97706;
             --danger: #dc2626;
             --purple: #7c3aed;
+            --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            
+            /* Mobile Light */
+            --whatsapp-header: #008069;
+            --whatsapp-bg: #f0f2f5;
         }
 
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        
-        body {
-            margin: 0;
-            font-family: 'Inter', sans-serif;
-            background-color: var(--bg-body);
-            color: var(--text-main);
-            transition: background-color 0.3s;
-        }
+        * { box-sizing: border-box; }
+        body { margin: 0; font-family: 'Inter', sans-serif; background-color: var(--bg-body); color: var(--text-main); transition: background-color 0.3s, color 0.3s; -webkit-font-smoothing: antialiased; }
 
-        /* --- UTILS --- */
-        button { cursor: pointer; font-family: inherit; transition: all 0.2s; }
-        button:active { transform: scale(0.96); }
+        button { cursor: pointer; font-family: inherit; transition: all 0.2s ease; }
+        button:active { transform: scale(0.98); }
 
-        /* --- LOGIN PAGE --- */
-        #loginPage {
-            height: 100vh; display: flex; justify-content: center; align-items: center;
-            background: radial-gradient(circle at center, var(--bg-card), var(--bg-body));
-        }
-        .login-box {
-            background: var(--bg-card); padding: 40px; width: 90%; max-width: 400px;
-            border-radius: 16px; border: 1px solid var(--border-color); text-align: center;
-        }
-        .login-box input {
-            width: 100%; padding: 14px; margin-bottom: 15px; border-radius: 8px;
-            border: 1px solid var(--border-color); background: var(--bg-body); color: var(--text-main);
-        }
-        .login-box button {
-            width: 100%; padding: 14px; background: var(--primary); color: white;
-            border: none; border-radius: 8px; font-weight: 700;
-        }
+        /* Login */
+        #loginPage { height: 100vh; display: flex; justify-content: center; align-items: center; background: radial-gradient(circle at center, var(--bg-card), var(--bg-body)); }
+        .login-box { background: var(--bg-card); padding: 40px; width: 100%; max-width: 400px; border-radius: 16px; border: 1px solid var(--border-color); box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1); text-align: center; }
+        .login-logo { height: 80px; width: auto; margin-bottom: 20px; filter: drop-shadow(0 0 10px var(--primary-bg)); }
+        .login-box h2 { color: var(--primary); margin: 0 0 20px 0; font-size: 24px; }
+        .login-box input { width: 100%; padding: 14px; margin-bottom: 15px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-body); color: var(--text-main); outline: none; }
+        .login-box input:focus { border-color: var(--primary); }
+        .login-box button { width: 100%; padding: 14px; background: var(--primary); color: white; border: none; border-radius: 8px; font-weight: 600; font-size: 16px; }
 
-        /* --- DESKTOP HEADER (Hidden on Mobile) --- */
-        header {
-            background: var(--bg-header); backdrop-filter: blur(10px); padding: 15px 30px;
-            display: flex; justify-content: space-between; align-items: center;
-            position: sticky; top: 0; z-index: 100; border-bottom: 1px solid var(--border-color);
-        }
+        /* Dashboard & Header (DESKTOP DEFAULT) */
+        #dashboardPage { display: none; animation: fadeIn 0.5s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* HEADER ASLI (Akan disembunyikan di Mobile) */
+        header.desktop-header { background: var(--bg-header); backdrop-filter: blur(10px); padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; border-bottom: 1px solid var(--border-color); box-shadow: var(--shadow); }
         .header-left { display: flex; align-items: center; gap: 15px; }
         .header-logo { height: 40px; width: auto; }
-        .header-title { font-size: 20px; font-weight: 700; color: var(--primary); }
+        .header-title { font-size: 20px; font-weight: 700; color: var(--primary); letter-spacing: -0.5px; }
         nav { display: flex; align-items: center; gap: 12px; }
-        nav button, nav select { padding: 8px 16px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-main); }
-        
-        /* --- MOBILE TOP BAR (Only Visible on Mobile) --- */
-        .mobile-header {
-            display: none; position: fixed; top: 0; left: 0; right: 0; height: 60px;
-            background: var(--bg-card); border-bottom: 1px solid var(--border-color);
-            z-index: 1001; align-items: center; justify-content: space-between; padding: 0 16px;
-        }
-        .mobile-title { font-weight: 700; font-size: 18px; color: var(--text-main); }
-        .kebab-btn { background: none; border: none; font-size: 24px; color: var(--text-main); padding: 5px 10px; }
-        
-        /* Dropdown Menu (WhatsApp Style) */
-        .dropdown-menu {
-            display: none; position: fixed; top: 50px; right: 10px;
-            background: var(--bg-card); border: 1px solid var(--border-color);
-            border-radius: 8px; box-shadow: 0 10px 25px rgba(0,0,0,0.5);
-            z-index: 1002; width: 180px; flex-direction: column; overflow: hidden;
-        }
-        .dropdown-menu.show { display: flex; animation: fadeIn 0.2s; }
-        .menu-item {
-            padding: 12px 16px; text-align: left; background: none; border: none;
-            color: var(--text-main); font-size: 14px; width: 100%;
-            border-bottom: 1px solid var(--border-color);
-        }
-        .menu-item:last-child { border-bottom: none; }
-        .menu-item:active { background: var(--bg-body); }
+        nav select, nav button { padding: 8px 16px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-main); font-size: 13px; font-weight: 500; }
+        nav button:hover { background: var(--bg-body); border-color: var(--primary); }
+        .btn-theme { padding: 8px !important; display: flex; align-items: center; justify-content: center; }
 
-        /* --- MOBILE BOTTOM NAV (Only Visible on Mobile) --- */
-        .bottom-nav {
-            display: none; position: fixed; bottom: 0; left: 0; right: 0; height: var(--nav-height);
-            background: var(--bg-nav-mobile); border-top: 1px solid var(--border-color);
-            z-index: 1000; justify-content: space-around; align-items: center;
-        }
-        .nav-item {
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            flex: 1; height: 100%; border: none; background: none; color: var(--text-muted);
-            font-size: 10px; gap: 4px; padding-top: 8px;
-        }
-        .nav-item.active { color: var(--primary); font-weight: 600; }
-        .nav-icon { font-size: 20px; line-height: 1; }
+        .container { padding: 30px; max-width: 1400px; margin: auto; }
 
-        /* --- MAIN LAYOUT --- */
-        .container { padding: 30px; max-width: 1400px; margin: auto; padding-bottom: 80px; }
-        
-        .total-box {
-            background: linear-gradient(135deg, var(--bg-card), var(--bg-body));
-            padding: 30px; border-radius: 20px; text-align: center; margin-bottom: 40px;
-            border: 1px solid var(--border-color); position: relative; overflow: hidden;
-        }
-        .total-box h1 { margin: 10px 0 0; font-size: 56px; color: var(--primary); }
-        
-        .section-header { margin: 40px 0 20px; padding-bottom: 10px; border-bottom: 1px solid var(--border-color); display: flex; align-items: center; gap: 10px; }
+        /* Components */
+        .total-box { background: linear-gradient(135deg, var(--bg-card), var(--bg-body)); padding: 30px; border-radius: 20px; text-align: center; margin-bottom: 40px; border: 1px solid var(--border-color); box-shadow: var(--shadow); position: relative; overflow: hidden; }
+        .total-box::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px; background: linear-gradient(90deg, var(--primary), var(--purple)); }
+        .total-box .label { color: var(--text-muted); font-size: 13px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; }
+        .total-box h1 { margin: 10px 0 0; font-size: 56px; color: var(--primary); font-weight: 800; letter-spacing: -2px; }
+
+        .section-header { display: flex; align-items: center; gap: 12px; margin: 40px 0 20px; padding-bottom: 10px; border-bottom: 1px solid var(--border-color); }
+        .section-title { font-size: 18px; font-weight: 700; color: var(--text-main); }
+        .badge { font-size: 11px; padding: 4px 10px; border-radius: 20px; color: white; font-weight: 600; }
+        .bg-primary { background: var(--primary); } .bg-warning { background: var(--warning); } .bg-purple { background: var(--purple); }
+
         .layout-row { display: flex; gap: 25px; align-items: flex-start; }
         
-        .summary-card {
-            background: var(--bg-card); padding: 25px; border-radius: 16px;
-            min-width: 280px; width: 280px; border: 1px solid var(--border-color);
-        }
-        .grid { flex-grow: 1; display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 15px; }
-        
-        /* CARD */
-        .card {
-            background: var(--bg-card); padding: 15px; border-radius: 12px;
-            border: 1px solid var(--border-color); position: relative;
-        }
-        .card-header { display: flex; justify-content: space-between; margin-bottom: 10px; }
-        .card-title { font-size: 14px; font-weight: 700; color: var(--text-muted); margin:0; }
-        .card table { width: 100%; text-align: center; }
-        .card td { font-size: 18px; font-weight: 700; padding-top: 5px; }
+        .summary-card { background: var(--bg-card); border: 1px solid var(--border-color); padding: 25px; border-radius: 16px; min-width: 280px; width: 280px; flex-shrink: 0; box-shadow: var(--shadow); }
+        .summary-header { font-size: 16px; font-weight: 700; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid var(--border-color); }
+        .summary-row { margin-bottom: 15px; }
+        .summary-label { font-size: 12px; color: var(--text-muted); margin-bottom: 4px; }
+        .summary-value { font-size: 24px; font-weight: 700; }
+
+        .grid { flex-grow: 1; display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; }
+
+        .card { background: var(--bg-card); padding: 20px; border-radius: 16px; border: 1px solid var(--border-color); transition: transform 0.2s, box-shadow 0.2s; cursor: pointer; position: relative; overflow: hidden; }
+        .card:hover { transform: translateY(-4px); box-shadow: 0 10px 20px rgba(0,0,0,0.1); border-color: var(--primary); }
+        .card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px; }
+        .card-title { margin: 0; font-size: 15px; font-weight: 700; color: var(--text-muted); }
+        .rate-badge { font-size: 10px; background: var(--bg-body); padding: 3px 8px; border-radius: 6px; color: var(--text-muted); border: 1px solid var(--border-color); }
+        .card table { width: 100%; border-collapse: collapse; }
+        .card th { font-size: 11px; text-align: center; color: var(--text-muted); font-weight: 600; padding-bottom: 5px; }
+        .card td { font-size: 20px; font-weight: 700; text-align: center; color: var(--text-main); }
         .val-actual { color: var(--success); }
 
-        /* CHART */
-        .chart-container { background: var(--bg-card); border-radius: 16px; padding: 20px; border: 1px solid var(--border-color); }
-        .chart-header { display: flex; justify-content: space-between; margin-bottom: 15px; flex-wrap: wrap; gap: 10px; }
-        .chart-controls button { padding: 4px 12px; border-radius: 20px; border: 1px solid var(--border-color); background: var(--bg-body); color: var(--text-muted); font-size: 12px; }
-        .chart-controls button.active { background: var(--purple); color: white; border: none; }
+        .chart-container { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 16px; padding: 25px; flex-grow: 1; min-height: 420px; box-shadow: var(--shadow); }
+        .chart-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .chart-controls button { background: var(--bg-body); border: 1px solid var(--border-color); color: var(--text-muted); padding: 6px 16px; border-radius: 20px; font-size: 12px; margin-left: 5px; }
+        .chart-controls button.active { background: var(--purple); color: white; border-color: var(--purple); }
 
-        /* HISTORY TABLE */
         .table-responsive { overflow-x: auto; border-radius: 12px; border: 1px solid var(--border-color); }
-        .full-table { width: 100%; border-collapse: collapse; min-width: 800px; background: var(--bg-card); }
-        .full-table th, .full-table td { padding: 12px; text-align: center; border-bottom: 1px solid var(--border-color); font-size: 13px; }
-        .full-table th { background: var(--bg-body); color: var(--primary); }
+        table.full-table { width: 100%; border-collapse: collapse; background: var(--bg-card); min-width: 900px; }
+        .full-table th { background: var(--bg-body); color: var(--primary); position: sticky; top: 0; z-index: 10; padding: 12px; font-size: 13px; text-align: center; border-bottom: 1px solid var(--border-color); }
+        .full-table td { padding: 10px; border-bottom: 1px solid var(--border-color); border-right: 1px solid var(--border-color); font-size: 13px; text-align: center; color: var(--text-main); }
+        .val-zero { color: var(--text-muted); opacity: 0.5; }
 
-        /* --- MOBILE RESPONSIVE (THE WHATSAPP STYLE) --- */
-        @media (max-width: 900px) {
-            /* Hide Desktop Header */
-            header { display: none; }
-            
-            /* Show Mobile Header & Nav */
-            .mobile-header { display: flex; }
-            .bottom-nav { display: flex; }
-            
-            .container { padding: 15px; padding-top: 70px; padding-bottom: 90px; }
-            
-            .layout-row { flex-direction: column; }
-            .summary-card { width: 100%; margin-bottom: 20px; }
-            
-            /* TAB LOGIC: Show/Hide based on attribute */
-            [data-active-tab="dashboard"] .view-total,
-            [data-active-tab="dashboard"] .view-chart { display: none !important; }
-            
-            [data-active-tab="total"] .view-dashboard,
-            [data-active-tab="total"] .view-chart { display: none !important; }
-            
-            [data-active-tab="grafik"] .view-dashboard,
-            [data-active-tab="grafik"] .view-total { display: none !important; }
-            
-            /* Mobile adjustments for layout */
-            .section-header { margin-top: 10px; font-size: 14px; }
-            .total-box h1 { font-size: 42px; }
-            
-            /* Adjust Chart Height */
-            .chart-container { min-height: 300px; padding: 10px; }
-        }
+        footer { text-align: center; padding: 30px; color: var(--text-muted); font-size: 12px; }
 
-        @media (min-width: 901px) {
-            /* Desktop Mode: Force display everything */
-            .view-dashboard, .view-total, .view-chart { display: block !important; }
-        }
+        /* --- 2. MOBILE CSS (WHATSAPP STYLE) --- */
+        /* Default: Sembunyikan elemen mobile di desktop */
+        .mobile-header, .bottom-nav, .mobile-kebab-menu, .mobile-overlay { display: none; }
         
-        /* Helper for overlay */
-        .overlay { display: none; position: fixed; inset: 0; z-index: 1001; }
+        @media (max-width: 900px) {
+            /* 1. Reset & Base Layout Mobile */
+            body { background-color: var(--whatsapp-bg); padding-bottom: 70px; } /* Space for bottom nav */
+            .container { padding: 10px; margin-top: 55px; /* Space for top header */ }
+            
+            /* 2. Hide Desktop Header */
+            .desktop-header { display: none !important; }
+            .header-title { display: block; font-size: 16px; } /* Reset size */
+
+            /* 3. Show Mobile Components */
+            .mobile-header {
+                display: flex; position: fixed; top: 0; left: 0; right: 0; height: 56px;
+                background: var(--whatsapp-header); color: white;
+                align-items: center; justify-content: space-between; padding: 0 16px;
+                z-index: 1000; box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            }
+            .mobile-title { font-weight: 600; font-size: 20px; }
+            .mobile-actions button { background: none; border: none; color: white; font-size: 20px; padding: 8px; }
+
+            /* Kebab Menu Dropdown */
+            .mobile-kebab-menu {
+                display: none; flex-direction: column; position: fixed; top: 5px; right: 5px;
+                background: var(--bg-card); width: 200px; border-radius: 4px;
+                box-shadow: 0 5px 15px rgba(0,0,0,0.5); z-index: 2000;
+                transform-origin: top right; animation: scaleIn 0.2s ease;
+            }
+            .mobile-kebab-menu.show { display: flex; }
+            .kebab-item { padding: 14px 16px; color: var(--text-main); font-size: 14px; text-align: left; background: none; border: none; }
+            .kebab-item:hover { background: var(--bg-body); }
+            
+            .mobile-overlay {
+                display: none; position: fixed; inset: 0; z-index: 1500;
+            }
+            .mobile-overlay.show { display: block; }
+
+            /* Bottom Nav */
+            .bottom-nav {
+                display: flex; position: fixed; bottom: 0; left: 0; right: 0; height: 65px;
+                background: var(--bg-card); border-top: 1px solid var(--border-color);
+                z-index: 1000; justify-content: space-around; align-items: center;
+            }
+            .nav-item {
+                flex: 1; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center;
+                background: none; border: none; color: var(--text-muted); gap: 4px;
+            }
+            .nav-item.active { color: var(--success); /* WA Green Accent */ }
+            .nav-item.active .nav-indicator { width: 100%; height: 3px; background: var(--success); position: absolute; top: 0; }
+            .nav-icon { font-size: 20px; }
+            .nav-label { font-size: 12px; font-weight: 500; }
+
+            /* 4. Content Visibility Logic (Tabs) */
+            /* Default: Hide sections not in active tab */
+            [data-mobile-tab="dashboard"] .m-hide-dashboard { display: none !important; }
+            [data-mobile-tab="total"] .m-hide-total { display: none !important; }
+            [data-mobile-tab="grafik"] .m-hide-grafik { display: none !important; }
+            
+            /* 5. Styling Adjustments for Mobile View */
+            .layout-row { flex-direction: column; gap: 15px; }
+            .summary-card { width: 100%; min-width: 0; margin-bottom: 10px; }
+            .grid { grid-template-columns: repeat(2, 1fr); gap: 10px; } /* 2 kolom di HP */
+            .card { padding: 12px; }
+            .card td { font-size: 16px; }
+            .total-box h1 { font-size: 40px; }
+            .chart-container { min-height: 300px; padding: 10px; }
+            .section-header { margin-top: 15px; margin-bottom: 15px; }
+
+            /* Sembunyikan beberapa elemen footer/chart controls yang tidak perlu di HP */
+            .chart-legend-custom { display: none; }
+        }
+
+        @keyframes scaleIn { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
     </style>
 </head>
 
@@ -221,157 +210,219 @@
 
 <div id="loginPage">
     <div class="login-box">
-        <img src="phi.png" alt="PHI" style="height: 60px; margin-bottom: 20px;">
-        <h2>LOGIN MONITORING</h2>
+        <img src="phi.png" alt="Logo" class="login-logo">
+        <h2>USER LOGIN</h2>
+        <p style="color: var(--text-muted); margin-bottom: 20px; font-size: 14px;">Production Monitoring System</p>
         <input id="username" placeholder="Username" type="text" autocomplete="off">
         <input id="password" type="password" placeholder="Password">
-        <button onclick="doLogin()">MASUK</button>
-        <p id="error" style="color:var(--danger); margin-top:10px; font-size:12px;"></p>
+        <button onclick="doLogin()">LOGIN</button>
+        <p id="error" style="margin-top:15px; font-size:13px;"></p>
     </div>
 </div>
 
 <div id="dashboardPage">
-    
-    <header>
+    <header class="desktop-header">
         <div class="header-left">
             <img src="phi.png" alt="Logo" class="header-logo">
-            <span class="header-title">COUNTER PHI</span>
+            <span class="header-title">COUNTER PRODUCTION PHI</span>
         </div>
         <nav>
-            <span id="clock" style="font-family:monospace; font-weight:600">--:--:--</span>
+            <span id="clock" style="font-family: monospace; font-weight:600; color:var(--text-main)"></span>
+            <select id="machineSelect">
+                <option value="machine01|L1">Machine 01</option>
+                <option value="machine02|L2">Machine 02</option>
+                <option value="machine03|L3">Machine 03</option>
+                <option value="machine04|L4">Machine 04</option>
+                <option value="machine05|L5">Machine 05</option>
+                <option value="machine06|L6">Machine 06</option>
+            </select>
+            <button onclick="showDashboard()" title="Dashboard">Dashboard</button>
+            <button onclick="showHistory()" title="History">History</button>
             <button onclick="manualSave()" style="color:var(--success); border-color:var(--success)">Save</button>
             <button onclick="resetCounter()" style="color:var(--danger); border-color:var(--danger)">Reset</button>
-            <button onclick="showHistory()">History</button>
-            <button onclick="toggleTheme()">◑</button>
+            <button onclick="toggleTheme()" class="btn-theme" title="Switch Theme">◑</button>
             <button onclick="logout()">Logout</button>
         </nav>
     </header>
 
     <div class="mobile-header">
-        <div class="header-left">
-            <img src="phi.png" alt="Logo" style="height:32px; margin-right:10px">
-            <span class="mobile-title">PHI Monitor</span>
+        <span class="mobile-title">PHI Production</span>
+        <div class="mobile-actions">
+            <button onclick="toggleKebabMenu()">&#8942;</button>
         </div>
-        <button class="kebab-btn" onclick="toggleMenu()">&#8942;</button>
     </div>
 
-    <div class="overlay" id="menuOverlay" onclick="toggleMenu()"></div>
-
-    <div class="dropdown-menu" id="dropdownMenu">
-        <button class="menu-item" onclick="manualSave(); toggleMenu()">Simpan Shift</button>
-        <button class="menu-item" onclick="resetCounter(); toggleMenu()">Reset Counter</button>
-        <button class="menu-item" onclick="showHistory(); toggleMenu()">Riwayat Data</button>
-        <button class="menu-item" onclick="toggleTheme(); toggleMenu()">Ganti Tema</button>
-        <button class="menu-item" onclick="logout()">Keluar</button>
+    <div class="mobile-overlay" id="mobileOverlay" onclick="toggleKebabMenu()"></div>
+    <div class="mobile-kebab-menu" id="kebabMenu">
+        <button class="kebab-item" onclick="manualSave(); toggleKebabMenu()">Simpan & Reset (Akhir Shift)</button>
+        <button class="kebab-item" onclick="resetCounter(); toggleKebabMenu()">Reset Counter</button>
+        <button class="kebab-item" onclick="showHistory(); toggleKebabMenu()">Riwayat Data</button>
+        <button class="kebab-item" onclick="toggleTheme(); toggleKebabMenu()">Ganti Tema</button>
+        <button class="kebab-item" onclick="logout()">Keluar</button>
     </div>
 
-    <div class="container" id="dashboardView" data-active-tab="dashboard">
+    <div class="container" id="dashboardView" data-mobile-tab="dashboard">
         
-        <div class="view-total">
-            <div class="total-box">
-                <div class="label">TOTAL PRODUKSI HARI INI</div>
-                <h1 id="total">0</h1>
-            </div>
+        <div class="total-box m-hide-dashboard m-hide-grafik">
+            <div class="label">Total Production Today</div>
+            <h1 id="total">0</h1>
         </div>
 
-        <div class="section-header view-dashboard">
-            <span style="background:var(--primary); padding:4px 8px; border-radius:4px; font-size:10px; color:#000; font-weight:700">CLUB CAN</span>
-            <b style="margin-left:8px">LINE 1-4 & 7-14</b>
+        <div class="section-header m-hide-total m-hide-grafik">
+            <span class="badge bg-primary">CLUB CAN</span>
+            <span class="section-title">LINE 1-4 & 7-14</span>
+        </div>
+        
+        <div class="layout-row">
+            <div class="summary-card m-hide-dashboard m-hide-grafik" style="border-left: 4px solid var(--primary);">
+                <div class="summary-header" style="color: var(--primary)">OVERALL CLUB</div>
+                <div class="summary-row">
+                    <div class="summary-label">Total Actual</div>
+                    <div class="summary-value" id="totalClubActual" style="color: var(--text-main)">0</div>
+                </div>
+                <div class="summary-row">
+                    <div class="summary-label">Total Prediction</div>
+                    <div class="summary-value" id="totalClubPrediction" style="color: var(--primary)">0</div>
+                </div>
+                <div class="summary-row">
+                    <div class="summary-label">Avg Efficiency</div>
+                    <div class="summary-value" id="totalClubEff">0%</div>
+                </div>
+            </div>
+            <div class="grid m-hide-total m-hide-grafik" id="clubCanContainer"></div>
+        </div>
+
+        <div class="section-header m-hide-total m-hide-grafik">
+            <span class="badge bg-warning">POUCH CAN</span>
+            <span class="section-title">LINE 5-6</span>
         </div>
 
         <div class="layout-row">
-            <div class="summary-card view-total" style="border-left: 4px solid var(--primary);">
-                <div style="color:var(--primary); font-weight:700; margin-bottom:15px; border-bottom:1px solid var(--border-color); padding-bottom:5px">OVERALL CLUB</div>
-                <div style="margin-bottom:10px"><small>Actual</small><div style="font-size:24px; font-weight:700" id="totalClubActual">0</div></div>
-                <div style="margin-bottom:10px"><small>Prediksi</small><div style="font-size:24px; font-weight:700; color:var(--primary)" id="totalClubPrediction">0</div></div>
-                <div><small>Efisiensi</small><div style="font-size:20px; font-weight:700" id="totalClubEff">0%</div></div>
+            <div class="summary-card m-hide-dashboard m-hide-grafik" style="border-left: 4px solid var(--warning);">
+                <div class="summary-header" style="color: var(--warning)">OVERALL POUCH</div>
+                <div class="summary-row">
+                    <div class="summary-label">Total Actual</div>
+                    <div class="summary-value" id="totalPouchActual" style="color: var(--text-main)">0</div>
+                </div>
+                <div class="summary-row">
+                    <div class="summary-label">Total Prediction</div>
+                    <div class="summary-value" id="totalPouchPrediction" style="color: var(--warning)">0</div>
+                </div>
+                <div class="summary-row">
+                    <div class="summary-label">Avg Efficiency</div>
+                    <div class="summary-value" id="totalPouchEff">0%</div>
+                </div>
             </div>
-
-            <div class="grid view-dashboard" id="clubCanContainer"></div>
+            <div class="grid m-hide-total m-hide-grafik" id="pouchCanContainer"></div>
         </div>
 
-        <div class="section-header view-dashboard">
-            <span style="background:var(--warning); padding:4px 8px; border-radius:4px; font-size:10px; color:#000; font-weight:700">POUCH CAN</span>
-            <b style="margin-left:8px">LINE 5-6</b>
+        <div class="section-header m-hide-dashboard m-hide-total" style="margin-top: 50px;">
+            <span class="badge bg-purple">ANALYTICS</span>
+            <span class="section-title">OVERALL PERFORMANCE</span>
         </div>
-
+        
         <div class="layout-row">
-            <div class="summary-card view-total" style="border-left: 4px solid var(--warning);">
-                <div style="color:var(--warning); font-weight:700; margin-bottom:15px; border-bottom:1px solid var(--border-color); padding-bottom:5px">OVERALL POUCH</div>
-                <div style="margin-bottom:10px"><small>Actual</small><div style="font-size:24px; font-weight:700" id="totalPouchActual">0</div></div>
-                <div style="margin-bottom:10px"><small>Prediksi</small><div style="font-size:24px; font-weight:700; color:var(--warning)" id="totalPouchPrediction">0</div></div>
-                <div><small>Efisiensi</small><div style="font-size:20px; font-weight:700" id="totalPouchEff">0%</div></div>
+            <div class="summary-card m-hide-dashboard m-hide-grafik" style="border-left: 4px solid var(--purple);">
+                <div class="summary-header" style="color: var(--purple)">OVERALL PERFORMANCE</div>
+                <div class="summary-row">
+                    <div class="summary-label">Overall Actual</div>
+                    <div class="summary-value" id="grandTotalActual" style="color: var(--purple)">0</div>
+                </div>
+                <div class="summary-row">
+                    <div class="summary-label">Overall Prediction</div>
+                    <div class="summary-value" id="grandTotalPrediction" style="color: var(--text-main)">0</div>
+                </div>
+                <div class="summary-row">
+                    <div class="summary-label">Overall Efficiency</div>
+                    <div class="summary-value" id="grandTotalEff">0%</div>
+                </div>
             </div>
             
-            <div class="grid view-dashboard" id="pouchCanContainer"></div>
-        </div>
-
-        <div class="section-header view-chart" style="margin-top:40px">
-            <span style="background:var(--purple); padding:4px 8px; border-radius:4px; font-size:10px; color:#fff; font-weight:700">GRAFIK</span>
-            <b style="margin-left:8px">PERFORMA</b>
-        </div>
-
-        <div class="layout-row view-chart">
-            <div class="summary-card view-total" style="border-left: 4px solid var(--purple);">
-                <div style="color:var(--purple); font-weight:700; margin-bottom:15px">GRAND TOTAL</div>
-                <div><small>Actual</small><div style="font-size:24px; font-weight:700" id="grandTotalActual">0</div></div>
-            </div>
-            
-            <div class="chart-container view-chart">
+            <div class="chart-container m-hide-dashboard m-hide-total">
                 <div class="chart-header">
-                    <span style="font-weight:700; font-size:14px">Grafik Produksi</span>
+                    <div class="chart-legend-custom">
+                        <div class="legend-item"><span class="dot" style="background:var(--success)"></span> GRAFIK</div>
+                        <div class="legend-item"><span class="dot" style="background:var(--danger)"></span> TOTAL PRODUCTION</div>
+                        <div class="legend-item"><span class="dot" style="background:var(--warning); height: 3px; border-radius:0"></span> PASIFIC HARVEST INDONESIA</div>
+                    </div>
                     <div class="chart-controls">
                         <button class="btn-chart active" onclick="updateChartPeriod('daily', this)">Hari</button>
                         <button class="btn-chart" onclick="updateChartPeriod('weekly', this)">Minggu</button>
+                        <button class="btn-chart" onclick="updateChartPeriod('monthly', this)">Bulan</button>
                     </div>
                 </div>
-                <div style="height: 300px; width: 100%;">
+                <div style="height: 320px; width: 100%;">
                     <canvas id="productionChart"></canvas>
                 </div>
             </div>
         </div>
     </div>
 
+    <div class="bottom-nav">
+        <button class="nav-item active" onclick="switchMobileTab('dashboard', this)">
+            <span class="nav-indicator"></span>
+            <span class="nav-icon">📊</span>
+            <span class="nav-label">Dashboard</span>
+        </button>
+        <button class="nav-item" onclick="switchMobileTab('total', this)">
+            <span class="nav-indicator"></span>
+            <span class="nav-icon">∑</span>
+            <span class="nav-label">Total</span>
+        </button>
+        <button class="nav-item" onclick="switchMobileTab('grafik', this)">
+            <span class="nav-indicator"></span>
+            <span class="nav-icon">📈</span>
+            <span class="nav-label">Grafik</span>
+        </button>
+    </div>
+
     <div class="container" id="historyView" style="display:none">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-            <h3>Riwayat Data</h3>
-            <button onclick="showDashboard()" style="background:var(--bg-card); border:1px solid var(--border-color); color:var(--text-main); padding:8px 16px; border-radius:8px">Kembali</button>
+            <div>
+                <h2 style="margin:0; color:var(--text-main)">Data Logger </h2>
+                <span style="font-size:13px; color:var(--text-muted)">Riwayat data penyimpanan akhir shift</span>
+            </div>
+            <div style="display:flex; gap:10px">
+                <button onclick="exportToExcel()" style="background:#10b981; border:none; color:white; padding:10px 20px; border-radius:8px;">Download Excel</button>
+                <button onclick="showDashboard()">Back</button>
+            </div>
         </div>
         <div class="table-responsive">
             <table class="full-table" id="historyTable">
                 <thead>
-                    <tr><th>Waktu</th><th>Total</th><th>L1</th><th>L2</th><th>L3</th><th>L4</th><th>L5</th><th>L6</th></tr>
+                    <tr>
+                        <th style="min-width: 160px; text-align:left;">Waktu</th>
+                        <th style="min-width: 100px;">Total Actual</th>
+                        <th style="min-width: 100px;">Total Pred.</th>
+                        <th>L1</th><th>L2</th><th>L3</th><th>L4</th>
+                        <th style="background:var(--bg-card); border-bottom:2px solid var(--warning)">L5</th>
+                        <th style="background:var(--bg-card); border-bottom:2px solid var(--warning)">L6</th>
+                        <th>L7</th><th>L8</th><th>L9</th><th>L10</th><th>L11</th><th>L12</th><th>L13</th><th>L14</th>
+                    </tr>
                 </thead>
                 <tbody id="historyBody"></tbody>
             </table>
         </div>
     </div>
-    
+
     <div class="container" id="sensorHistoryView" style="display:none">
-        <div style="display:flex; justify-content:space-between; margin-bottom:20px;">
-            <h3 id="sensorTitle">Detail</h3>
-            <button onclick="showDashboard()">Kembali</button>
+        <div style="margin-bottom:20px; display:flex; justify-content:space-between; align-items:center;">
+            <h2 id="sensorTitle" style="color:var(--text-main); margin:0;">Line Detail</h2>
+            <button onclick="showDashboard()">Back</button>
         </div>
         <div class="table-responsive">
-            <table class="full-table"><tbody id="sensorHistoryTable"></tbody></table>
+            <table class="full-table">
+                <thead><tr><th style="text-align:left">Waktu</th><th style="text-align:left">Nilai</th></tr></thead>
+                <tbody id="sensorHistoryTable"></tbody>
+            </table>
         </div>
     </div>
 
-    <div class="bottom-nav">
-        <button class="nav-item active" onclick="switchTab('dashboard', this)">
-            <span class="nav-icon">📊</span>
-            <span>Dashboard</span>
-        </button>
-        <button class="nav-item" onclick="switchTab('total', this)">
-            <span class="nav-icon">∑</span>
-            <span>Total</span>
-        </button>
-        <button class="nav-item" onclick="switchTab('grafik', this)">
-            <span class="nav-icon">📈</span>
-            <span>Grafik</span>
-        </button>
-    </div>
-
+    <footer>
+        System: <span id="status" style="color:var(--success)">Connecting...</span> | 
+        Cloud: <span id="firebaseStatus" style="color:var(--primary)">Syncing...</span> | 
+        PASIFIC HARVEST INDONESIA &copy; 2026
+    </footer>
 </div>
 
 <script type="module">
@@ -391,7 +442,6 @@
     const app = initializeApp(firebaseConfig);
     const database = getDatabase(app);
 
-    // --- LOGIC GLOBAL ---
     let latestCounter = {};
     let globalStartTime = null; 
     let manualOffset = 0; 
@@ -402,33 +452,28 @@
 
     const getVar = (name) => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
 
-    // --- MOBILE UI FUNCTIONS ---
-    window.toggleMenu = () => {
-        const menu = document.getElementById("dropdownMenu");
-        const overlay = document.getElementById("menuOverlay");
-        if(menu.style.display === "flex") {
-            menu.style.display = "none";
-            overlay.style.display = "none";
-        } else {
-            menu.style.display = "flex";
-            overlay.style.display = "block";
-        }
+    /* --- MOBILE SPECIFIC JS --- */
+    window.toggleKebabMenu = () => {
+        const menu = document.getElementById("kebabMenu");
+        const overlay = document.getElementById("mobileOverlay");
+        menu.classList.toggle("show");
+        overlay.classList.toggle("show");
     };
 
-    window.switchTab = (tabName, btn) => {
-        // Update Bottom Nav Style
-        document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+    window.switchMobileTab = (tabName, btn) => {
+        // 1. Set Active Button
+        document.querySelectorAll('.bottom-nav .nav-item').forEach(b => b.classList.remove('active'));
         if(btn) btn.classList.add('active');
-        
-        // Filter View Content using Data Attribute
-        document.getElementById('dashboardView').setAttribute('data-active-tab', tabName);
-        
-        // Scroll to top
+
+        // 2. Set Active View via Data Attribute (CSS will handle hide/show)
+        document.getElementById('dashboardView').setAttribute('data-mobile-tab', tabName);
+
+        // 3. Scroll to top
         window.scrollTo(0,0);
-        
-        // Special case for Chart re-render
+
+        // 4. Resize chart if tab is Grafik
         if(tabName === 'grafik' && myChart) {
-            setTimeout(() => myChart.resize(), 100);
+            setTimeout(() => { myChart.resize(); }, 100);
         }
     };
 
@@ -438,6 +483,7 @@
         const next = current === 'dark' ? 'light' : 'dark';
         html.setAttribute('data-theme', next);
         localStorage.setItem('theme', next);
+        
         if(myChart) {
             myChart.options.scales.x.ticks.color = getVar('--text-muted');
             myChart.options.scales.y.ticks.color = getVar('--text-muted');
@@ -446,16 +492,27 @@
         }
     };
 
-    // Load saved theme
-    document.documentElement.setAttribute('data-theme', localStorage.getItem('theme') || 'dark');
+    const savedTheme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', savedTheme);
 
-    // --- AUTH & INIT ---
+    function syncConfig() {
+        onValue(ref(database, 'config/productionStartTime'), (snap) => {
+            const val = snap.val();
+            if (val) { globalStartTime = val; updateUI(); } 
+            else { set(ref(database, 'config/productionStartTime'), Date.now()); }
+        });
+        onValue(ref(database, 'config/manualOffset'), (snap) => {
+            manualOffset = snap.val() || 0;
+            updateUI();
+        });
+    }
+
     window.doLogin = () => {
         const u = document.getElementById("username").value;
         const p = document.getElementById("password").value;
         if(u === "admin" && p === "admin123") {
             sessionStorage.setItem("login", "1"); location.reload();
-        } else { document.getElementById("error").innerText = "Username/Password salah!"; }
+        } else { document.getElementById("error").innerText = "Username atau Password salah!"; }
     };
     window.logout = () => { sessionStorage.clear(); location.reload(); };
 
@@ -468,18 +525,22 @@
         }
     };
 
-    function syncConfig() {
-        onValue(ref(database, 'config/productionStartTime'), (snap) => {
-            const val = snap.val();
-            if (val) { globalStartTime = val; updateUI(); } 
-            else { set(ref(database, 'config/productionStartTime'), Date.now()); }
+    window.exportToExcel = () => {
+        if (historyDataCache.length === 0) return alert("Tidak ada data history.");
+        let csv = "\uFEFFWaktu;Total Actual;Total Prediction";
+        for (let i = 1; i <= 14; i++) csv += `;Line ${i}`;
+        csv += "\n";
+        [...historyDataCache].reverse().forEach(item => {
+            let row = `"${item.time.replace(/,/g, '')}";${item.total||0};${item.totalPrediction||0}`;
+            for (let i = 1; i <= 14; i++) row += `;${item.counter ? (item.counter[`L${i}`]||0) : 0}`;
+            csv += row + "\n";
         });
-        onValue(ref(database, 'config/manualOffset'), (snap) => {
-            manualOffset = snap.val() || 0; updateUI();
-        });
-    }
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }));
+        link.download = `SardinesPHI_History_${new Date().toISOString().slice(0,10)}.csv`;
+        link.click();
+    };
 
-    // --- CHART LOGIC ---
     window.updateChartPeriod = (period, btn) => {
         document.querySelectorAll('.btn-chart').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
@@ -494,56 +555,94 @@
     function processAndRenderChart(period) {
         if(historyDataCache.length === 0) return;
         const grouped = {};
+        const months = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"];
+        
         historyDataCache.forEach(entry => {
             let d = entry.timestamp ? new Date(entry.timestamp) : new Date();
-            let key = d.toLocaleDateString('id-ID', {day:'numeric', month:'short'});
-            if(period === 'weekly') {
-                 // Logic sederhana mingguan
-                 key = `W${Math.ceil(d.getDate()/7)} ${d.getMonth()+1}`;
-            }
+            let key;
+            if (period === 'daily') key = d.toLocaleDateString('id-ID', {day:'numeric', month:'short'});
+            else if (period === 'weekly') {
+                const start = new Date(d.getFullYear(), d.getMonth(), 1);
+                const week = Math.ceil((d.getDate() + start.getDay()) / 7);
+                key = `W${week} (${months[d.getMonth()]})`;
+            } else key = `${months[d.getMonth()]} ${d.getFullYear()}`;
+
             if(!grouped[key]) grouped[key] = { act: 0, pred: 0 };
             grouped[key].act += (entry.total || 0);
-            grouped[key].pred += (entry.totalPrediction || 400000);
+            grouped[key].pred += (entry.totalPrediction !== undefined ? entry.totalPrediction : 470000);
         });
-        renderChart(Object.keys(grouped), Object.values(grouped).map(v=>v.act), Object.values(grouped).map(v=>v.pred));
+
+        const lbls = Object.keys(grouped);
+        const acts = lbls.map(k => grouped[k].act);
+        const preds = lbls.map(k => grouped[k].pred);
+        renderChart(lbls, acts, preds);
     }
 
-    function renderChart(labels, act, pred) {
+    function renderChart(labels, actuals, predictions) {
         const ctx = document.getElementById('productionChart').getContext('2d');
         if (myChart) myChart.destroy();
+        
         myChart = new Chart(ctx, {
             data: {
                 labels: labels,
                 datasets: [
-                    { type: 'line', label: 'Target', data: pred, borderColor: getVar('--warning'), borderDash: [5,5], pointRadius: 0, tension: 0.3 },
-                    { type: 'bar', label: 'Actual', data: act, backgroundColor: getVar('--primary'), borderRadius: 4 }
+                    { type: 'line', label: 'Target', data: predictions, borderColor: getVar('--warning'), backgroundColor: getVar('--warning'), borderWidth: 2, borderDash: [6, 4], pointRadius: 0, tension: 0.3, order: 1 },
+                    { type: 'bar', label: 'Actual', data: actuals, backgroundColor: ctx => {
+                        const i = ctx.dataIndex; return actuals[i] >= predictions[i] ? getVar('--success') : getVar('--danger');
+                    }, borderRadius: 6, order: 2, barPercentage: 0.6 }
                 ]
             },
             options: {
-                responsive: true, maintainAspectRatio: false,
+                responsive: true, 
+                maintainAspectRatio: false,
                 scales: {
-                    y: { grid: { color: getVar('--border-color') }, ticks: { color: getVar('--text-muted') } },
-                    x: { display:false } // Hide X labels on mobile for space
+                    y: { 
+                        beginAtZero: true, 
+                        grace: '5%', 
+                        grid: { color: getVar('--border-color'), borderDash: [4, 4] }, 
+                        ticks: { 
+                            stepSize: 1000, 
+                            color: getVar('--text-muted'), 
+                            callback: v => v >= 1000 ? (v/1000).toFixed(0)+'k' : v 
+                        } 
+                    },
+                    x: { grid: { display: false }, ticks: { color: getVar('--text-muted') } }
                 },
-                plugins: { legend: {display:false} }
+                plugins: { legend: { display: false }, tooltip: { backgroundColor: getVar('--bg-header'), titleColor: getVar('--text-main'), bodyColor: getVar('--text-main'), borderColor: getVar('--border-color'), borderWidth: 1 } }
             }
         });
     }
 
-    // --- UI GENERATOR ---
+    const client = mqtt.connect("wss://c836c913dd894d7db71ce06137b51f4e.s1.eu.hivemq.cloud:8884/mqtt", { username: "adminphi123", password: "Phi12345", reconnectPeriod: 2000 });
+    client.on("connect", () => { document.getElementById("status").innerText = "Connected"; for(let i=1; i<=6; i++) client.subscribe(`iot/esp32/machine0${i}/counter`); });
+    client.on("message", (t, m) => {
+        try {
+            const d = JSON.parse(m.toString());
+            const mach = t.split('/')[2];
+            if(Object.values(d.counter).every(v=>v===0) && d.reset_source!=="web") {}
+            Object.assign(latestCounter, d.counter);
+            set(ref(database, `lastCache/${mach}`), d);
+            document.getElementById("firebaseStatus").innerText = "Synced";
+            updateUI();
+        } catch(e) { console.error(e); }
+    });
+
     function generateAllCards() {
-        const c1 = document.getElementById("clubCanContainer"); 
-        const c2 = document.getElementById("pouchCanContainer");
+        const c1 = document.getElementById("clubCanContainer"); const c2 = document.getElementById("pouchCanContainer");
         c1.innerHTML = ""; c2.innerHTML = "";
         for(let i=1; i<=14; i++) {
             const isP = (i===5||i===6);
+            const style = isP ? "color:var(--warning)" : "color:var(--primary)";
             const html = `
-            <div class="card" onclick="showSensorHistory(${i})" style="${isP?'border-left:3px solid var(--warning)':'border-left:3px solid var(--primary)'}">
+            <div class="card" onclick="showSensorHistory(${i})" style="${isP?'border-left:4px solid var(--warning)':'border-left:4px solid var(--primary)'}">
                 <div class="card-header">
                     <h3 class="card-title">LINE ${i.toString().padStart(2,'0')}</h3>
-                    <span style="font-size:10px; color:var(--text-muted)">${rates[i-1]}/m</span>
+                    <span class="rate-badge">${rates[i-1]}/m</span>
                 </div>
-                <table><tr><td class="val-actual" id="L${i}">0</td><td id="P${i}" style="font-size:14px; color:${isP?'var(--warning)':'var(--primary)'}">0</td><td id="E${i}" style="font-size:14px">0%</td></tr></table>
+                <table>
+                    <tr><th>ACTUAL</th><th>PRED.</th><th>EFF.</th></tr>
+                    <tr><td class="val-actual" id="L${i}">0</td><td id="P${i}" style="${style}">0</td><td id="E${i}">0%</td></tr>
+                </table>
             </div>`;
             if(isP) c2.innerHTML+=html; else c1.innerHTML+=html;
         }
@@ -553,6 +652,7 @@
         if(!globalStartTime) return;
         const mins = Math.max(0, Date.now() - globalStartTime) / 60000;
         let gTot=0, cAct=0, cPred=0, pAct=0, pPred=0;
+
         for(let i=1; i<=14; i++) {
             const act = latestCounter[`L${i}`] || 0;
             const pred = Math.floor(rates[i-1] * mins);
@@ -570,54 +670,27 @@
         }
         const final = gTot + manualOffset;
         document.getElementById("total").innerText = final.toLocaleString();
-        const clockEl = document.getElementById("clock");
-        if(clockEl) clockEl.innerText = new Date().toLocaleTimeString('id-ID');
-        
+        document.getElementById("clock").innerText = new Date().toLocaleString('id-ID');
         updSum("totalClub", cAct, cPred); updSum("totalPouch", pAct, pPred); updSum("grandTotal", final, cPred+pPred);
     }
 
     function updSum(id, act, pred) {
         document.getElementById(`${id}Actual`).innerText = act.toLocaleString();
-        const pEl = document.getElementById(`${id}Prediction`); if(pEl) pEl.innerText = pred.toLocaleString();
-        const eEl = document.getElementById(`${id}Eff`);
-        if(eEl) {
-            const eff = pred>0 ? ((act/pred)*100).toFixed(1)+'%' : '0%';
-            eEl.innerText = eff;
-            eEl.style.color = parseFloat(eff)>=90 ? getVar('--success') : getVar('--danger');
-        }
+        document.getElementById(`${id}Prediction`).innerText = pred.toLocaleString();
+        const eff = pred>0 ? ((act/pred)*100).toFixed(1)+'%' : '0%';
+        const el = document.getElementById(`${id}Eff`); el.innerText = eff;
+        el.style.color = parseFloat(eff)>=90 ? getVar('--success') : parseFloat(eff)>=70 ? getVar('--warning') : getVar('--danger');
     }
-
-    // --- MQTT & FIREBASE ACTIONS (Sama seperti sebelumnya) ---
-    const client = mqtt.connect("wss://c836c913dd894d7db71ce06137b51f4e.s1.eu.hivemq.cloud:8884/mqtt", { username: "adminphi123", password: "Phi12345", reconnectPeriod: 2000 });
-    client.on("connect", () => { for(let i=1; i<=6; i++) client.subscribe(`iot/esp32/machine0${i}/counter`); });
-    client.on("message", (t, m) => {
-        try {
-            const d = JSON.parse(m.toString());
-            const mach = t.split('/')[2];
-            Object.assign(latestCounter, d.counter);
-            set(ref(database, `lastCache/${mach}`), d);
-            updateUI();
-        } catch(e) {}
-    });
 
     window.resetCounter = async () => {
-        if(confirm(`Reset Penghitung Manual?`)) {
-            await set(ref(database, 'config/manualOffset'), manualOffset + (latestCounter.L1||0)); // Simplified logic
-            client.publish(`iot/esp32/machine01/cmd`, JSON.stringify({cmd:"RESET", reset_source:"web"}));
+        const val = document.getElementById("machineSelect").value;
+        const [mach, line] = val.split("|");
+        if(confirm(`Reset ${line}? Total hari ini tidak akan berkurang.`)) {
+            const curr = latestCounter[line] || 0;
+            await set(ref(database, 'config/manualOffset'), manualOffset + curr);
+            client.publish(`iot/esp32/${mach}/cmd`, JSON.stringify({cmd:"RESET", reset_source:"web"}));
         }
     };
-    
-    async function executeSaveAndReset() {
-        // Logic simpan data
-        let act = parseInt(document.getElementById("total").innerText.replace(/,/g,''));
-        await push(ref(database, 'history'), { time: new Date().toLocaleString('id-ID'), timestamp: Date.now(), total: act, counter: {...latestCounter} });
-        // Reset all
-        for(let i=1; i<=6; i++) client.publish(`iot/esp32/machine0${i}/cmd`, JSON.stringify({cmd:"RESET", reset_source:"web"}));
-        await set(ref(database, 'config/productionStartTime'), Date.now());
-        await set(ref(database, 'config/manualOffset'), 0);
-        location.reload();
-    }
-    window.manualSave = () => { if(confirm("Simpan Shift & Reset Total?")) executeSaveAndReset(); };
 
     function checkAutoSchedule() {
         const d = new Date();
@@ -625,37 +698,49 @@
         else if(d.getMinutes()!==5) hasAutoSaved=false;
     }
 
-    window.showDashboard = () => {
-        document.getElementById("dashboardView").style.display="block";
-        document.getElementById("historyView").style.display="none";
-        document.getElementById("sensorHistoryView").style.display="none";
-        document.querySelector(".bottom-nav").style.display="flex"; // Show nav
-    };
+    async function executeSaveAndReset() {
+        let act = manualOffset, pred = 0;
+        if(globalStartTime) {
+            const mins = Math.max(0, Date.now() - globalStartTime) / 60000;
+            for(let i=1; i<=14; i++) { act += (latestCounter[`L${i}`]||0); pred += Math.floor(rates[i-1]*mins); }
+        }
+        try {
+            await push(ref(database, 'history'), { time: new Date().toLocaleString('id-ID'), timestamp: Date.now(), total: act, totalPrediction: pred, counter: {...latestCounter} });
+            for(let i=1; i<=6; i++) client.publish(`iot/esp32/machine0${i}/cmd`, JSON.stringify({cmd:"RESET", reset_source:"web"}));
+            await set(ref(database, 'config/productionStartTime'), Date.now());
+            await set(ref(database, 'config/manualOffset'), 0);
+            latestCounter={}; fetchHistoryForChart(); updateUI();
+        } catch(e) { console.error(e); }
+    }
+    window.manualSave = () => { if(confirm("Simpan & Reset Total (Akhir Shift)?")) executeSaveAndReset(); };
+
+    window.showDashboard = () => { document.getElementById("dashboardView").style.display="block"; document.getElementById("historyView").style.display="none"; document.getElementById("sensorHistoryView").style.display="none"; };
     
     window.showHistory = async () => {
-        document.getElementById("dashboardView").style.display="none";
-        document.getElementById("historyView").style.display="block";
-        document.querySelector(".bottom-nav").style.display="none"; // Hide nav inside history
+        document.getElementById("dashboardView").style.display="none"; document.getElementById("historyView").style.display="block";
         const snap = await get(ref(database, 'history'));
         const tbody = document.getElementById("historyBody"); tbody.innerHTML="";
         if(snap.exists()) {
-            Object.values(snap.val()).reverse().forEach(h => {
-                let row = `<tr><td>${h.time.split(' ')[1]}</td><td>${h.total}</td>`; // Simplified time
-                for(let i=1; i<=6; i++) row+=`<td>${h.counter?h.counter[`L${i}`]||0:0}</td>`;
+            historyDataCache = Object.values(snap.val());
+            [...historyDataCache].reverse().forEach(h => {
+                let row = `<tr><td style="text-align:left; font-weight:600">${h.time}</td><td style="font-weight:700; color:var(--text-main)">${h.total?.toLocaleString()||0}</td><td style="color:var(--text-muted)">${h.totalPrediction?.toLocaleString()||'-'}</td>`;
+                for(let i=1; i<=14; i++) {
+                    let v = h.counter?h.counter[`L${i}`]||0:0;
+                    row+=`<td class="${v>0?'val-active':'val-zero'}" style="${(i===5||i===6)?'background:rgba(245, 158, 11, 0.1)':''}">${v}</td>`;
+                }
                 tbody.innerHTML += row + "</tr>";
             });
         }
     };
 
     window.showSensorHistory = async (id) => {
-        document.getElementById("dashboardView").style.display="none";
-        document.getElementById("sensorHistoryView").style.display="block";
-        document.getElementById("sensorTitle").innerText = `LINE ${id}`;
-        document.querySelector(".bottom-nav").style.display="none"; // Hide nav
+        document.getElementById("dashboardView").style.display="none"; document.getElementById("sensorHistoryView").style.display="block";
+        document.getElementById("sensorTitle").innerText = `LINE ${id} DETAIL`;
         const snap = await get(ref(database, 'history'));
         const t = document.getElementById("sensorHistoryTable"); t.innerHTML="";
         if(snap.exists()) Object.values(snap.val()).reverse().forEach(h => {
-             t.innerHTML+=`<tr><td>${h.time}</td><td>${h.counter?h.counter[`L${id}`]||0:0}</td></tr>`;
+            const v = h.counter ? h.counter[`L${id}`]||0 : 0;
+            t.innerHTML+=`<tr><td style="text-align:left">${h.time}</td><td style="text-align:left; color:${v>0?getVar('--success'):getVar('--text-muted')}">${v}</td></tr>`;
         });
     };
 
