@@ -557,9 +557,19 @@
                 ]
             },
             options: {
-                responsive: true, maintainAspectRatio: false,
+                responsive: true, 
+                maintainAspectRatio: false,
                 scales: {
-                    y: { beginAtZero: true, grid: { color: getVar('--border-color'), borderDash: [2, 2] }, ticks: { color: getVar('--text-muted'), callback: v => v >= 1000 ? (v/1000).toFixed(0)+'k' : v } },
+                    y: { 
+                        beginAtZero: true, 
+                        grace: '5%', 
+                        grid: { color: getVar('--border-color'), borderDash: [4, 4] }, 
+                        ticks: { 
+                            stepSize: 1000, 
+                            color: getVar('--text-muted'), 
+                            callback: v => v >= 1000 ? (v/1000).toFixed(0)+'k' : v 
+                        } 
+                    },
                     x: { grid: { display: false }, ticks: { color: getVar('--text-muted') } }
                 },
                 plugins: { legend: { display: false }, tooltip: { backgroundColor: getVar('--bg-header'), titleColor: getVar('--text-main'), bodyColor: getVar('--text-main'), borderColor: getVar('--border-color'), borderWidth: 1 } }
