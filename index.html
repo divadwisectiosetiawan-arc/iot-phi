@@ -651,8 +651,8 @@
 
     function checkAutoSchedule() {
         const d = new Date();
-        if(d.getHours()===17 && d.getMinutes()===05) { if(!hasAutoSaved){ executeSaveAndReset(); hasAutoSaved=true; } }
-        else if(d.getMinutes()!==05) hasAutoSaved=false;
+        if(d.getHours()===17 && d.getMinutes()===5) { if(!hasAutoSaved){ executeSaveAndReset(); hasAutoSaved=true; } }
+        else if(d.getMinutes()!==5) hasAutoSaved=false;
     }
 
     async function executeSaveAndReset() {
