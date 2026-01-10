@@ -2,194 +2,218 @@
 <html lang="id" data-theme="dark">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Pasific Harvest - IoT</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PASIFIC HARVEST INDONESIA</title>
     
     <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
 
     <style>
+        /* --- 1. VARIABLES & THEMING --- */
         :root {
-            /* Warna Tema Utama (Dark Blue Navy - Mirip Screenshot) */
-            --bg-app: #0b1121; 
-            --bg-card: #151e32; 
-            --bg-nav: #0f172a;
-            --border-color: #2d3748;
+            /* Color Palette - Dark Mode (Default) */
+            --bg-body: #0f172a;
+            --bg-card: #1e293b;
+            --bg-header: rgba(15, 23, 42, 0.9);
+            --border-color: #334155;
             
-            --text-white: #ffffff;
-            --text-grey: #94a3b8;
-            --text-label: #64748b;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
             
-            --primary: #3b82f6; /* Biru badge */
-            --accent: #fbbf24;  /* Kuning jam */
-            
+            --primary: #38bdf8;
+            --primary-bg: rgba(56, 189, 248, 0.1);
             --success: #22c55e;
             --warning: #f59e0b;
             --danger: #ef4444;
             --purple: #a855f7;
+            
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --radius: 12px;
         }
 
-        /* Light Mode Overrides */
+        /* Light Mode Variables */
         [data-theme="light"] {
-            --bg-app: #f1f5f9;
+            --bg-body: #f1f5f9;
             --bg-card: #ffffff;
-            --bg-nav: #ffffff;
+            --bg-header: rgba(255, 255, 255, 0.9);
             --border-color: #e2e8f0;
-            --text-white: #0f172a; /* Jadi hitam */
-            --text-grey: #64748b;
+            
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            
+            --primary: #0284c7;
+            --primary-bg: rgba(2, 132, 199, 0.1);
+            --success: #16a34a;
+            --warning: #d97706;
+            --danger: #dc2626;
+            --purple: #7c3aed;
+            
+            --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
         }
 
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        * { box-sizing: border-box; }
         
         body {
-            margin: 0; padding: 0;
-            font-family: 'Roboto', sans-serif;
-            background-color: var(--bg-app);
-            color: var(--text-white);
-            transition: 0.3s;
-            padding-bottom: 80px; /* Space untuk bottom nav di HP */
+            margin: 0;
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            transition: background-color 0.3s, color 0.3s;
+            -webkit-font-smoothing: antialiased;
         }
 
-        /* --- 1. LOGIN PAGE --- */
+        /* --- 2. COMPONENTS --- */
+        button {
+            cursor: pointer;
+            font-family: inherit;
+            transition: all 0.2s ease;
+        }
+        button:active { transform: scale(0.98); }
+
+        /* Login Page */
         #loginPage {
-            height: 100vh; width: 100%; position: fixed; top: 0; z-index: 9999;
-            display: flex; justify-content: center; align-items: center;
-            background: var(--bg-app);
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: radial-gradient(circle at center, var(--bg-card), var(--bg-body));
         }
         .login-box {
-            background: var(--bg-card); padding: 30px; width: 85%; max-width: 400px;
-            border-radius: 12px; text-align: center; border: 1px solid var(--border-color);
-            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
-        }
-        .login-box input {
-            width: 100%; padding: 12px; margin-bottom: 15px; background: var(--bg-app);
-            border: 1px solid var(--border-color); color: var(--text-white); border-radius: 6px;
-        }
-        .login-box button {
-            width: 100%; padding: 12px; background: var(--primary); color: white;
-            border: none; border-radius: 6px; font-weight: bold; cursor: pointer;
-        }
-
-        /* --- 2. HEADER & NAVIGATION --- */
-        header {
             background: var(--bg-card);
-            padding: 12px 16px;
-            display: flex; justify-content: space-between; align-items: center;
-            position: sticky; top: 0; z-index: 100;
-            border-bottom: 1px solid var(--border-color);
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
-        }
-        .header-brand { display: flex; align-items: center; gap: 12px; }
-        .header-logo { height: 38px; width: auto; border-radius: 50%; background: white; padding: 2px; }
-        .header-text h1 { margin: 0; font-size: 14px; font-weight: 900; letter-spacing: 0.5px; text-transform: uppercase; }
-        .header-text p { margin: 0; font-size: 10px; color: var(--text-grey); }
-        .header-clock { font-family: monospace; font-size: 14px; font-weight: bold; color: var(--accent); }
-
-        /* Desktop Nav Buttons (Hidden on Mobile) */
-        .desktop-nav { display: flex; gap: 10px; align-items: center; }
-        .desktop-nav button, .desktop-nav select {
-            padding: 6px 12px; border-radius: 6px; border: 1px solid var(--border-color);
-            background: var(--bg-app); color: var(--text-white); cursor: pointer; font-size: 12px;
-        }
-
-        /* Mobile Menu Toggle (Hidden on Desktop) */
-        .mobile-menu-btn { display: none; font-size: 24px; cursor: pointer; color: var(--text-white); margin-left: 10px; }
-
-        /* --- 3. MAIN CONTENT --- */
-        .container { padding: 16px; max-width: 1200px; margin: 0 auto; }
-
-        /* TABS LOGIC (Untuk Mobile) */
-        .tab-content { display: none; animation: fadeEffect 0.3s; }
-        .tab-content.active { display: block; }
-        @keyframes fadeEffect { from {opacity: 0;} to {opacity: 1;} }
-
-        /* --- 4. CARD DESIGN (MOBILE STYLE) --- */
-        .grid-container {
-            display: grid; 
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); /* Responsive Grid */
-            gap: 15px;
-        }
-
-        .machine-card {
-            background-color: var(--bg-card);
+            padding: 40px;
+            width: 100%;
+            max-width: 400px;
+            border-radius: 16px;
             border: 1px solid var(--border-color);
-            border-radius: 8px;
-            padding: 16px;
-            display: flex; flex-direction: column; gap: 15px;
-            position: relative; overflow: hidden;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+            text-align: center;
         }
-        /* Efek hover di desktop */
-        .machine-card:hover { transform: translateY(-2px); border-color: var(--primary); transition: 0.2s; }
+        .login-logo { height: 80px; width: auto; margin-bottom: 20px; filter: drop-shadow(0 0 10px var(--primary-bg)); }
+        .login-box h2 { color: var(--primary); margin: 0 0 20px 0; font-size: 24px; }
+        .login-box input {
+            width: 100%; padding: 14px; margin-bottom: 15px;
+            border-radius: 8px; border: 1px solid var(--border-color);
+            background: var(--bg-body); color: var(--text-main); outline: none;
+        }
+        .login-box input:focus { border-color: var(--primary); }
+        .login-box button {
+            width: 100%; padding: 14px; background: var(--primary); color: white;
+            border: none; border-radius: 8px; font-weight: 600; font-size: 16px;
+        }
+        .login-box button:hover { opacity: 0.9; }
 
-        .mc-header {
-            display: flex; justify-content: space-between; align-items: center;
-            border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 12px;
-        }
-        .mc-title { font-size: 16px; font-weight: 700; letter-spacing: 1px; }
-        .mc-badge {
-            font-size: 10px; font-weight: 600; padding: 3px 6px; border-radius: 4px;
-            background: rgba(59, 130, 246, 0.15); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.3);
-        }
-        .mc-badge.pouch { background: rgba(245, 158, 11, 0.15); color: #fbbf24; border-color: rgba(245, 158, 11, 0.3); }
-        .mc-cpm { font-size: 12px; font-weight: 600; color: var(--text-grey); }
+        /* Dashboard Layout */
+        #dashboardPage { display: none; animation: fadeIn 0.5s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        .mc-body { display: grid; grid-template-columns: 1fr 1fr 1fr; text-align: center; }
-        /* Alignment agar rapi */
-        .mc-stat:first-child { text-align: left; } 
-        .mc-stat:last-child { text-align: right; }
+        header {
+            background: var(--bg-header);
+            backdrop-filter: blur(10px);
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            border-bottom: 1px solid var(--border-color);
+            box-shadow: var(--shadow);
+        }
+        .header-left { display: flex; align-items: center; gap: 15px; }
+        .header-logo { height: 40px; width: auto; }
+        .header-title { font-size: 20px; font-weight: 700; color: var(--primary); letter-spacing: -0.5px; }
+
+        nav { display: flex; align-items: center; gap: 12px; }
+        nav select, nav button {
+            padding: 8px 16px; border-radius: 8px; border: 1px solid var(--border-color);
+            background: var(--bg-card); color: var(--text-main); font-size: 13px; font-weight: 500;
+        }
+        nav button:hover { background: var(--bg-body); border-color: var(--primary); }
+        .btn-theme { padding: 8px !important; display: flex; align-items: center; justify-content: center; }
+
+        .container { padding: 30px; max-width: 1400px; margin: auto; }
+
+        /* Counter Box */
+        .total-box {
+            background: linear-gradient(135deg, var(--bg-card), var(--bg-body));
+            padding: 30px; border-radius: 20px; text-align: center;
+            margin-bottom: 40px; border: 1px solid var(--border-color);
+            box-shadow: var(--shadow); position: relative; overflow: hidden;
+        }
+        .total-box::before {
+            content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px;
+            background: linear-gradient(90deg, var(--primary), var(--purple));
+        }
+        .total-box .label { color: var(--text-muted); font-size: 13px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; }
+        .total-box h1 { margin: 10px 0 0; font-size: 56px; color: var(--primary); font-weight: 800; letter-spacing: -2px; }
+
+        /* Section & Grid */
+        .section-header {
+            display: flex; align-items: center; gap: 12px; margin: 40px 0 20px;
+            padding-bottom: 10px; border-bottom: 1px solid var(--border-color);
+        }
+        .section-title { font-size: 18px; font-weight: 700; color: var(--text-main); }
+        .badge { font-size: 11px; padding: 4px 10px; border-radius: 20px; color: white; font-weight: 600; }
+        .bg-primary { background: var(--primary); }
+        .bg-warning { background: var(--warning); }
+        .bg-purple { background: var(--purple); }
+
+        .layout-row { display: flex; gap: 25px; align-items: flex-start; }
         
-        .stat-label { font-size: 10px; font-weight: 600; color: var(--text-label); margin-bottom: 4px; text-transform: uppercase; }
-        .stat-val { font-size: 20px; font-weight: 700; color: var(--text-white); }
-
-        /* --- 5. TOTALS & CHART STYLE --- */
-        .summary-box {
+        /* Summary Sidebar Card */
+        .summary-card {
             background: var(--bg-card); border: 1px solid var(--border-color);
-            padding: 20px; border-radius: 12px; margin-bottom: 15px;
+            padding: 25px; border-radius: 16px; min-width: 280px; width: 280px; flex-shrink: 0;
+            box-shadow: var(--shadow);
         }
-        .summary-row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 14px; border-bottom: 1px dashed var(--border-color); padding-bottom: 5px; }
-        
-        /* --- 6. BOTTOM NAV (MOBILE ONLY) --- */
-        .bottom-nav {
-            position: fixed; bottom: 0; left: 0; width: 100%; height: 65px;
-            background: var(--bg-nav); border-top: 1px solid var(--border-color);
-            display: none; /* Hidden on Desktop */
-            justify-content: space-around; align-items: center; z-index: 999;
-        }
-        .nav-item {
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            color: var(--text-grey); font-size: 10px; background: none; border: none; width: 100%; height: 100%; gap: 4px;
-        }
-        .nav-item svg { width: 22px; height: 22px; fill: currentColor; }
-        .nav-item.active { color: var(--primary); }
-        
-        /* --- 7. SETTINGS MODAL (MOBILE) --- */
-        .mobile-overlay {
-            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.8); z-index: 9999; justify-content: center; align-items: center;
-        }
-        .settings-card { background: var(--bg-card); padding: 20px; border-radius: 12px; width: 80%; }
-        .settings-card button { width: 100%; padding: 12px; margin-bottom: 10px; border-radius: 6px; border: none; color: white; font-weight: bold; }
+        .summary-header { font-size: 16px; font-weight: 700; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid var(--border-color); }
+        .summary-row { margin-bottom: 15px; }
+        .summary-label { font-size: 12px; color: var(--text-muted); margin-bottom: 4px; }
+        .summary-value { font-size: 24px; font-weight: 700; }
 
-        /* --- MEDIA QUERIES (RESPONSIVE MAGIC) --- */
-        @media (max-width: 768px) {
-            /* Saat di HP: */
-            .desktop-nav { display: none; } /* Sembunyikan menu desktop */
-            .mobile-menu-btn { display: block; } /* Tampilkan menu titik tiga */
-            .bottom-nav { display: flex; } /* Tampilkan nav bawah */
-            
-            /* Pada HP, kita gunakan sistem TAB. Jadi sembunyikan container yang tidak aktif */
-            .desktop-layout-only { display: none !important; } 
-            
-            /* Grid di HP jadi 1 kolom */
-            .grid-container { grid-template-columns: 1fr; }
-        }
+        .grid { flex-grow: 1; display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; }
 
-        @media (min-width: 769px) {
-            /* Saat di Desktop: */
-            .tab-content { display: block !important; } /* Tampilkan semua konten (tidak perlu tab) */
-            /* Kita bisa mengatur layout desktop grid disini jika mau lebih kompleks */
-            #view-totals, #view-grafik { margin-top: 30px; }
+        /* Machine Card */
+        .card {
+            background: var(--bg-card); padding: 20px; border-radius: 16px;
+            border: 1px solid var(--border-color); transition: transform 0.2s, box-shadow 0.2s;
+            cursor: pointer; position: relative; overflow: hidden;
+        }
+        .card:hover { transform: translateY(-4px); box-shadow: 0 10px 20px rgba(0,0,0,0.1); border-color: var(--primary); }
+        .card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px; }
+        .card-title { margin: 0; font-size: 15px; font-weight: 700; color: var(--text-muted); }
+        .rate-badge { font-size: 10px; background: var(--bg-body); padding: 3px 8px; border-radius: 6px; color: var(--text-muted); border: 1px solid var(--border-color); }
+        
+        .card table { width: 100%; border-collapse: collapse; }
+        .card th { font-size: 11px; text-align: center; color: var(--text-muted); font-weight: 600; padding-bottom: 5px; }
+        .card td { font-size: 20px; font-weight: 700; text-align: center; color: var(--text-main); }
+        .val-actual { color: var(--success); }
+
+        /* Chart Section */
+        .chart-container {
+            background: var(--bg-card); border: 1px solid var(--border-color);
+            border-radius: 16px; padding: 25px; flex-grow: 1; min-height: 420px;
+            box-shadow: var(--shadow);
+        }
+        .chart-controls button {
+            background: var(--bg-body); border: 1px solid var(--border-color); color: var(--text-muted);
+            padding: 6px 16px; border-radius: 20px; font-size: 12px; margin-left: 5px;
+        }
+        .chart-controls button.active { background: var(--purple); color: white; border-color: var(--purple); }
+
+        /* Table History */
+        .table-responsive { overflow-x: auto; border-radius: 12px; border: 1px solid var(--border-color); }
+        table.full-table { width: 100%; border-collapse: collapse; background: var(--bg-card); min-width: 900px; }
+        .full-table th { background: var(--bg-body); color: var(--primary); position: sticky; top: 0; z-index: 10; padding: 12px; font-size: 13px; text-align: center; border-bottom: 1px solid var(--border-color); }
+        .full-table td { padding: 10px; border-bottom: 1px solid var(--border-color); border-right: 1px solid var(--border-color); font-size: 13px; text-align: center; color: var(--text-main); }
+        .val-zero { color: var(--text-muted); opacity: 0.5; }
+
+        /* Mobile */
+        @media (max-width: 900px) {
+            .layout-row { flex-direction: column; }
+            .summary-card { width: 100%; }
+            .header-title { display: none; } /* Hemat tempat di HP */
         }
     </style>
 </head>
@@ -198,139 +222,187 @@
 
 <div id="loginPage">
     <div class="login-box">
-        <img src="phi.png" alt="Logo" style="height:60px; margin-bottom:20px;">
-        <h3>SYSTEM LOGIN</h3>
-        <input id="username" placeholder="Username" type="text">
+        <img src="phi.png" alt="Logo" class="login-logo">
+        <h2>USER LOGIN</h2>
+        <p style="color: var(--text-muted); margin-bottom: 20px; font-size: 14px;">Production Monitoring System</p>
+        <input id="username" placeholder="Username" type="text" autocomplete="off">
         <input id="password" type="password" placeholder="Password">
-        <button onclick="doLogin()">MASUK</button>
-        <p id="error" style="color:var(--danger); margin-top:10px; font-size:12px;"></p>
+        <button onclick="doLogin()">LOGIN</button>
+        <p id="error" style="margin-top:15px; font-size:13px;"></p>
     </div>
 </div>
 
-<div id="dashboardPage" style="display:none;">
-    
+<div id="dashboardPage">
     <header>
-        <div class="header-brand">
+        <div class="header-left">
             <img src="phi.png" alt="Logo" class="header-logo">
-            <div class="header-text">
-                <h1>PASIFIC HARVEST</h1>
-                <p>INTEGRATED IOT SYSTEM</p>
-            </div>
+            <span class="header-title">COUNTER PRODUCTION PHI</span>
         </div>
-
-        <div class="desktop-nav">
-            <span id="clockDesktop" class="header-clock">00:00:00</span>
-            <select id="machineSelectDesktop">
-                <option value="machine01|L1">Line 01</option>
-                <option value="machine02|L2">Line 02</option>
-                <option value="machine03|L3">Line 03</option>
-                <option value="machine04|L4">Line 04</option>
-                <option value="machine05|L5">Line 05</option>
-                <option value="machine06|L6">Line 06</option>
+        
+        <nav>
+            <span id="clock" style="font-family: monospace; font-weight:600; color:var(--text-main)"></span>
+            
+            <select id="machineSelect">
+                <option value="machine01|L1">Machine 01</option>
+                <option value="machine02|L2">Machine 02</option>
+                <option value="machine03|L3">Machine 03</option>
+                <option value="machine04|L4">Machine 04</option>
+                <option value="machine05|L5">Machine 05</option>
+                <option value="machine06|L6">Machine 06</option>
             </select>
-            <button onclick="manualSave()" style="background:var(--success)">Save</button>
-            <button onclick="resetCounter()" style="background:var(--danger)">Reset</button>
-            <button onclick="exportToExcel()" style="background:#10b981">Excel</button>
-            <button onclick="toggleTheme()">Theme</button>
-            <button onclick="logout()">Logout</button>
-        </div>
 
-        <div style="display:flex; align-items:center; gap:10px;" class="mobile-only-header">
-            <span id="clockMobile" class="header-clock" style="display:block; @media(min-width:769px){display:none}">00.00</span>
-            <div class="mobile-menu-btn" onclick="toggleSettings(true)">⋮</div>
-        </div>
+            <button onclick="showDashboard()" title="Dashboard">Dashboard</button>
+            <button onclick="showHistory()" title="History">History</button>
+            <button onclick="manualSave()" style="color:var(--success); border-color:var(--success)">Save</button>
+            <button onclick="resetCounter()" style="color:var(--danger); border-color:var(--danger)">Reset</button>
+            <button onclick="toggleTheme()" class="btn-theme" title="Switch Theme">◑</button>
+            <button onclick="logout()">Logout</button>
+        </nav>
     </header>
 
-    <div class="container">
+    <div class="container" id="dashboardView">
+        <div class="total-box">
+            <div class="label">Total Production Today</div>
+            <h1 id="total">0</h1>
+        </div>
+
+        <div class="section-header">
+            <span class="badge bg-primary">CLUB CAN</span>
+            <span class="section-title">LINE 1-4 & 7-14</span>
+        </div>
         
-        <div id="tab-dashboard" class="tab-content active">
-            <div class="summary-box" style="padding:15px; display:flex; justify-content:space-between; align-items:center; background: linear-gradient(90deg, var(--bg-card), var(--bg-app)); border:1px solid var(--primary);">
-                <span style="font-size:12px; color:var(--text-grey)">REALTIME TOTAL</span>
-                <span id="totalDisplay" style="font-size:24px; font-weight:900; color:var(--primary)">0</span>
+        <div class="layout-row">
+            <div class="summary-card" style="border-left: 4px solid var(--primary);">
+                <div class="summary-header" style="color: var(--primary)">OVERALL CLUB</div>
+                <div class="summary-row">
+                    <div class="summary-label">Total Actual</div>
+                    <div class="summary-value" id="totalClubActual" style="color: var(--text-main)">0</div>
+                </div>
+                <div class="summary-row">
+                    <div class="summary-label">Total Prediction</div>
+                    <div class="summary-value" id="totalClubPrediction" style="color: var(--primary)">0</div>
+                </div>
+                <div class="summary-row">
+                    <div class="summary-label">Avg Efficiency</div>
+                    <div class="summary-value" id="totalClubEff">0%</div>
+                </div>
             </div>
-
-            <div id="cardsContainer" class="grid-container"></div>
+            <div class="grid" id="clubCanContainer"></div>
         </div>
 
-        <div id="tab-totals" class="tab-content">
-            <h4 style="color:var(--text-grey); margin: 20px 0 10px;">PRODUCTION SUMMARY</h4>
+        <div class="section-header">
+            <span class="badge bg-warning">POUCH CAN</span>
+            <span class="section-title">LINE 5-6</span>
+        </div>
+
+        <div class="layout-row">
+            <div class="summary-card" style="border-left: 4px solid var(--warning);">
+                <div class="summary-header" style="color: var(--warning)">OVERALL POUCH</div>
+                <div class="summary-row">
+                    <div class="summary-label">Total Actual</div>
+                    <div class="summary-value" id="totalPouchActual" style="color: var(--text-main)">0</div>
+                </div>
+                <div class="summary-row">
+                    <div class="summary-label">Total Prediction</div>
+                    <div class="summary-value" id="totalPouchPrediction" style="color: var(--warning)">0</div>
+                </div>
+                <div class="summary-row">
+                    <div class="summary-label">Avg Efficiency</div>
+                    <div class="summary-value" id="totalPouchEff">0%</div>
+                </div>
+            </div>
+            <div class="grid" id="pouchCanContainer"></div>
+        </div>
+
+        <div class="section-header" style="margin-top: 50px;">
+            <span class="badge bg-purple">ANALYTICS</span>
+            <span class="section-title">OVERALL PERFORMANCE</span>
+        </div>
+        
+        <div class="layout-row">
+            <div class="summary-card" style="border-left: 4px solid var(--purple);">
+                <div class="summary-header" style="color: var(--purple)">OVERALL PERFORMANCE</div>
+                <div class="summary-row">
+                    <div class="summary-label">Overall Actual</div>
+                    <div class="summary-value" id="grandTotalActual" style="color: var(--purple)">0</div>
+                </div>
+                <div class="summary-row">
+                    <div class="summary-label">Overall Prediction</div>
+                    <div class="summary-value" id="grandTotalPrediction" style="color: var(--text-main)">0</div>
+                </div>
+                <div class="summary-row">
+                    <div class="summary-label">Overall Efficiency</div>
+                    <div class="summary-value" id="grandTotalEff">0%</div>
+                </div>
+            </div>
             
-            <div class="summary-box" style="border-left: 4px solid var(--primary)">
-                <div style="color:var(--primary); font-weight:bold; margin-bottom:10px;">CLUB CAN (Line 1-4, 7-14)</div>
-                <div class="summary-row"><span>Actual</span><span id="totalClubActual">0</span></div>
-                <div class="summary-row"><span>Prediction</span><span id="totalClubPrediction">0</span></div>
-                <div class="summary-row"><span>Efficiency</span><span id="totalClubEff">0%</span></div>
-            </div>
-
-            <div class="summary-box" style="border-left: 4px solid var(--warning)">
-                <div style="color:var(--warning); font-weight:bold; margin-bottom:10px;">POUCH CAN (Line 5-6)</div>
-                <div class="summary-row"><span>Actual</span><span id="totalPouchActual">0</span></div>
-                <div class="summary-row"><span>Prediction</span><span id="totalPouchPrediction">0</span></div>
-                <div class="summary-row"><span>Efficiency</span><span id="totalPouchEff">0%</span></div>
-            </div>
-
-            <div class="summary-box" style="border-left: 4px solid var(--purple)">
-                <div style="color:var(--purple); font-weight:bold; margin-bottom:10px;">GRAND TOTAL</div>
-                <div class="summary-row"><span>Total Actual</span><span id="grandTotalActual" style="font-size:18px; font-weight:bold">0</span></div>
-                <div class="summary-row"><span>Total Prediction</span><span id="grandTotalPrediction">0</span></div>
-                <div class="summary-row"><span>Avg Efficiency</span><span id="grandTotalEff">0%</span></div>
-            </div>
-        </div>
-
-        <div id="tab-grafik" class="tab-content">
-            <div class="summary-box">
-                <div style="display:flex; justify-content:space-between; margin-bottom:15px; align-items:center;">
-                    <span style="font-weight:bold">CHART</span>
-                    <div style="display:flex; gap:5px;">
-                        <button onclick="updateChartPeriod('daily', this)" style="font-size:10px; padding:4px 8px; border-radius:10px; border:none; background:var(--primary); color:white;">Day</button>
-                        <button onclick="updateChartPeriod('weekly', this)" style="font-size:10px; padding:4px 8px; border-radius:10px; border:none; background:var(--bg-nav); color:grey;">Week</button>
+            <div class="chart-container">
+                <div class="chart-header">
+                    <div class="chart-legend-custom">
+                        <div class="legend-item"><span class="dot" style="background:var(--success)"></span> GRAFIK</div>
+                        <div class="legend-item"><span class="dot" style="background:var(--danger)"></span> TOTAL PRODUCTION</div>
+                        <div class="legend-item"><span class="dot" style="background:var(--warning); height: 3px; border-radius:0"></span> PASIFIC HARVEST INDONESIA</div>
+                    </div>
+                    <div class="chart-controls">
+                        <button class="btn-chart active" onclick="updateChartPeriod('daily', this)">Hari</button>
+                        <button class="btn-chart" onclick="updateChartPeriod('weekly', this)">Minggu</button>
+                        <button class="btn-chart" onclick="updateChartPeriod('monthly', this)">Bulan</button>
                     </div>
                 </div>
-                <div style="height:300px;"><canvas id="productionChart"></canvas></div>
+                <div style="height: 320px; width: 100%;">
+                    <canvas id="productionChart"></canvas>
+                </div>
             </div>
         </div>
-
     </div>
 
-    <nav class="bottom-nav">
-        <button class="nav-item active" onclick="switchMobileTab('dashboard', this)">
-            <svg viewBox="0 0 24 24"><path d="M4 11h5V5H4v6zm0 7h5v-6H4v6zm6 0h5v-6h-5v6zm6 0h5v-6h-5v6zm-6-7h5V5h-5v6zm6-6v6h5V5h-5z"/></svg>
-            <span>DASHBOARD</span>
-        </button>
-        <button class="nav-item" onclick="switchMobileTab('totals', this)">
-            <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 9h-2V7h2v5zm4 0h-2V7h2v5zm-2 6H8v-4h6v4z"/></svg>
-            <span>TOTALS</span>
-        </button>
-        <button class="nav-item" onclick="switchMobileTab('grafik', this)">
-            <svg viewBox="0 0 24 24"><path d="M3.5 18.49l6-6.01 4 4L22 6.92l-1.41-1.41-7.09 7.97-4-4L2 16.99z"/></svg>
-            <span>GRAFIK</span>
-        </button>
-    </nav>
-
-    <div id="mobileSettings" class="mobile-overlay">
-        <div class="settings-card">
-            <h3 style="margin-top:0; color:var(--text-white); border-bottom:1px solid var(--border-color); padding-bottom:10px;">MENU</h3>
-            
-            <label style="font-size:12px; color:grey;">Pilih Mesin:</label>
-            <select id="machineSelectMobile" style="width:100%; padding:10px; margin-bottom:15px; background:var(--bg-app); color:white; border:1px solid var(--border-color);">
-                <option value="machine01|L1">Line 01</option>
-                <option value="machine02|L2">Line 02</option>
-                <option value="machine03|L3">Line 03</option>
-                <option value="machine04|L4">Line 04</option>
-                <option value="machine05|L5">Line 05</option>
-                <option value="machine06|L6">Line 06</option>
-            </select>
-
-            <button onclick="manualSave()" style="background:var(--success)">Simpan Data</button>
-            <button onclick="resetCounterMobile()" style="background:var(--danger)">Reset Line</button>
-            <button onclick="exportToExcel()" style="background:#10b981">Download Excel</button>
-            <button onclick="toggleTheme()" style="background:var(--purple)">Ganti Tema</button>
-            <button onclick="logout()" style="background:var(--bg-nav); border:1px solid var(--border-color);">Logout</button>
-            
-            <div onclick="toggleSettings(false)" style="text-align:center; margin-top:15px; color:var(--danger); cursor:pointer;">Tutup</div>
+    <div class="container" id="historyView" style="display:none">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+            <div>
+                <h2 style="margin:0; color:var(--text-main)">Data Logger </h2>
+                <span style="font-size:13px; color:var(--text-muted)">Riwayat data penyimpanan akhir shift</span>
+            </div>
+            <div style="display:flex; gap:10px">
+                <button onclick="exportToExcel()" style="background:#10b981; border:none; color:white; padding:10px 20px; border-radius:8px;">Download Excel</button>
+                <button onclick="showDashboard()">Back</button>
+            </div>
+        </div>
+        <div class="table-responsive">
+            <table class="full-table" id="historyTable">
+                <thead>
+                    <tr>
+                        <th style="min-width: 160px; text-align:left;">Waktu</th>
+                        <th style="min-width: 100px;">Total Actual</th>
+                        <th style="min-width: 100px;">Total Pred.</th>
+                        <th>L1</th><th>L2</th><th>L3</th><th>L4</th>
+                        <th style="background:var(--bg-card); border-bottom:2px solid var(--warning)">L5</th>
+                        <th style="background:var(--bg-card); border-bottom:2px solid var(--warning)">L6</th>
+                        <th>L7</th><th>L8</th><th>L9</th><th>L10</th><th>L11</th><th>L12</th><th>L13</th><th>L14</th>
+                    </tr>
+                </thead>
+                <tbody id="historyBody"></tbody>
+            </table>
         </div>
     </div>
 
+    <div class="container" id="sensorHistoryView" style="display:none">
+        <div style="margin-bottom:20px; display:flex; justify-content:space-between; align-items:center;">
+            <h2 id="sensorTitle" style="color:var(--text-main); margin:0;">Line Detail</h2>
+            <button onclick="showDashboard()">Back</button>
+        </div>
+        <div class="table-responsive">
+            <table class="full-table">
+                <thead><tr><th style="text-align:left">Waktu</th><th style="text-align:left">Nilai</th></tr></thead>
+                <tbody id="sensorHistoryTable"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <footer>
+        System: <span id="status" style="color:var(--success)">Connecting...</span> | 
+        Cloud: <span id="firebaseStatus" style="color:var(--primary)">Syncing...</span> | 
+        PASIFIC HARVEST INDONESIA &copy; 2026
+    </footer>
 </div>
 
 <script type="module">
@@ -350,7 +422,7 @@
     const app = initializeApp(firebaseConfig);
     const database = getDatabase(app);
 
-    // --- VARIABLES ---
+    // --- Variables ---
     let latestCounter = {};
     let globalStartTime = null; 
     let manualOffset = 0; 
@@ -359,48 +431,50 @@
     let myChart = null;
     let historyDataCache = [];
 
-    // --- HELPER UI ---
+    // --- Helper for Colors ---
     const getVar = (name) => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
 
-    // --- TAB SWITCHER (MOBILE ONLY) ---
-    window.switchMobileTab = (tabName, btn) => {
-        // Hanya jalan jika di layar kecil (mobile)
-        if(window.innerWidth <= 768) {
-            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-            document.getElementById(`tab-${tabName}`).classList.add('active');
-            
-            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-            btn.classList.add('active');
+    /* --- THEME TOGGLE LOGIC --- */
+    window.toggleTheme = () => {
+        const html = document.documentElement;
+        const current = html.getAttribute('data-theme');
+        const next = current === 'dark' ? 'light' : 'dark';
+        html.setAttribute('data-theme', next);
+        localStorage.setItem('theme', next);
+        
+        // Update Chart colors dynamically
+        if(myChart) {
+            myChart.options.scales.x.ticks.color = getVar('--text-muted');
+            myChart.options.scales.y.ticks.color = getVar('--text-muted');
+            myChart.options.scales.y.grid.color = getVar('--border-color');
+            myChart.update();
         }
     };
 
-    // --- SETTINGS MODAL ---
-    window.toggleSettings = (show) => {
-        document.getElementById('mobileSettings').style.display = show ? 'flex' : 'none';
-    };
+    // Load saved theme
+    const savedTheme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', savedTheme);
 
-    window.toggleTheme = () => {
-        const html = document.documentElement;
-        const next = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
-        html.setAttribute('data-theme', next);
-        localStorage.setItem('theme', next);
-        if(myChart) myChart.update();
-    };
-    document.documentElement.setAttribute('data-theme', localStorage.getItem('theme') || 'dark');
+    /* --- FIREBASE SYNC --- */
+    function syncConfig() {
+        onValue(ref(database, 'config/productionStartTime'), (snap) => {
+            const val = snap.val();
+            if (val) { globalStartTime = val; updateUI(); } 
+            else { set(ref(database, 'config/productionStartTime'), Date.now()); }
+        });
+        onValue(ref(database, 'config/manualOffset'), (snap) => {
+            manualOffset = snap.val() || 0;
+            updateUI();
+        });
+    }
 
-    // --- CLOCK ---
-    setInterval(() => {
-        const d = new Date();
-        const t = d.toLocaleTimeString('id-ID', {hour12:false}).replace(/:/g, '.'); // Format 16.37.41
-        document.getElementById('clockDesktop').innerText = t;
-        document.getElementById('clockMobile').innerText = t;
-    }, 1000);
-
-    /* --- LOGIC UTAMA --- */
+    /* --- AUTH --- */
     window.doLogin = () => {
-        if(document.getElementById("username").value === "admin" && document.getElementById("password").value === "admin123") {
+        const u = document.getElementById("username").value;
+        const p = document.getElementById("password").value;
+        if(u === "admin" && p === "admin123") {
             sessionStorage.setItem("login", "1"); location.reload();
-        } else { document.getElementById("error").innerText = "Login Gagal!"; }
+        } else { document.getElementById("error").innerText = "Username atau Password salah!"; }
     };
     window.logout = () => { sessionStorage.clear(); location.reload(); };
 
@@ -408,127 +482,187 @@
         if(sessionStorage.getItem("login") === "1") {
             document.getElementById("loginPage").style.display = "none";
             document.getElementById("dashboardPage").style.display = "block";
-            
-            generateAllCards(); 
-            syncConfig(); 
-            loadLastCacheFromFirebase(); 
-            fetchHistoryForChart();
-            
-            setInterval(checkAutoSchedule, 10000);
-            setInterval(updateUI, 1000);
+            generateAllCards(); syncConfig(); loadLastCacheFromFirebase(); fetchHistoryForChart();
+            setInterval(checkAutoSchedule, 10000); setInterval(updateUI, 1000);
         }
     };
 
-    /* --- UI GENERATION (THE CORE CHANGE) --- */
-    function generateAllCards() {
-        const container = document.getElementById("cardsContainer");
-        container.innerHTML = "";
+    /* --- EXCEL EXPORT --- */
+    window.exportToExcel = () => {
+        if (historyDataCache.length === 0) return alert("Tidak ada data history.");
+        let csv = "\uFEFFWaktu;Total Actual;Total Prediction";
+        for (let i = 1; i <= 14; i++) csv += `;Line ${i}`;
+        csv += "\n";
+        [...historyDataCache].reverse().forEach(item => {
+            let row = `"${item.time.replace(/,/g, '')}";${item.total||0};${item.totalPrediction||0}`;
+            for (let i = 1; i <= 14; i++) row += `;${item.counter ? (item.counter[`L${i}`]||0) : 0}`;
+            csv += row + "\n";
+        });
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }));
+        link.download = `SardinesPHI_History_${new Date().toISOString().slice(0,10)}.csv`;
+        link.click();
+    };
 
+    /* --- CHART LOGIC --- */
+    window.updateChartPeriod = (period, btn) => {
+        document.querySelectorAll('.btn-chart').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        processAndRenderChart(period);
+    };
+
+    async function fetchHistoryForChart() {
+        const snap = await get(ref(database, 'history'));
+        if(snap.exists()) { historyDataCache = Object.values(snap.val()); processAndRenderChart('daily'); }
+    }
+
+    function processAndRenderChart(period) {
+        if(historyDataCache.length === 0) return;
+        const grouped = {};
+        const months = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"];
+        
+        historyDataCache.forEach(entry => {
+            let d = entry.timestamp ? new Date(entry.timestamp) : new Date();
+            let key;
+            if (period === 'daily') key = d.toLocaleDateString('id-ID', {day:'numeric', month:'short'});
+            else if (period === 'weekly') {
+                const start = new Date(d.getFullYear(), d.getMonth(), 1);
+                const week = Math.ceil((d.getDate() + start.getDay()) / 7);
+                key = `W${week} (${months[d.getMonth()]})`;
+            } else key = `${months[d.getMonth()]} ${d.getFullYear()}`;
+
+            if(!grouped[key]) grouped[key] = { act: 0, pred: 0 };
+            grouped[key].act += (entry.total || 0);
+            grouped[key].pred += (entry.totalPrediction !== undefined ? entry.totalPrediction : 470000);
+        });
+
+        const lbls = Object.keys(grouped);
+        const acts = lbls.map(k => grouped[k].act);
+        const preds = lbls.map(k => grouped[k].pred);
+        renderChart(lbls, acts, preds);
+    }
+
+    function renderChart(labels, actuals, predictions) {
+        const ctx = document.getElementById('productionChart').getContext('2d');
+        if (myChart) myChart.destroy();
+        
+        myChart = new Chart(ctx, {
+            data: {
+                labels: labels,
+                datasets: [
+                    { type: 'line', label: 'Target', data: predictions, borderColor: getVar('--warning'), backgroundColor: getVar('--warning'), borderWidth: 2, borderDash: [6, 4], pointRadius: 0, tension: 0.3, order: 1 },
+                    { type: 'bar', label: 'Actual', data: actuals, backgroundColor: ctx => {
+                        const i = ctx.dataIndex; return actuals[i] >= predictions[i] ? getVar('--success') : getVar('--danger');
+                    }, borderRadius: 6, order: 2, barPercentage: 0.6 }
+                ]
+            },
+            options: {
+                responsive: true, 
+                maintainAspectRatio: false,
+                scales: {
+                    y: { 
+                        beginAtZero: true, 
+                        grace: '5%', 
+                        grid: { color: getVar('--border-color'), borderDash: [4, 4] }, 
+                        ticks: { 
+                            stepSize: 1000, 
+                            color: getVar('--text-muted'), 
+                            callback: v => v >= 1000 ? (v/1000).toFixed(0)+'k' : v 
+                        } 
+                    },
+                    x: { grid: { display: false }, ticks: { color: getVar('--text-muted') } }
+                },
+                plugins: { legend: { display: false }, tooltip: { backgroundColor: getVar('--bg-header'), titleColor: getVar('--text-main'), bodyColor: getVar('--text-main'), borderColor: getVar('--border-color'), borderWidth: 1 } }
+            }
+        });
+    }
+
+    /* --- MQTT --- */
+    const client = mqtt.connect("wss://c836c913dd894d7db71ce06137b51f4e.s1.eu.hivemq.cloud:8884/mqtt", { username: "adminphi123", password: "Phi12345", reconnectPeriod: 2000 });
+    client.on("connect", () => { document.getElementById("status").innerText = "Connected"; for(let i=1; i<=6; i++) client.subscribe(`iot/esp32/machine0${i}/counter`); });
+    client.on("message", (t, m) => {
+        try {
+            const d = JSON.parse(m.toString());
+            const mach = t.split('/')[2];
+            if(Object.values(d.counter).every(v=>v===0) && d.reset_source!=="web") {}
+            Object.assign(latestCounter, d.counter);
+            set(ref(database, `lastCache/${mach}`), d);
+            document.getElementById("firebaseStatus").innerText = "Synced";
+            updateUI();
+        } catch(e) { console.error(e); }
+    });
+
+    /* --- UI LOGIC --- */
+    function generateAllCards() {
+        const c1 = document.getElementById("clubCanContainer"); const c2 = document.getElementById("pouchCanContainer");
+        c1.innerHTML = ""; c2.innerHTML = "";
         for(let i=1; i<=14; i++) {
             const isP = (i===5||i===6);
-            const badge = isP ? "POUCHCAN" : "CLUBCAN";
-            const badgeClass = isP ? "pouch" : "";
-            
-            // Layout Kartu Baru (Mirip Screenshot)
+            const style = isP ? "color:var(--warning)" : "color:var(--primary)";
             const html = `
-            <div class="machine-card">
-                <div class="mc-header">
-                    <div style="display:flex; align-items:center; gap:8px;">
-                        <span class="mc-title">LINE ${i.toString().padStart(2,'0')}</span>
-                        <span class="mc-badge ${badgeClass}">${badge}</span>
-                    </div>
-                    <span class="mc-cpm">${rates[i-1]} CPM</span>
+            <div class="card" onclick="showSensorHistory(${i})" style="${isP?'border-left:4px solid var(--warning)':'border-left:4px solid var(--primary)'}">
+                <div class="card-header">
+                    <h3 class="card-title">LINE ${i.toString().padStart(2,'0')}</h3>
+                    <span class="rate-badge">${rates[i-1]}/m</span>
                 </div>
-                <div class="mc-body">
-                    <div class="mc-stat">
-                        <div class="stat-label">ACTUAL</div>
-                        <div class="stat-val" id="L${i}">0</div>
-                    </div>
-                    <div class="mc-stat">
-                        <div class="stat-label">PREDICT</div>
-                        <div class="stat-val" id="P${i}">0</div>
-                    </div>
-                    <div class="mc-stat">
-                        <div class="stat-label">EFF %</div>
-                        <div class="stat-val" id="E${i}">0%</div>
-                    </div>
-                </div>
+                <table>
+                    <tr><th>ACTUAL</th><th>PRED.</th><th>EFF.</th></tr>
+                    <tr><td class="val-actual" id="L${i}">0</td><td id="P${i}" style="${style}">0</td><td id="E${i}">0%</td></tr>
+                </table>
             </div>`;
-            container.innerHTML += html;
+            if(isP) c2.innerHTML+=html; else c1.innerHTML+=html;
         }
     }
 
-    /* --- DATA LOGIC --- */
     function updateUI() {
         if(!globalStartTime) return;
         const mins = Math.max(0, Date.now() - globalStartTime) / 60000;
-        
         let gTot=0, cAct=0, cPred=0, pAct=0, pPred=0;
 
         for(let i=1; i<=14; i++) {
             const act = latestCounter[`L${i}`] || 0;
             const pred = Math.floor(rates[i-1] * mins);
-            const eff = pred>0 ? ((act/pred)*100).toFixed(0)+'%' : '0%';
-            
+            const eff = pred>0 ? ((act/pred)*100).toFixed(1)+'%' : '0%';
             const isP = (i===5||i===6);
             if(isP) { pAct+=act; pPred+=pred; } else { cAct+=act; cPred+=pred; }
             
-            // Update Card
-            const elL = document.getElementById(`L${i}`);
-            if(elL) {
-                elL.innerText = act; 
-                document.getElementById(`P${i}`).innerText = pred; 
-                const eEl = document.getElementById(`E${i}`);
-                eEl.innerText = eff;
-                eEl.style.color = parseFloat(eff)>=90 ? getVar('--success') : getVar('--danger');
+            const el = document.getElementById(`L${i}`);
+            if(el) {
+                el.innerText = act; document.getElementById(`P${i}`).innerText = pred; 
+                const eEl = document.getElementById(`E${i}`); eEl.innerText = eff;
+                eEl.style.color = parseFloat(eff)>=90 ? getVar('--success') : parseFloat(eff)>=70 ? getVar('--warning') : getVar('--danger');
             }
             gTot+=act;
         }
-        
-        const finalTotal = gTot + manualOffset;
-        
-        // Update di kedua tempat (Header & Totals Tab)
-        document.getElementById("totalDisplay").innerText = finalTotal.toLocaleString(); 
-        
-        // Update Summary Arrays
-        updateSum('totalClub', cAct, cPred);
-        updateSum('totalPouch', pAct, pPred);
-        updateSum('grandTotal', finalTotal, cPred+pPred);
+        const final = gTot + manualOffset;
+        document.getElementById("total").innerText = final.toLocaleString();
+        document.getElementById("clock").innerText = new Date().toLocaleString('id-ID');
+        updSum("totalClub", cAct, cPred); updSum("totalPouch", pAct, pPred); updSum("grandTotal", final, cPred+pPred);
     }
 
-    function updateSum(id, act, pred) {
+    function updSum(id, act, pred) {
         document.getElementById(`${id}Actual`).innerText = act.toLocaleString();
         document.getElementById(`${id}Prediction`).innerText = pred.toLocaleString();
-        const eff = pred>0 ? ((act/pred)*100).toFixed(0)+'%' : '0%';
-        document.getElementById(`${id}Eff`).innerText = eff;
+        const eff = pred>0 ? ((act/pred)*100).toFixed(1)+'%' : '0%';
+        const el = document.getElementById(`${id}Eff`); el.innerText = eff;
+        el.style.color = parseFloat(eff)>=90 ? getVar('--success') : parseFloat(eff)>=70 ? getVar('--warning') : getVar('--danger');
     }
 
-    /* --- RESET & DATA --- */
+    /* --- RESET & SAVE --- */
     window.resetCounter = async () => {
-        const val = document.getElementById("machineSelectDesktop").value; // Ambil dari desktop select
-        processReset(val);
-    };
-    
-    // Fungsi khusus untuk tombol reset di mobile modal
-    window.resetCounterMobile = async () => {
-        const val = document.getElementById("machineSelectMobile").value; // Ambil dari mobile select
-        processReset(val);
-        toggleSettings(false); // Tutup modal
-    };
-
-    async function processReset(val) {
+        const val = document.getElementById("machineSelect").value;
         const [mach, line] = val.split("|");
-        if(confirm(`Reset ${line}?`)) {
+        if(confirm(`Reset ${line}? Total hari ini tidak akan berkurang.`)) {
             const curr = latestCounter[line] || 0;
             await set(ref(database, 'config/manualOffset'), manualOffset + curr);
             client.publish(`iot/esp32/${mach}/cmd`, JSON.stringify({cmd:"RESET", reset_source:"web"}));
         }
-    }
+    };
 
     function checkAutoSchedule() {
         const d = new Date();
-        if(d.getHours()===15 && d.getMinutes()===10 && !hasAutoSaved) { executeSaveAndReset(); hasAutoSaved=true; }
-        else if(d.getMinutes()!==10) hasAutoSaved=false;
+        if(d.getHours()===17 && d.getMinutes()===5) { if(!hasAutoSaved){ executeSaveAndReset(); hasAutoSaved=true; } }
+        else if(d.getMinutes()!==5) hasAutoSaved=false;
     }
 
     async function executeSaveAndReset() {
@@ -537,76 +671,51 @@
             const mins = Math.max(0, Date.now() - globalStartTime) / 60000;
             for(let i=1; i<=14; i++) { act += (latestCounter[`L${i}`]||0); pred += Math.floor(rates[i-1]*mins); }
         }
-        await push(ref(database, 'history'), { time: new Date().toLocaleString('id-ID'), timestamp: Date.now(), total: act, totalPrediction: pred, counter: {...latestCounter} });
-        for(let i=1; i<=6; i++) client.publish(`iot/esp32/machine0${i}/cmd`, JSON.stringify({cmd:"RESET", reset_source:"web"}));
-        await set(ref(database, 'config/productionStartTime'), Date.now());
-        await set(ref(database, 'config/manualOffset'), 0);
-        latestCounter={}; fetchHistoryForChart(); updateUI();
+        try {
+            await push(ref(database, 'history'), { time: new Date().toLocaleString('id-ID'), timestamp: Date.now(), total: act, totalPrediction: pred, counter: {...latestCounter} });
+            for(let i=1; i<=6; i++) client.publish(`iot/esp32/machine0${i}/cmd`, JSON.stringify({cmd:"RESET", reset_source:"web"}));
+            await set(ref(database, 'config/productionStartTime'), Date.now());
+            await set(ref(database, 'config/manualOffset'), 0);
+            latestCounter={}; fetchHistoryForChart(); updateUI();
+        } catch(e) { console.error(e); }
     }
-    
-    window.manualSave = () => { if(confirm("Simpan & Reset Akhir Shift?")) executeSaveAndReset(); };
+    window.manualSave = () => { if(confirm("Simpan & Reset Total (Akhir Shift)?")) executeSaveAndReset(); };
 
-    /* --- EXCEL --- */
-    window.exportToExcel = () => {
-        if (historyDataCache.length === 0) return alert("No Data");
-        let csv = "\uFEFFWaktu;Total;Pred"; for(let i=1;i<=14;i++) csv+=`;L${i}`; csv+="\n";
-        [...historyDataCache].reverse().forEach(h => {
-            let row = `"${h.time.replace(/,/g,'')}";${h.total};${h.totalPrediction}`;
-            for(let i=1;i<=14;i++) row+=`;${h.counter?h.counter[`L${i}`]||0:0}`;
-            csv+=row+"\n";
-        });
-        const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([csv],{type:'text/csv'})); a.download = `Log_${new Date().toISOString().slice(0,10)}.csv`; a.click();
+    /* --- NAV --- */
+    window.showDashboard = () => { document.getElementById("dashboardView").style.display="block"; document.getElementById("historyView").style.display="none"; document.getElementById("sensorHistoryView").style.display="none"; };
+    
+    window.showHistory = async () => {
+        document.getElementById("dashboardView").style.display="none"; document.getElementById("historyView").style.display="block";
+        const snap = await get(ref(database, 'history'));
+        const tbody = document.getElementById("historyBody"); tbody.innerHTML="";
+        if(snap.exists()) {
+            historyDataCache = Object.values(snap.val());
+            [...historyDataCache].reverse().forEach(h => {
+                let row = `<tr><td style="text-align:left; font-weight:600">${h.time}</td><td style="font-weight:700; color:var(--text-main)">${h.total?.toLocaleString()||0}</td><td style="color:var(--text-muted)">${h.totalPrediction?.toLocaleString()||'-'}</td>`;
+                for(let i=1; i<=14; i++) {
+                    let v = h.counter?h.counter[`L${i}`]||0:0;
+                    row+=`<td class="${v>0?'val-active':'val-zero'}" style="${(i===5||i===6)?'background:rgba(245, 158, 11, 0.1)':''}">${v}</td>`;
+                }
+                tbody.innerHTML += row + "</tr>";
+            });
+        }
     };
 
-    /* --- CHART --- */
-    window.updateChartPeriod = (p,b) => { processAndRenderChart(p); };
-    async function fetchHistoryForChart() {
+    window.showSensorHistory = async (id) => {
+        document.getElementById("dashboardView").style.display="none"; document.getElementById("sensorHistoryView").style.display="block";
+        document.getElementById("sensorTitle").innerText = `LINE ${id} DETAIL`;
         const snap = await get(ref(database, 'history'));
-        if(snap.exists()) { historyDataCache = Object.values(snap.val()); processAndRenderChart('daily'); }
-    }
-    function processAndRenderChart(period) {
-        if(historyDataCache.length===0) return;
-        const grouped={}; const months=["Jan","Feb","Mar","Apr","Mei","Jun","Jul","Agu","Sep","Okt","Nov","Des"];
-        historyDataCache.forEach(e => {
-            let d = e.timestamp ? new Date(e.timestamp) : new Date();
-            let k = period==='daily' ? d.toLocaleDateString('id-ID',{day:'numeric',month:'short'}) : (period==='weekly' ? `W${Math.ceil((d.getDate()+(new Date(d.getFullYear(),d.getMonth(),1)).getDay())/7)}` : months[d.getMonth()]);
-            if(!grouped[k]) grouped[k]={act:0,pred:0};
-            grouped[k].act+=e.total||0; grouped[k].pred+=(e.totalPrediction||e.total);
+        const t = document.getElementById("sensorHistoryTable"); t.innerHTML="";
+        if(snap.exists()) Object.values(snap.val()).reverse().forEach(h => {
+            const v = h.counter ? h.counter[`L${id}`]||0 : 0;
+            t.innerHTML+=`<tr><td style="text-align:left">${h.time}</td><td style="text-align:left; color:${v>0?getVar('--success'):getVar('--text-muted')}">${v}</td></tr>`;
         });
-        const k = Object.keys(grouped);
-        renderChart(k, k.map(x=>grouped[x].act), k.map(x=>grouped[x].pred));
-    }
-    function renderChart(l, a, p) {
-        const ctx = document.getElementById('productionChart').getContext('2d');
-        if(myChart) myChart.destroy();
-        myChart = new Chart(ctx, {
-            data: { labels: l, datasets: [
-                { type:'line', label:'Target', data:p, borderColor:'#fbbf24', borderWidth:2, pointRadius:0 },
-                { type:'bar', label:'Actual', data:a, backgroundColor: c=>c.raw>=p[c.dataIndex]?'#22c55e':'#ef4444' }
-            ]},
-            options: { responsive:true, maintainAspectRatio:false, scales:{ y:{ticks:{stepSize:1000, color:'#94a3b8', callback:v=>v>=1000?(v/1000).toFixed(0)+'k':v}, grid:{color:'#2d3748'}}, x:{grid:{display:false}, ticks:{color:'#94a3b8'}} }, plugins:{legend:{display:false}} }
-        });
-    }
+    };
 
-    /* --- MQTT & FIREBASE --- */
-    function syncConfig() {
-        onValue(ref(database, 'config/productionStartTime'), (s) => { const v=s.val(); if(v){globalStartTime=v;updateUI();}else{set(ref(database,'config/productionStartTime'),Date.now())} });
-        onValue(ref(database, 'config/manualOffset'), (s) => { manualOffset=s.val()||0; updateUI(); });
-    }
     async function loadLastCacheFromFirebase() {
         const snap = await get(ref(database, 'lastCache'));
         if(snap.exists()) { Object.keys(snap.val()).forEach(m => { if(snap.val()[m].counter) Object.assign(latestCounter, snap.val()[m].counter); }); updateUI(); }
     }
-    const client = mqtt.connect("wss://c836c913dd894d7db71ce06137b51f4e.s1.eu.hivemq.cloud:8884/mqtt", { username: "adminphi123", password: "Phi12345", reconnectPeriod: 2000 });
-    client.on("connect", () => { for(let i=1; i<=6; i++) client.subscribe(`iot/esp32/machine0${i}/counter`); });
-    client.on("message", (t, m) => {
-        try {
-            const d = JSON.parse(m.toString()); const mach = t.split('/')[2];
-            Object.assign(latestCounter, d.counter);
-            set(ref(database, `lastCache/${mach}`), d);
-            updateUI();
-        } catch(e) {}
-    });
 </script>
 </body>
 </html>
