@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>PASIFIC HARVEST INDONESIA</title>
+    <title>PASIFIK HARVEST INDONESIA</title>
     
     <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -281,8 +281,8 @@
                     <div class="summary-value" id="totalClubActual" style="color: var(--text-main)">0</div>
                 </div>
                 <div class="summary-row">
-                    <div class="summary-label">Total Prediction</div>
-                    <div class="summary-value" id="totalClubPrediction" style="color: var(--primary)">0</div>
+                    <div class="summary-label">Total Teorythical</div>
+                    <div class="summary-value" id="totalClubTeorythical" style="color: var(--primary)">0</div>
                 </div>
                 <div class="summary-row">
                     <div class="summary-label">Avg Efficiency</div>
@@ -293,27 +293,27 @@
         </div>
 
         <div class="section-header m-hide-total m-hide-grafik">
-            <span class="badge bg-warning">POUCH CAN</span>
+            <span class="badge bg-warning">ROUND CAN</span>
             <span class="section-title">LINE 5-6</span>
         </div>
 
         <div class="layout-row">
             <div class="summary-card m-hide-dashboard m-hide-grafik" style="border-left: 4px solid var(--warning);">
-                <div class="summary-header" style="color: var(--warning)">OVERALL POUCH</div>
+                <div class="summary-header" style="color: var(--warning)">OVERALL ROUND</div>
                 <div class="summary-row">
                     <div class="summary-label">Total Actual</div>
-                    <div class="summary-value" id="totalPouchActual" style="color: var(--text-main)">0</div>
+                    <div class="summary-value" id="totalRoundhActual" style="color: var(--text-main)">0</div>
                 </div>
                 <div class="summary-row">
-                    <div class="summary-label">Total Prediction</div>
-                    <div class="summary-value" id="totalPouchPrediction" style="color: var(--warning)">0</div>
+                    <div class="summary-label">Total Teorythical</div>
+                    <div class="summary-value" id="totalRoundTeorythical" style="color: var(--warning)">0</div>
                 </div>
                 <div class="summary-row">
                     <div class="summary-label">Avg Efficiency</div>
-                    <div class="summary-value" id="totalPouchEff">0%</div>
+                    <div class="summary-value" id="totalRoundEff">0%</div>
                 </div>
             </div>
-            <div class="grid m-hide-total m-hide-grafik" id="pouchCanContainer"></div>
+            <div class="grid m-hide-total m-hide-grafik" id="roundCanContainer"></div>
         </div>
 
         <div class="section-header m-hide-dashboard m-hide-total" style="margin-top: 50px;">
@@ -329,8 +329,8 @@
                     <div class="summary-value" id="grandTotalActual" style="color: var(--purple)">0</div>
                 </div>
                 <div class="summary-row">
-                    <div class="summary-label">Overall Prediction</div>
-                    <div class="summary-value" id="grandTotalPrediction" style="color: var(--text-main)">0</div>
+                    <div class="summary-label">Overall Teorythical</div>
+                    <div class="summary-value" id="grandTotalTeorythical" style="color: var(--text-main)">0</div>
                 </div>
                 <div class="summary-row">
                     <div class="summary-label">Overall Efficiency</div>
@@ -343,7 +343,7 @@
                     <div class="chart-legend-custom">
                         <div class="legend-item"><span class="dot" style="background:var(--success)"></span> GRAFIK</div>
                         <div class="legend-item"><span class="dot" style="background:var(--danger)"></span> TOTAL PRODUCTION</div>
-                        <div class="legend-item"><span class="dot" style="background:var(--warning); height: 3px; border-radius:0"></span> PASIFIC HARVEST INDONESIA</div>
+                        <div class="legend-item"><span class="dot" style="background:var(--warning); height: 3px; border-radius:0"></span> PASIFIK HARVEST INDONESIA</div>
                     </div>
                     <div class="chart-controls">
                         <button class="btn-chart active" onclick="updateChartPeriod('daily', this)">Hari</button>
@@ -421,7 +421,7 @@
     <footer>
         System: <span id="status" style="color:var(--success)">Connecting...</span> | 
         Cloud: <span id="firebaseStatus" style="color:var(--primary)">Syncing...</span> | 
-        PASIFIC HARVEST INDONESIA &copy; 2026
+        PASIFIK HARVEST INDONESIA &copy; 2026
     </footer>
 </div>
 
@@ -527,11 +527,11 @@
 
     window.exportToExcel = () => {
         if (historyDataCache.length === 0) return alert("Tidak ada data history.");
-        let csv = "\uFEFFWaktu;Total Actual;Total Prediction";
+        let csv = "\uFEFFWaktu;Total Actual;Total Teorythical";
         for (let i = 1; i <= 14; i++) csv += `;Line ${i}`;
         csv += "\n";
         [...historyDataCache].reverse().forEach(item => {
-            let row = `"${item.time.replace(/,/g, '')}";${item.total||0};${item.totalPrediction||0}`;
+            let row = `"${item.time.replace(/,/g, '')}";${item.total||0};${item.totalTeorythical||0}`;
             for (let i = 1; i <= 14; i++) row += `;${item.counter ? (item.counter[`L${i}`]||0) : 0}`;
             csv += row + "\n";
         });
@@ -569,7 +569,7 @@
 
             if(!grouped[key]) grouped[key] = { act: 0, pred: 0 };
             grouped[key].act += (entry.total || 0);
-            grouped[key].pred += (entry.totalPrediction !== undefined ? entry.totalPrediction : 470000);
+            grouped[key].pred += (entry.totalTeorythical !== undefined ? entry.totalTeorythical : 470000);
         });
 
         const lbls = Object.keys(grouped);
@@ -578,7 +578,7 @@
         renderChart(lbls, acts, preds);
     }
 
-    function renderChart(labels, actuals, predictions) {
+    function renderChart(labels, actuals, teorythicals) {
         const ctx = document.getElementById('productionChart').getContext('2d');
         if (myChart) myChart.destroy();
         
@@ -586,9 +586,9 @@
             data: {
                 labels: labels,
                 datasets: [
-                    { type: 'line', label: 'Target', data: predictions, borderColor: getVar('--warning'), backgroundColor: getVar('--warning'), borderWidth: 2, borderDash: [6, 4], pointRadius: 0, tension: 0.3, order: 1 },
+                    { type: 'line', label: 'Target', data: teorythicals, borderColor: getVar('--warning'), backgroundColor: getVar('--warning'), borderWidth: 2, borderDash: [6, 4], pointRadius: 0, tension: 0.3, order: 1 },
                     { type: 'bar', label: 'Actual', data: actuals, backgroundColor: ctx => {
-                        const i = ctx.dataIndex; return actuals[i] >= predictions[i] ? getVar('--success') : getVar('--danger');
+                        const i = ctx.dataIndex; return actuals[i] >= teorythicals[i] ? getVar('--success') : getVar('--danger');
                     }, borderRadius: 6, order: 2, barPercentage: 0.6 }
                 ]
             },
@@ -628,7 +628,7 @@
     });
 
     function generateAllCards() {
-        const c1 = document.getElementById("clubCanContainer"); const c2 = document.getElementById("pouchCanContainer");
+        const c1 = document.getElementById("clubCanContainer"); const c2 = document.getElementById("roundCanContainer");
         c1.innerHTML = ""; c2.innerHTML = "";
         for(let i=1; i<=14; i++) {
             const isP = (i===5||i===6);
@@ -637,7 +637,7 @@
             <div class="card" onclick="showSensorHistory(${i})" style="${isP?'border-left:4px solid var(--warning)':'border-left:4px solid var(--primary)'}">
                 <div class="card-header">
                     <h3 class="card-title">LINE ${i.toString().padStart(2,'0')}</h3>
-                    <span class="rate-badge">${rates[i-1]}/m</span>
+                    <span class="rate-badge">${rates[i-1]}cpm</span>
                 </div>
                 <table>
                     <tr><th>ACTUAL</th><th>PRED.</th><th>EFF.</th></tr>
@@ -671,12 +671,12 @@
         const final = gTot + manualOffset;
         document.getElementById("total").innerText = final.toLocaleString();
         document.getElementById("clock").innerText = new Date().toLocaleString('id-ID');
-        updSum("totalClub", cAct, cPred); updSum("totalPouch", pAct, pPred); updSum("grandTotal", final, cPred+pPred);
+        updSum("totalClub", cAct, cPred); updSum("totalRound", pAct, pPred); updSum("grandTotal", final, cPred+pPred);
     }
 
     function updSum(id, act, pred) {
         document.getElementById(`${id}Actual`).innerText = act.toLocaleString();
-        document.getElementById(`${id}Prediction`).innerText = pred.toLocaleString();
+        document.getElementById(`${id}Teorythical`).innerText = pred.toLocaleString();
         const eff = pred>0 ? ((act/pred)*100).toFixed(1)+'%' : '0%';
         const el = document.getElementById(`${id}Eff`); el.innerText = eff;
         el.style.color = parseFloat(eff)>=90 ? getVar('--success') : parseFloat(eff)>=70 ? getVar('--warning') : getVar('--danger');
@@ -705,7 +705,7 @@
             for(let i=1; i<=14; i++) { act += (latestCounter[`L${i}`]||0); pred += Math.floor(rates[i-1]*mins); }
         }
         try {
-            await push(ref(database, 'history'), { time: new Date().toLocaleString('id-ID'), timestamp: Date.now(), total: act, totalPrediction: pred, counter: {...latestCounter} });
+            await push(ref(database, 'history'), { time: new Date().toLocaleString('id-ID'), timestamp: Date.now(), total: act, totalTeorythical: pred, counter: {...latestCounter} });
             for(let i=1; i<=6; i++) client.publish(`iot/esp32/machine0${i}/cmd`, JSON.stringify({cmd:"RESET", reset_source:"web"}));
             await set(ref(database, 'config/productionStartTime'), Date.now());
             await set(ref(database, 'config/manualOffset'), 0);
@@ -723,7 +723,7 @@
         if(snap.exists()) {
             historyDataCache = Object.values(snap.val());
             [...historyDataCache].reverse().forEach(h => {
-                let row = `<tr><td style="text-align:left; font-weight:600">${h.time}</td><td style="font-weight:700; color:var(--text-main)">${h.total?.toLocaleString()||0}</td><td style="color:var(--text-muted)">${h.totalPrediction?.toLocaleString()||'-'}</td>`;
+                let row = `<tr><td style="text-align:left; font-weight:600">${h.time}</td><td style="font-weight:700; color:var(--text-main)">${h.total?.toLocaleString()||0}</td><td style="color:var(--text-muted)">${h.totalTeorythical?.toLocaleString()||'-'}</td>`;
                 for(let i=1; i<=14; i++) {
                     let v = h.counter?h.counter[`L${i}`]||0:0;
                     row+=`<td class="${v>0?'val-active':'val-zero'}" style="${(i===5||i===6)?'background:rgba(245, 158, 11, 0.1)':''}">${v}</td>`;
