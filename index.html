@@ -393,7 +393,7 @@
                     <tr>
                         <th style="min-width: 160px; text-align:left;">Waktu</th>
                         <th style="min-width: 100px;">Total Actual</th>
-                        <th style="min-width: 100px;">Total Pred.</th>
+                        <th style="min-width: 100px;">Total Teorythical.</th>
                         <th>L1</th><th>L2</th><th>L3</th><th>L4</th>
                         <th style="background:var(--bg-card); border-bottom:2px solid var(--warning)">L5</th>
                         <th style="background:var(--bg-card); border-bottom:2px solid var(--warning)">L6</th>
@@ -567,15 +567,15 @@
                 key = `W${week} (${months[d.getMonth()]})`;
             } else key = `${months[d.getMonth()]} ${d.getFullYear()}`;
 
-            if(!grouped[key]) grouped[key] = { act: 0, pred: 0 };
+            if(!grouped[key]) grouped[key] = { act: 0, teorythical: 0 };
             grouped[key].act += (entry.total || 0);
-            grouped[key].pred += (entry.totalTeorythical !== undefined ? entry.totalTeorythical : 470000);
+            grouped[key].teorythical += (entry.totalTeorythical !== undefined ? entry.totalTeorythical : 470000);
         });
 
         const lbls = Object.keys(grouped);
         const acts = lbls.map(k => grouped[k].act);
-        const preds = lbls.map(k => grouped[k].pred);
-        renderChart(lbls, acts, preds);
+        const teorythicals = lbls.map(k => grouped[k].teorythical);
+        renderChart(lbls, acts, teorythicals);
     }
 
     function renderChart(labels, actuals, teorythicals) {
@@ -640,7 +640,7 @@
                     <span class="rate-badge">${rates[i-1]}cpm</span>
                 </div>
                 <table>
-                    <tr><th>ACTUAL</th><th>PRED.</th><th>EFF.</th></tr>
+                    <tr><th>ACTUAL</th><th>TEORYTHICAL.</th><th>EFF.</th></tr>
                     <tr><td class="val-actual" id="L${i}">0</td><td id="P${i}" style="${style}">0</td><td id="E${i}">0%</td></tr>
                 </table>
             </div>`;
@@ -651,18 +651,18 @@
     function updateUI() {
         if(!globalStartTime) return;
         const mins = Math.max(0, Date.now() - globalStartTime) / 60000;
-        let gTot=0, cAct=0, cPred=0, pAct=0, pPred=0;
+        let gTot=0, cAct=0, cTeorythical=0, pAct=0, pTeorythical=0;
 
         for(let i=1; i<=14; i++) {
             const act = latestCounter[`L${i}`] || 0;
-            const pred = Math.floor(rates[i-1] * mins);
-            const eff = pred>0 ? ((act/pred)*100).toFixed(1)+'%' : '0%';
+            const teorythical = Math.floor(rates[i-1] * mins);
+            const eff = teorythical>0 ? ((act/teorythical)*100).toFixed(1)+'%' : '0%';
             const isP = (i===5||i===6);
-            if(isP) { pAct+=act; pPred+=pred; } else { cAct+=act; cPred+=pred; }
+            if(isP) { pAct+=act; pTeorythical+=teorythical; } else { cAct+=act; cTeorythical+=teorythical; }
             
             const el = document.getElementById(`L${i}`);
             if(el) {
-                el.innerText = act; document.getElementById(`P${i}`).innerText = pred; 
+                el.innerText = act; document.getElementById(`P${i}`).innerText = teorythical; 
                 const eEl = document.getElementById(`E${i}`); eEl.innerText = eff;
                 eEl.style.color = parseFloat(eff)>=90 ? getVar('--success') : parseFloat(eff)>=70 ? getVar('--warning') : getVar('--danger');
             }
@@ -671,13 +671,13 @@
         const final = gTot + manualOffset;
         document.getElementById("total").innerText = final.toLocaleString();
         document.getElementById("clock").innerText = new Date().toLocaleString('id-ID');
-        updSum("totalClub", cAct, cPred); updSum("totalRound", pAct, pPred); updSum("grandTotal", final, cPred+pPred);
+        updSum("totalClub", cAct, cTeorythical); updSum("totalRound", pAct, pTeorythical); updSum("grandTotal", final, cTeorythical+pTeorythical);
     }
 
-    function updSum(id, act, pred) {
+    function updSum(id, act, teorythical) {
         document.getElementById(`${id}Actual`).innerText = act.toLocaleString();
-        document.getElementById(`${id}Teorythical`).innerText = pred.toLocaleString();
-        const eff = pred>0 ? ((act/pred)*100).toFixed(1)+'%' : '0%';
+        document.getElementById(`${id}Teorythical`).innerText = teorythical.toLocaleString();
+        const eff = teorythical>0 ? ((act/teorythical)*100).toFixed(1)+'%' : '0%';
         const el = document.getElementById(`${id}Eff`); el.innerText = eff;
         el.style.color = parseFloat(eff)>=90 ? getVar('--success') : parseFloat(eff)>=70 ? getVar('--warning') : getVar('--danger');
     }
@@ -699,13 +699,13 @@
     }
 
     async function executeSaveAndReset() {
-        let act = manualOffset, pred = 0;
+        let act = manualOffset, teorythical = 0;
         if(globalStartTime) {
             const mins = Math.max(0, Date.now() - globalStartTime) / 60000;
-            for(let i=1; i<=14; i++) { act += (latestCounter[`L${i}`]||0); pred += Math.floor(rates[i-1]*mins); }
+            for(let i=1; i<=14; i++) { act += (latestCounter[`L${i}`]||0); teorythical += Math.floor(rates[i-1]*mins); }
         }
         try {
-            await push(ref(database, 'history'), { time: new Date().toLocaleString('id-ID'), timestamp: Date.now(), total: act, totalTeorythical: pred, counter: {...latestCounter} });
+            await push(ref(database, 'history'), { time: new Date().toLocaleString('id-ID'), timestamp: Date.now(), total: act, totalTeorythical: teorythical, counter: {...latestCounter} });
             for(let i=1; i<=6; i++) client.publish(`iot/esp32/machine0${i}/cmd`, JSON.stringify({cmd:"RESET", reset_source:"web"}));
             await set(ref(database, 'config/productionStartTime'), Date.now());
             await set(ref(database, 'config/manualOffset'), 0);
