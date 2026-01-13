@@ -602,7 +602,7 @@
         });
     }
 
-    const client = mqtt.connect("wss://72ebeae451364089a9ebe5b5f5702548.s1.eu.hivemq.cloud:8884/mqtt", { username: "admin", password: "admin123", reconnectPeriod: 2000 });
+    const client = mqtt.connect("wss://72ebeae451364089a9ebe5b5f5702548.s1.eu.hivemq.cloud:8884/mqtt", { username: "admin", password: "Admin123", reconnectPeriod: 2000 });
     client.on("connect", () => { document.getElementById("status").innerText = "Connected"; for(let i=1; i<=6; i++) client.subscribe(`iot/esp32/machine0${i}/counter`); });
     client.on("message", (t, m) => {
         try {
