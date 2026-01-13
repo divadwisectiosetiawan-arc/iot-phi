@@ -10,7 +10,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
 
     <style>
-        /* --- 1. ORIGINAL CSS (UNTUK DESKTOP - TIDAK DIUBAH) --- */
+        /* --CSS (DESKTOP) --- */
         :root {
             --bg-body: #0f172a;
             --bg-card: #1e293b;
@@ -128,20 +128,20 @@
 
         footer { text-align: center; padding: 30px; color: var(--text-muted); font-size: 12px; }
 
-        /* --- 2. MOBILE CSS (WHATSAPP STYLE) --- */
-        /* Default: Sembunyikan elemen mobile di desktop */
+        /* CSS (MOBILE) */
+        /* MAIN : MENU */
         .mobile-header, .bottom-nav, .mobile-kebab-menu, .mobile-overlay { display: none; }
         
         @media (max-width: 900px) {
-            /* 1. Reset & Base Layout Mobile */
+            /* Reset & Base Layout Mobile */
             body { background-color: var(--whatsapp-bg); padding-bottom: 70px; } /* Space for bottom nav */
             .container { padding: 10px; margin-top: 55px; /* Space for top header */ }
             
-            /* 2. Hide Desktop Header */
+            /* Hide Desktop Header */
             .desktop-header { display: none !important; }
             .header-title { display: block; font-size: 16px; } /* Reset size */
 
-            /* 3. Show Mobile Components */
+            /* Show Mobile */
             .mobile-header {
                 display: flex; position: fixed; top: 0; left: 0; right: 0; height: 56px;
                 background: var(--whatsapp-header); color: white;
@@ -182,13 +182,13 @@
             .nav-icon { font-size: 20px; }
             .nav-label { font-size: 12px; font-weight: 500; }
 
-            /* 4. Content Visibility Logic (Tabs) */
+            /* Content Visibility Logic (Tabs) */
             /* Default: Hide sections not in active tab */
             [data-mobile-tab="dashboard"] .m-hide-dashboard { display: none !important; }
             [data-mobile-tab="total"] .m-hide-total { display: none !important; }
             [data-mobile-tab="grafik"] .m-hide-grafik { display: none !important; }
             
-            /* 5. Styling Adjustments for Mobile View */
+            /* Styling Adjustments for Mobile View */
             .layout-row { flex-direction: column; gap: 15px; }
             .summary-card { width: 100%; min-width: 0; margin-bottom: 10px; }
             .grid { grid-template-columns: repeat(2, 1fr); gap: 10px; } /* 2 kolom di HP */
@@ -198,7 +198,7 @@
             .chart-container { min-height: 300px; padding: 10px; }
             .section-header { margin-top: 15px; margin-bottom: 15px; }
 
-            /* Sembunyikan beberapa elemen footer/chart controls yang tidak perlu di HP */
+            /* Hide Element In MOBILE */
             .chart-legend-custom { display: none; }
         }
 
@@ -397,7 +397,7 @@
                         <th>L1</th><th>L2</th><th>L3</th><th>L4</th>
                         <th style="background:var(--bg-card); border-bottom:2px solid var(--warning)">L5</th>
                         <th style="background:var(--bg-card); border-bottom:2px solid var(--warning)">L6</th>
-                        <th>L7</th><th>L8</th><th>L9</th><th>L10</th><th>L11</th><th>L12</th><th>L13</th><th>L14</th>
+                        <th>L7</th><th>L8</th><th>L9</th><th>L10</th><th>L11</th><th>L12</th><th>L14</th><th>L15</th>
                     </tr>
                 </thead>
                 <tbody id="historyBody"></tbody>
