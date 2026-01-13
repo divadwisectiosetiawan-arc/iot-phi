@@ -417,13 +417,13 @@
     import { getDatabase, ref, set, onValue, push, get } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-database.js";
 
     const firebaseConfig = {
-        apiKey: "AIzaSyAcA7CYQqoig7eVaMbopIQpq9EWn1mVudA",
-        authDomain: "iot-phi.firebaseapp.com",
-        databaseURL: "https://iot-phi-default-rtdb.asia-southeast1.firebasedatabase.app",
-        projectId: "iot-phi",
+        apiKey: "AIzaSyAC8Il1tbSGONHO6mLdEoe698XVnYmoJTY",
+        authDomain: "iot-cntr.firebaseapp.com",
+        databaseURL: "https://iot-cntr-default-rtdb.asia-southeast1.firebasedatabase.app",
+        projectId: "iot-cntr",
         storageBucket: "iot-phi.firebasestorage.app",
-        messagingSenderId: "284686032428",
-        appId: "1:284686032428:web:82bec581d6c9d1a3193b89"
+        messagingSenderId: "634140620662",
+        appId: "1:634140620662:web:12912eb4d52002f1966c57"
     };
 
     const app = initializeApp(firebaseConfig);
@@ -602,7 +602,7 @@
         });
     }
 
-    const client = mqtt.connect("wss://c836c913dd894d7db71ce06137b51f4e.s1.eu.hivemq.cloud:8884/mqtt", { username: "adminphi123", password: "Phi12345", reconnectPeriod: 2000 });
+    const client = mqtt.connect("wss://72ebeae451364089a9ebe5b5f5702548.s1.eu.hivemq.cloud:8884/mqtt", { username: "admin", password: "admin123", reconnectPeriod: 2000 });
     client.on("connect", () => { document.getElementById("status").innerText = "Connected"; for(let i=1; i<=6; i++) client.subscribe(`iot/esp32/machine0${i}/counter`); });
     client.on("message", (t, m) => {
         try {
