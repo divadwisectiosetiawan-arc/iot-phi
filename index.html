@@ -10,7 +10,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
 
     <style>
-        /* --CSS (DESKTOP) --- */
+        /* --- 1. CSS (DESKTOP) --- */
         :root {
             --bg-body: #0f172a;
             --bg-card: #1e293b;
@@ -29,8 +29,8 @@
             
             /* Mobile Variables */
             --nav-height: 60px;
-            --whatsapp-header: #1f2c34; /* Warna Header WA Dark */
-            --whatsapp-bg: #111b21;    /* Warna Body WA Dark */
+            --whatsapp-header: #1f2c34;
+            --whatsapp-bg: #111b21;
         }
 
         [data-theme="light"] {
@@ -128,20 +128,16 @@
 
         footer { text-align: center; padding: 30px; color: var(--text-muted); font-size: 12px; }
 
-        /* CSS (MOBILE) */
-        /* MAIN : MENU */
+        /* --- 2. MOBILE CSS (WHATSAPP STYLE) --- */
         .mobile-header, .bottom-nav, .mobile-kebab-menu, .mobile-overlay { display: none; }
         
         @media (max-width: 900px) {
-            /* Reset & Base Layout Mobile */
-            body { background-color: var(--whatsapp-bg); padding-bottom: 70px; } /* Space for bottom nav */
-            .container { padding: 10px; margin-top: 55px; /* Space for top header */ }
+            body { background-color: var(--whatsapp-bg); padding-bottom: 70px; } 
+            .container { padding: 10px; margin-top: 55px; }
             
-            /* Hide Desktop Header */
             .desktop-header { display: none !important; }
-            .header-title { display: block; font-size: 16px; } /* Reset size */
+            .header-title { display: block; font-size: 16px; } 
 
-            /* Show Mobile */
             .mobile-header {
                 display: flex; position: fixed; top: 0; left: 0; right: 0; height: 56px;
                 background: var(--whatsapp-header); color: white;
@@ -151,7 +147,6 @@
             .mobile-title { font-weight: 600; font-size: 20px; }
             .mobile-actions button { background: none; border: none; color: white; font-size: 20px; padding: 8px; }
 
-            /* Kebab Menu Dropdown */
             .mobile-kebab-menu {
                 display: none; flex-direction: column; position: fixed; top: 5px; right: 5px;
                 background: var(--bg-card); width: 200px; border-radius: 4px;
@@ -162,12 +157,9 @@
             .kebab-item { padding: 14px 16px; color: var(--text-main); font-size: 14px; text-align: left; background: none; border: none; }
             .kebab-item:hover { background: var(--bg-body); }
             
-            .mobile-overlay {
-                display: none; position: fixed; inset: 0; z-index: 1500;
-            }
+            .mobile-overlay { display: none; position: fixed; inset: 0; z-index: 1500; }
             .mobile-overlay.show { display: block; }
 
-            /* Bottom Nav */
             .bottom-nav {
                 display: flex; position: fixed; bottom: 0; left: 0; right: 0; height: 65px;
                 background: var(--bg-card); border-top: 1px solid var(--border-color);
@@ -177,28 +169,23 @@
                 flex: 1; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center;
                 background: none; border: none; color: var(--text-muted); gap: 4px;
             }
-            .nav-item.active { color: var(--success); /* WA Green Accent */ }
+            .nav-item.active { color: var(--success); }
             .nav-item.active .nav-indicator { width: 100%; height: 3px; background: var(--success); position: absolute; top: 0; }
             .nav-icon { font-size: 20px; }
             .nav-label { font-size: 12px; font-weight: 500; }
 
-            /* Content Visibility Logic (Tabs) */
-            /* Default: Hide sections not in active tab */
             [data-mobile-tab="dashboard"] .m-hide-dashboard { display: none !important; }
             [data-mobile-tab="total"] .m-hide-total { display: none !important; }
             [data-mobile-tab="grafik"] .m-hide-grafik { display: none !important; }
             
-            /* Styling Adjustments for Mobile View */
             .layout-row { flex-direction: column; gap: 15px; }
             .summary-card { width: 100%; min-width: 0; margin-bottom: 10px; }
-            .grid { grid-template-columns: repeat(2, 1fr); gap: 10px; } /* 2 kolom di HP */
+            .grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
             .card { padding: 12px; }
             .card td { font-size: 16px; }
             .total-box h1 { font-size: 40px; }
             .chart-container { min-height: 300px; padding: 10px; }
             .section-header { margin-top: 15px; margin-bottom: 15px; }
-
-            /* Hide Element In MOBILE */
             .chart-legend-custom { display: none; }
         }
 
@@ -270,7 +257,7 @@
 
         <div class="section-header m-hide-total m-hide-grafik">
             <span class="badge bg-primary">CLUB CAN</span>
-            <span class="section-title">LINE 1-4 & 7-14</span>
+            <span class="section-title">LINE 1-4 & 7-12, 14-15</span>
         </div>
         
         <div class="layout-row">
@@ -446,7 +433,8 @@
     let globalStartTime = null; 
     let manualOffset = 0; 
     let hasAutoSaved = false; 
-    const rates = Array(14).fill(70); 
+    // Array diperbesar ke 16 agar index 15 tersedia
+    const rates = Array(16).fill(70); 
     let myChart = null;
     let historyDataCache = [];
 
@@ -461,17 +449,10 @@
     };
 
     window.switchMobileTab = (tabName, btn) => {
-        // 1. Set Active Button
         document.querySelectorAll('.bottom-nav .nav-item').forEach(b => b.classList.remove('active'));
         if(btn) btn.classList.add('active');
-
-        // 2. Set Active View via Data Attribute (CSS will handle hide/show)
         document.getElementById('dashboardView').setAttribute('data-mobile-tab', tabName);
-
-        // 3. Scroll to top
         window.scrollTo(0,0);
-
-        // 4. Resize chart if tab is Grafik
         if(tabName === 'grafik' && myChart) {
             setTimeout(() => { myChart.resize(); }, 100);
         }
@@ -528,11 +509,19 @@
     window.exportToExcel = () => {
         if (historyDataCache.length === 0) return alert("Tidak ada data history.");
         let csv = "\uFEFFWaktu;Total Actual;Total Teorythical";
-        for (let i = 1; i <= 14; i++) csv += `;Line ${i}`;
+        // Loop sampai 15, lewati 13
+        for (let i = 1; i <= 15; i++) {
+            if(i === 13) continue;
+            csv += `;Line ${i}`;
+        }
         csv += "\n";
         [...historyDataCache].reverse().forEach(item => {
             let row = `"${item.time.replace(/,/g, '')}";${item.total||0};${item.totalTeorythical||0}`;
-            for (let i = 1; i <= 14; i++) row += `;${item.counter ? (item.counter[`L${i}`]||0) : 0}`;
+            // Loop sampai 15, lewati 13
+            for (let i = 1; i <= 15; i++) {
+                if(i === 13) continue;
+                row += `;${item.counter ? (item.counter[`L${i}`]||0) : 0}`;
+            }
             csv += row + "\n";
         });
         const link = document.createElement("a");
@@ -630,7 +619,10 @@
     function generateAllCards() {
         const c1 = document.getElementById("clubCanContainer"); const c2 = document.getElementById("roundCanContainer");
         c1.innerHTML = ""; c2.innerHTML = "";
-        for(let i=1; i<=14; i++) {
+        // Loop sampai 15, lewati 13
+        for(let i=1; i<=15; i++) {
+            if(i === 13) continue;
+
             const isP = (i===5||i===6);
             const style = isP ? "color:var(--warning)" : "color:var(--primary)";
             const html = `
@@ -653,7 +645,10 @@
         const mins = Math.max(0, Date.now() - globalStartTime) / 60000;
         let gTot=0, cAct=0, cTeorythical=0, pAct=0, rTeorythical=0;
 
-        for(let i=1; i<=14; i++) {
+        // Loop sampai 15, lewati 13
+        for(let i=1; i<=15; i++) {
+            if(i === 13) continue;
+
             const act = latestCounter[`L${i}`] || 0;
             const teorythical = Math.floor(rates[i-1] * mins);
             const eff = teorythical>0 ? ((act/teorythical)*100).toFixed(1)+'%' : '0%';
@@ -671,15 +666,25 @@
         const final = gTot + manualOffset;
         document.getElementById("total").innerText = final.toLocaleString();
         document.getElementById("clock").innerText = new Date().toLocaleString('id-ID');
-        updSum("totalClub", cAct, cTeorythical); updSum("totalRound", pAct, rTeorythical); updSum("grandTotal", final, cTeorythical+rTeorythical);
+        updSum("totalClub", cAct, cTeorythical); 
+        updSum("totalRound", pAct, rTeorythical); 
+        updSum("grandTotal", final, cTeorythical+rTeorythical);
     }
 
     function updSum(id, act, teorythical) {
-        document.getElementById(`${id}Actual`).innerText = act.toLocaleString();
-        document.getElementById(`${id}Teorythical`).innerText = teorythical.toLocaleString();
+        // Fix: Removed potential issue where element ID mismatch caused crash
+        const elAct = document.getElementById(`${id}Actual`);
+        if(elAct) elAct.innerText = act.toLocaleString();
+        
+        const elTeo = document.getElementById(`${id}Teorythical`);
+        if(elTeo) elTeo.innerText = teorythical.toLocaleString();
+        
         const eff = teorythical>0 ? ((act/teorythical)*100).toFixed(1)+'%' : '0%';
-        const el = document.getElementById(`${id}Eff`); el.innerText = eff;
-        el.style.color = parseFloat(eff)>=90 ? getVar('--success') : parseFloat(eff)>=70 ? getVar('--warning') : getVar('--danger');
+        const el = document.getElementById(`${id}Eff`); 
+        if(el) {
+            el.innerText = eff;
+            el.style.color = parseFloat(eff)>=90 ? getVar('--success') : parseFloat(eff)>=70 ? getVar('--warning') : getVar('--danger');
+        }
     }
 
     window.resetCounter = async () => {
@@ -702,7 +707,12 @@
         let act = manualOffset, teorythical = 0;
         if(globalStartTime) {
             const mins = Math.max(0, Date.now() - globalStartTime) / 60000;
-            for(let i=1; i<=14; i++) { act += (latestCounter[`L${i}`]||0); teorythical += Math.floor(rates[i-1]*mins); }
+            // Loop sampai 15, lewati 13
+            for(let i=1; i<=15; i++) { 
+                if(i===13) continue;
+                act += (latestCounter[`L${i}`]||0); 
+                teorythical += Math.floor(rates[i-1]*mins); 
+            }
         }
         try {
             await push(ref(database, 'history'), { time: new Date().toLocaleString('id-ID'), timestamp: Date.now(), total: act, totalTeorythical: teorythical, counter: {...latestCounter} });
@@ -724,7 +734,9 @@
             historyDataCache = Object.values(snap.val());
             [...historyDataCache].reverse().forEach(h => {
                 let row = `<tr><td style="text-align:left; font-weight:600">${h.time}</td><td style="font-weight:700; color:var(--text-main)">${h.total?.toLocaleString()||0}</td><td style="color:var(--text-muted)">${h.totalTeorythical?.toLocaleString()||'-'}</td>`;
-                for(let i=1; i<=14; i++) {
+                // Loop sampai 15, lewati 13
+                for(let i=1; i<=15; i++) {
+                    if(i===13) continue;
                     let v = h.counter?h.counter[`L${i}`]||0:0;
                     row+=`<td class="${v>0?'val-active':'val-zero'}" style="${(i===5||i===6)?'background:rgba(245, 158, 11, 0.1)':''}">${v}</td>`;
                 }
