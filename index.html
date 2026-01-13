@@ -728,76 +728,79 @@
         }
     }
 
-    window.resetCounter = async () => {
-        window.resetCounter = async () => {
-        // 1. Ambil ID Mesin dari Dropdown
-        const val = document.getElementById("machineSelect").value;
-        const [mach, line] = val.split("|"); // mach = "machine01"
+   // GANTI BAGIAN window.resetCounter DENGAN INI:
 
-        // 2. TENTUKAN PASANGAN LINE (Wajib sinkron dengan ESP32)
-        // Ini kuncinya: Kita harus tahu Line mana saja yang akan jadi 0 saat mesin ini direset
-        let pairs = [];
-        if (mach === "machine01") pairs = ["L1", "L2"];
-        else if (mach === "machine02") pairs = ["L3", "L4"];
-        else if (mach === "machine03") pairs = ["L5", "L6"];
-        else if (mach === "machine04") pairs = ["L7", "L8"];  // Sesuaikan jika L8/L9
-        else if (mach === "machine05") pairs = ["L9", "L10"];
-        else if (mach === "machine06") pairs = ["L11", "L12"];
-        
-        // 3. HITUNG TOTAL YANG AKAN DI-NOL-KAN
-        // Kita jumlahkan nilai terakhir dari kedua sensor sebelum dihapus
-        let valueToSave = 0;
-        let details = [];
+window.resetCounter = async () => {
+    const val = document.getElementById("machineSelect").value;
+    const [mach, line] = val.split("|"); 
 
-        pairs.forEach(l => {
-            const currentVal = latestCounter[l] || 0;
-            valueToSave += currentVal;
-            details.push(`${l}=${currentVal}`);
-        });
+    // Mapping pasangan Line per Mesin
+    let pairs = [];
+    if (mach === "machine01") pairs = ["L1", "L2"];
+    else if (mach === "machine02") pairs = ["L3", "L4"];
+    else if (mach === "machine03") pairs = ["L5", "L6"];
+    else if (mach === "machine04") pairs = ["L7", "L8"];
+    else if (mach === "machine05") pairs = ["L9", "L10"];
+    else if (mach === "machine06") pairs = ["L11", "L12"];
+    
+    let valueToSave = 0;
+    let details = [];
 
-        // Jika nilainya 0, tidak perlu simpan offset, langsung reset saja
-        if (valueToSave === 0) {
-            if(confirm(`Reset ${mach} (Nilai sudah 0)?`)) {
-                client.publish(`iot/esp32/${mach}/cmd`, JSON.stringify({cmd:"RESET", reset_source:"web"}));
-            }
-            return;
-        }
+    // Hitung total nilai yang akan di-reset
+    pairs.forEach(l => {
+        const currentVal = latestCounter[l] || 0;
+        valueToSave += currentVal;
+        details.push(`${l}=${currentVal}`);
+    });
 
-        // 4. KONFIRMASI & EKSEKUSI
-        const msg = `RESET ${mach.toUpperCase()}?\n\n` +
-                    `Nilai saat ini: ${details.join(" + ")} = ${valueToSave}\n` +
-                    `Nilai ${valueToSave} akan dipindah ke TOTAL PRODUCTION agar tidak hilang.\n` +
-                    `Counter di Card akan kembali ke 0.`;
-
-        if(confirm(msg)) {
-            try {
-                // LANGKAH 1: Simpan dulu ke 'manualOffset' di Firebase (PENTING!)
-                // Rumus: Offset Lama + Nilai L1 + Nilai L2
-                const newOffset = manualOffset + valueToSave;
-                await set(ref(database, 'config/manualOffset'), newOffset);
-                
-                // LANGKAH 2: Baru kirim perintah hapus ke ESP32
-                client.publish(`iot/esp32/${mach}/cmd`, JSON.stringify({cmd:"RESET", reset_source:"web"}));
-                
-                // LANGKAH 3: Feedback
-                // Update manualOffset lokal agar UI langsung berubah tanpa menunggu Firebase callback
-                manualOffset = newOffset; 
-                updateUI(); 
-                
-            } catch (err) {
-                alert("Gagal menyimpan data ke database. Cek koneksi internet.");
-                console.error(err);
-            }
-        }
-    };
-        const val = document.getElementById("machineSelect").value;
-        const [mach, line] = val.split("|");
-        if(confirm(`Reset ${line}? Total hari ini tidak akan berkurang.`)) {
-            const curr = latestCounter[line] || 0;
-            await set(ref(database, 'config/manualOffset'), manualOffset + curr);
+    // Jika nilai sudah 0, reset biasa tanpa ubah offset
+    if (valueToSave === 0) {
+        if(confirm(`Reset ${mach} (Nilai sudah 0)?`)) {
             client.publish(`iot/esp32/${mach}/cmd`, JSON.stringify({cmd:"RESET", reset_source:"web"}));
+            // Reset visual lokal juga biar responsif
+            pairs.forEach(l => latestCounter[l] = 0);
+            updateUI();
         }
-    };
+        return;
+    }
+
+    const msg = `RESET ${mach.toUpperCase()}?\n\n` +
+                `Nilai saat ini: ${details.join(" + ")} = ${valueToSave}\n` +
+                `Nilai ${valueToSave} akan dipindah ke Offset agar Total Production TETAP.\n` +
+                `Counter di Card Line akan kembali ke 0.`;
+
+    if(confirm(msg)) {
+        try {
+            // 1. Hitung Offset Baru
+            const newOffset = manualOffset + valueToSave;
+
+            // 2. Simpan Offset ke Firebase
+            await set(ref(database, 'config/manualOffset'), newOffset);
+
+            // 3. Kirim Perintah Reset ke Alat
+            client.publish(`iot/esp32/${mach}/cmd`, JSON.stringify({cmd:"RESET", reset_source:"web"}));
+            
+            // --- PERBAIKAN UTAMA DISINI ---
+            // 4. Update Variabel Lokal SECARA LANGSUNG
+            // Kita paksa nilai Line jadi 0 sekarang juga di memori browser
+            // agar saat updateUI jalan, dia tidak menghitung ganda.
+            pairs.forEach(l => {
+                latestCounter[l] = 0; 
+            });
+            
+            // 5. Update Offset Lokal
+            manualOffset = newOffset; 
+            
+            // 6. Refresh Tampilan
+            updateUI(); 
+            // -----------------------------
+
+        } catch (err) {
+            alert("Gagal menyimpan data ke database. Cek koneksi internet.");
+            console.error(err);
+        }
+    }
+};
 
     function checkAutoSchedule() {
         const d = new Date();
