@@ -302,7 +302,7 @@
                 <div class="summary-header" style="color: var(--warning)">OVERALL ROUND</div>
                 <div class="summary-row">
                     <div class="summary-label">Total Actual</div>
-                    <div class="summary-value" id="totalRoundhActual" style="color: var(--text-main)">0</div>
+                    <div class="summary-value" id="totalRoundActual" style="color: var(--text-main)">0</div>
                 </div>
                 <div class="summary-row">
                     <div class="summary-label">Total Teorythical</div>
@@ -651,14 +651,14 @@
     function updateUI() {
         if(!globalStartTime) return;
         const mins = Math.max(0, Date.now() - globalStartTime) / 60000;
-        let gTot=0, cAct=0, cTeorythical=0, pAct=0, pTeorythical=0;
+        let gTot=0, cAct=0, cTeorythical=0, pAct=0, rTeorythical=0;
 
         for(let i=1; i<=14; i++) {
             const act = latestCounter[`L${i}`] || 0;
             const teorythical = Math.floor(rates[i-1] * mins);
             const eff = teorythical>0 ? ((act/teorythical)*100).toFixed(1)+'%' : '0%';
             const isP = (i===5||i===6);
-            if(isP) { pAct+=act; pTeorythical+=teorythical; } else { cAct+=act; cTeorythical+=teorythical; }
+            if(isP) { pAct+=act; rTeorythical+=teorythical; } else { cAct+=act; cTeorythical+=teorythical; }
             
             const el = document.getElementById(`L${i}`);
             if(el) {
@@ -671,7 +671,7 @@
         const final = gTot + manualOffset;
         document.getElementById("total").innerText = final.toLocaleString();
         document.getElementById("clock").innerText = new Date().toLocaleString('id-ID');
-        updSum("totalClub", cAct, cTeorythical); updSum("totalRound", pAct, pTeorythical); updSum("grandTotal", final, cTeorythical+pTeorythical);
+        updSum("totalClub", cAct, cTeorythical); updSum("totalRound", pAct, rTeorythical); updSum("grandTotal", final, cTeorythical+rTeorythical);
     }
 
     function updSum(id, act, teorythical) {
