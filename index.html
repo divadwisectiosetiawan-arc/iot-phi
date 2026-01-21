@@ -59,17 +59,22 @@
         button { cursor: pointer; font-family: inherit; transition: all 0.2s ease; }
         button:active { transform: scale(0.98); }
 
-        /* Login */
-        #loginPage { height: 100vh; display: flex; justify-content: center; align-items: center; background: radial-gradient(circle at center, var(--bg-card), var(--bg-body)); }
-        .login-box { background: var(--bg-card); padding: 40px; width: 100%; max-width: 400px; border-radius: 16px; border: 1px solid var(--border-color); box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1); text-align: center; }
+        /* Login Modal (ADMIN) */
+        .login-overlay { 
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+            background: rgba(0,0,0,0.8); backdrop-filter: blur(5px); z-index: 3000;
+            align-items: center; justify-content: center;
+        }
+        .login-box { background: var(--bg-card); padding: 40px; width: 100%; max-width: 400px; border-radius: 16px; border: 1px solid var(--border-color); box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1); text-align: center; position: relative;}
         .login-logo { height: 80px; width: auto; margin-bottom: 20px; filter: drop-shadow(0 0 10px var(--primary-bg)); }
         .login-box h2 { color: var(--primary); margin: 0 0 20px 0; font-size: 24px; }
         .login-box input { width: 100%; padding: 14px; margin-bottom: 15px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-body); color: var(--text-main); outline: none; }
         .login-box input:focus { border-color: var(--primary); }
         .login-box button { width: 100%; padding: 14px; background: var(--primary); color: white; border: none; border-radius: 8px; font-weight: 600; font-size: 16px; }
+        .close-login { position: absolute; top: 10px; right: 15px; font-size: 24px; color: var(--text-muted); background: none; border: none; cursor: pointer; }
 
         /* Dashboard & Header (DESKTOP DEFAULT) */
-        #dashboardPage { display: none; animation: fadeIn 0.5s ease; }
+        #dashboardPage { display: block; animation: fadeIn 0.5s ease; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
         /* HEADER ASLI (Akan disembunyikan di Mobile) */
@@ -128,7 +133,7 @@
 
         footer { text-align: center; padding: 30px; color: var(--text-muted); font-size: 12px; }
 
-        /* --- 2. CSS SETTINGS MODAL (BARU) --- */
+        /* --- 2. CSS SETTINGS MODAL & ADMIN CONTROL --- */
         .modal {
             display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%;
             overflow: auto; background-color: rgba(0,0,0,0.7); backdrop-filter: blur(5px);
@@ -165,14 +170,15 @@
 
         .modal-footer { padding: 20px; border-top: 1px solid var(--border-color); text-align: right; }
         
-        .btn-settings { 
-            background: transparent; border: none; color: var(--text-muted); cursor: pointer; padding: 5px; 
-            transition: color 0.2s; 
-        }
-        .btn-settings:hover { color: var(--primary); }
+        /* ADMIN CONTROLS */
+        .btn-settings, .admin-only { display: none; } /* Default Hidden */
+        body.is-admin .btn-settings { display: block; background: transparent; border: none; color: var(--text-muted); cursor: pointer; padding: 5px; transition: color 0.2s; }
+        body.is-admin .btn-settings:hover { color: var(--primary); }
+        body.is-admin .admin-only { display: inline-block; }
+        body.is-admin .guest-only { display: none; }
 
 
-        /* --- 3. MOBILE CSS (WHATSAPP STYLE) --- */
+        /* --- 3. MOBILE CSS --- */
         .mobile-header, .bottom-nav, .mobile-kebab-menu, .mobile-overlay { display: none; }
         
         @media (max-width: 900px) {
@@ -239,15 +245,16 @@
 
 <body>
 
-<div id="loginPage">
+<div id="loginOverlay" class="login-overlay">
     <div class="login-box">
+        <button class="close-login" onclick="toggleLoginModal()">&times;</button>
         <img src="phi.png" alt="Logo" class="login-logo">
-        <h2>USER LOGIN</h2>
-        <p style="color: var(--text-muted); margin-bottom: 20px; font-size: 14px;">Production Monitoring System</p>
+        <h2>ADMINISTRATOR</h2>
+        <p style="color: var(--text-muted); margin-bottom: 20px; font-size: 14px;">Masuk untuk mengubah pengaturan</p>
         <input id="username" placeholder="Username" type="text" autocomplete="off">
         <input id="password" type="password" placeholder="Password">
         <button onclick="doLogin()">LOGIN</button>
-        <p id="error" style="margin-top:15px; font-size:13px;"></p>
+        <p id="error" style="margin-top:15px; font-size:13px; color:var(--danger)"></p>
     </div>
 </div>
 
@@ -259,20 +266,25 @@
         </div>
         <nav>
             <span id="clock" style="font-family: monospace; font-weight:600; color:var(--text-main)"></span>
-            <select id="machineSelect">
-                <option value="machine01|L1">Machine 01</option>
-                <option value="machine02|L2">Machine 02</option>
-                <option value="machine03|L3">Machine 03</option>
-                <option value="machine04|L4">Machine 04</option>
-                <option value="machine05|L5">Machine 05</option>
-                <option value="machine06|L6">Machine 06</option>
-            </select>
+            <button onclick="toggleLoginModal()" class="guest-only">Administrator</button>
+            
+            <div class="admin-only" style="display:none; gap:10px; align-items:center;">
+                <select id="machineSelect">
+                    <option value="machine01|L1">Machine 01</option>
+                    <option value="machine02|L2">Machine 02</option>
+                    <option value="machine03|L3">Machine 03</option>
+                    <option value="machine04|L4">Machine 04</option>
+                    <option value="machine05|L5">Machine 05</option>
+                    <option value="machine06|L6">Machine 06</option>
+                </select>
+                <button onclick="manualSave()" style="color:var(--success); border-color:var(--success)">Save</button>
+                <button onclick="resetCounter()" style="color:var(--danger); border-color:var(--danger)">Reset</button>
+                <button onclick="logout()">Logout</button>
+            </div>
+            
             <button onclick="showDashboard()" title="Dashboard">Dashboard</button>
             <button onclick="showHistory()" title="History">History</button>
-            <button onclick="manualSave()" style="color:var(--success); border-color:var(--success)">Save</button>
-            <button onclick="resetCounter()" style="color:var(--danger); border-color:var(--danger)">Reset</button>
             <button onclick="toggleTheme()" class="btn-theme" title="Switch Theme">◑</button>
-            <button onclick="logout()">Logout</button>
         </nav>
     </header>
 
@@ -285,11 +297,12 @@
 
     <div class="mobile-overlay" id="mobileOverlay" onclick="toggleKebabMenu()"></div>
     <div class="mobile-kebab-menu" id="kebabMenu">
-        <button class="kebab-item" onclick="manualSave(); toggleKebabMenu()">Simpan & Reset (Akhir Shift)</button>
-        <button class="kebab-item" onclick="resetCounter(); toggleKebabMenu()">Reset Counter</button>
+        <button class="kebab-item" onclick="toggleLoginModal()">Login Admin</button>
+        <button class="kebab-item admin-only" onclick="manualSave(); toggleKebabMenu()">Simpan & Reset</button>
+        <button class="kebab-item admin-only" onclick="resetCounter(); toggleKebabMenu()">Reset Counter</button>
         <button class="kebab-item" onclick="showHistory(); toggleKebabMenu()">Riwayat Data</button>
         <button class="kebab-item" onclick="toggleTheme(); toggleKebabMenu()">Ganti Tema</button>
-        <button class="kebab-item" onclick="logout()">Keluar</button>
+        <button class="kebab-item admin-only" onclick="logout()">Logout</button>
     </div>
 
     <div class="container" id="dashboardView" data-mobile-tab="dashboard">
@@ -403,6 +416,7 @@
                         <div class="form-group">
                             <label class="form-label">TARGET SPEED (CPM)</label>
                             <input type="number" id="setSpeed" class="modal-input" placeholder="70">
+                            <small style="color:var(--text-muted); font-size:10px;">Nilai Prediksi Teorythical</small>
                         </div>
                     </div>
                 </div>
@@ -554,6 +568,11 @@
         overlay.classList.toggle("show");
     };
 
+    window.toggleLoginModal = () => {
+        const modal = document.getElementById("loginOverlay");
+        modal.style.display = modal.style.display === "flex" ? "none" : "flex";
+    }
+
     window.switchMobileTab = (tabName, btn) => {
         document.querySelectorAll('.bottom-nav .nav-item').forEach(b => b.classList.remove('active'));
         if(btn) btn.classList.add('active');
@@ -611,8 +630,17 @@
         // NEW: Load Setting Per Line
         onValue(ref(database, 'lineSettings'), (snap) => {
             lineConfigs = snap.val() || {};
-            generateAllCards(); // Refresh UI karena CPM mungkin berubah
+            // Jangan generate ulang kartu agar tidak flicker, cukup updateUI
+            // Kita bisa panggil updateUI langsung untuk merefresh perhitungan CPM
             updateUI();
+            
+            // Khusus untuk update badge CPM di card, kita perlu update DOM element spesifik
+            for(let i=1; i<=15; i++) {
+                if(i===13) continue;
+                const conf = lineConfigs[`L${i}`] || { cpm: defaultCPM };
+                const badge = document.getElementById(`cpmBadge${i}`);
+                if(badge) badge.innerText = `${conf.cpm} cpm`;
+            }
         });
     }
 
@@ -659,34 +687,56 @@
         
         await set(ref(database, `lineSettings/L${lineId}`), newConfig);
         closeSettings();
+        // Update UI langsung untuk feedback cepat (optimistic update)
+        lineConfigs[`L${lineId}`] = newConfig;
+        updateUI();
     };
 
     // --- AUTH & INITIALIZATION ---
+    function checkAuth() {
+        const role = sessionStorage.getItem("role");
+        if(role === 'admin') {
+            document.body.classList.add("is-admin");
+            document.querySelectorAll('.admin-only').forEach(e => e.style.display = 'flex'); // Show admin controls
+        } else {
+            document.body.classList.remove("is-admin");
+            document.querySelectorAll('.admin-only').forEach(e => e.style.display = 'none');
+        }
+    }
+
     window.doLogin = () => {
         const u = document.getElementById("username").value;
         const p = document.getElementById("password").value;
         if(u === "admin" && p === "admin123") {
-            sessionStorage.setItem("login", "1"); location.reload();
-        } else { document.getElementById("error").innerText = "Username atau Password salah!"; }
+            sessionStorage.setItem("role", "admin");
+            window.toggleLoginModal();
+            checkAuth();
+            alert("Login Berhasil! Mode Administrator Aktif.");
+        } else { 
+            document.getElementById("error").innerText = "Username atau Password salah!"; 
+        }
     };
-    window.logout = () => { sessionStorage.clear(); location.reload(); };
+
+    window.logout = () => { 
+        sessionStorage.clear(); 
+        location.reload(); 
+    };
 
     window.onload = () => {
-        if(sessionStorage.getItem("login") === "1") {
-            document.getElementById("loginPage").style.display = "none";
-            document.getElementById("dashboardPage").style.display = "block";
-            generateAllCards(); 
-            syncConfig(); 
-            loadLastCacheFromFirebase(); 
-            fetchHistoryForChart();
-            setInterval(checkAutoSchedule, 10000); 
-            setInterval(updateUI, 1000);
+        // Dashboard selalu terbuka untuk umum
+        generateAllCards(); 
+        syncConfig(); 
+        loadLastCacheFromFirebase(); 
+        fetchHistoryForChart();
+        checkAuth(); // Cek apakah admin atau viewer
 
-            // Close modal jika klik di luar
-            window.onclick = function(event) {
-                const modal = document.getElementById("settingsModal");
-                if (event.target == modal) closeSettings();
-            }
+        setInterval(checkAutoSchedule, 10000); 
+        setInterval(updateUI, 1000);
+
+        // Close modal jika klik di luar
+        window.onclick = function(event) {
+            const modal = document.getElementById("settingsModal");
+            if (event.target == modal) closeSettings();
         }
     };
 
@@ -800,7 +850,7 @@
         } catch(e) { console.error(e); }
     });
 
-    // --- GENERATE CARDS (WITH SETTINGS BUTTON) ---
+    // --- GENERATE CARDS (WITH SETTINGS BUTTON - Hidden by Default) ---
     function generateAllCards() {
         const c1 = document.getElementById("clubCanContainer"); const c2 = document.getElementById("roundCanContainer");
         c1.innerHTML = ""; c2.innerHTML = "";
@@ -818,7 +868,7 @@
                 <div class="card-header">
                     <div style="display:flex; flex-direction:column;">
                         <h3 class="card-title">LINE ${i.toString().padStart(2,'0')}</h3>
-                        <span class="rate-badge" style="width:fit-content">${conf.cpm} cpm</span>
+                        <span id="cpmBadge${i}" class="rate-badge" style="width:fit-content">${conf.cpm || defaultCPM} cpm</span>
                     </div>
                     <div>
                          <button class="btn-settings" onclick="openSettings(${i})" title="Settings">⚙️</button>
@@ -835,7 +885,7 @@
         }
     }
 
-    // --- CORE CALCULATION LOGIC ---
+    // --- CORE CALCULATION LOGIC (FIXED) ---
     function updateUI() {
         if(!globalStartTime) return;
         
@@ -849,7 +899,8 @@
 
             // Load Config
             const conf = lineConfigs[`L${i}`] || {};
-            const speed = conf.cpm || defaultCPM;
+            // FIX: Pastikan CPM di-parse sebagai Integer
+            const speed = parseInt(conf.cpm) || defaultCPM;
             
             // 1. Hitung Durasi Operasional
             let opMins = globalMins; // Default global
@@ -880,8 +931,8 @@
             }
 
             // 2. Kurangi Downtime
-            const totalDowntime = (conf.dtUnuse||0) + (conf.dtExt||0) + (conf.dtPlan||0) + 
-                                  (conf.dtTrial||0) + (conf.dtBreakdown||0) + (conf.dtSpeed||0) + (conf.dtMinor||0);
+            const totalDowntime = (parseInt(conf.dtUnuse)||0) + (parseInt(conf.dtExt)||0) + (parseInt(conf.dtPlan)||0) + 
+                                  (parseInt(conf.dtTrial)||0) + (parseInt(conf.dtBreakdown)||0) + (parseInt(conf.dtSpeed)||0) + (parseInt(conf.dtMinor)||0);
             
             let netRunTime = opMins - totalDowntime;
             if(netRunTime < 0) netRunTime = 0;
@@ -997,7 +1048,6 @@
         let act = manualOffset, teorythical = 0;
         
         // Kalkulasi manual untuk total teorythical saat reset akhir shift
-        // Menggunakan logic yang sama dengan updateUI tapi iterasi semua line
         const now = new Date();
         const globalMins = globalStartTime ? Math.max(0, now.getTime() - globalStartTime) / 60000 : 0;
 
@@ -1006,15 +1056,10 @@
             act += (latestCounter[`L${i}`]||0); 
             
             const conf = lineConfigs[`L${i}`] || {};
-            const speed = conf.cpm || defaultCPM;
+            const speed = parseInt(conf.cpm) || defaultCPM;
             
-            // Logic waktu simple untuk report
-            let opMins = globalMins;
-            // Jika ingin presisi report, logic start/stop harus diimplementasikan disini juga
-            // Untuk penyederhanaan saat reset, kita pakai globalMins atau custom logic jika perlu
-            // Disini saya pakai simple approach:
-            
-            teorythical += Math.floor(speed * opMins); 
+            // Simplified logic for report
+            teorythical += Math.floor(speed * globalMins); 
         }
 
         try {
@@ -1022,9 +1067,6 @@
             for(let i=1; i<=6; i++) client.publish(`iot/esp32/machine0${i}/cmd`, JSON.stringify({cmd:"RESET", reset_source:"web"}));
             await set(ref(database, 'config/productionStartTime'), Date.now());
             await set(ref(database, 'config/manualOffset'), 0);
-            
-            // Optional: Reset lineSettings downtime to 0 for next shift?
-            // await set(ref(database, 'lineSettings'), {}); 
             
             latestCounter={}; fetchHistoryForChart(); updateUI();
         } catch(e) { console.error(e); }
