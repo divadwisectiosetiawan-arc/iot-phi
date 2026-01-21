@@ -7,14 +7,14 @@
     
     <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
 
     <style>
         /* --- CSS UTAMA --- */
         :root {
             --bg-body: #0f172a;
             --bg-card: #1e293b;
-            --bg-header: rgba(15, 23, 42, 0.9);
+            --bg-header: rgba(15, 23, 42, 0.95);
             --border-color: #334155;
             --text-main: #f8fafc;
             --text-muted: #94a3b8;
@@ -25,7 +25,7 @@
             --danger: #ef4444;
             --purple: #a855f7;
             --info: #0ea5e9;
-            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            --radius: 12px;
             
             /* Mobile Variables */
             --whatsapp-header: #1f2c34;
@@ -33,15 +33,15 @@
         }
 
         [data-theme="light"] {
-            --bg-body: #f1f5f9;
+            --bg-body: #f8fafc;
             --bg-card: #ffffff;
-            --bg-header: rgba(255, 255, 255, 0.9);
+            --bg-header: rgba(255, 255, 255, 0.95);
             --border-color: #e2e8f0;
             --text-main: #0f172a;
             --text-muted: #64748b;
             --primary: #0284c7;
             --primary-bg: rgba(2, 132, 199, 0.1);
-            --success: #51b1ff;
+            --success: #16a34a;
             --warning: #d97706;
             --danger: #dc2626;
             --purple: #7c3aed;
@@ -53,19 +53,41 @@
         button { cursor: pointer; font-family: inherit; transition: all 0.2s ease; }
         button:active { transform: scale(0.98); }
 
-        /* Login */
-        .login-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); backdrop-filter: blur(5px); z-index: 3000; align-items: center; justify-content: center; }
-        .login-box { background: var(--bg-card); padding: 40px; width: 100%; max-width: 400px; border-radius: 16px; border: 1px solid var(--border-color); text-align: center; position: relative;}
-        .login-logo { height: 80px; width: auto; margin-bottom: 20px; filter: drop-shadow(0 0 10px var(--primary-bg)); }
-        .login-box input { width: 100%; padding: 14px; margin-bottom: 15px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-body); color: var(--text-main); outline: none; }
-        .login-box button { width: 100%; padding: 14px; background: var(--primary); color: white; border: none; border-radius: 8px; font-weight: 600; }
-        .close-login { position: absolute; top: 10px; right: 15px; font-size: 24px; color: var(--text-muted); background: none; border: none; cursor: pointer; }
+        /* --- LOGIN STYLES (NEW) --- */
+        .auth-overlay { 
+            display: flex; position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+            background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(8px); z-index: 9999; 
+            align-items: center; justify-content: center; animation: fadeIn 0.3s;
+        }
+        .auth-box { 
+            background: var(--bg-card); padding: 40px; width: 100%; max-width: 380px; 
+            border-radius: 20px; border: 1px solid var(--border-color); text-align: center; 
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); position: relative;
+        }
+        .auth-logo { height: 60px; width: auto; margin-bottom: 20px; filter: drop-shadow(0 0 15px var(--primary-bg)); }
+        .auth-title { font-size: 20px; font-weight: 700; color: var(--text-main); margin-bottom: 5px; }
+        .auth-subtitle { font-size: 13px; color: var(--text-muted); margin-bottom: 30px; }
+        
+        .input-group { margin-bottom: 15px; text-align: left; }
+        .input-label { display: block; font-size: 12px; color: var(--text-muted); margin-bottom: 5px; font-weight: 600; }
+        .auth-input { 
+            width: 100%; padding: 12px; border-radius: 10px; border: 1px solid var(--border-color); 
+            background: var(--bg-body); color: var(--text-main); outline: none; transition: border-color 0.2s;
+        }
+        .auth-input:focus { border-color: var(--primary); }
+        
+        .btn-auth { 
+            width: 100%; padding: 12px; background: var(--primary); color: white; 
+            border: none; border-radius: 10px; font-weight: 600; font-size: 14px; margin-top: 10px; 
+        }
+        .btn-auth:hover { opacity: 0.9; }
+        .close-modal { position: absolute; top: 15px; right: 20px; background: none; border: none; font-size: 24px; color: var(--text-muted); }
 
         /* Layout */
-        #dashboardPage { display: block; animation: fadeIn 0.5s ease; }
+        #dashboardPage { display: none; animation: fadeIn 0.5s ease; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        header.desktop-header { background: var(--bg-header); backdrop-filter: blur(10px); padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; border-bottom: 1px solid var(--border-color); box-shadow: var(--shadow); }
+        header.desktop-header { background: var(--bg-header); backdrop-filter: blur(10px); padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; border-bottom: 1px solid var(--border-color); box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
         .header-left { display: flex; align-items: center; gap: 15px; }
         .header-logo { height: 40px; width: auto; }
         .header-title { font-size: 20px; font-weight: 700; color: var(--primary); }
@@ -82,31 +104,43 @@
 
         .layout-row { display: flex; gap: 25px; align-items: flex-start; }
         
-        /* OEE Analytics */
+        /* OEE GLOBAL */
         .oee-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-bottom: 30px; }
         .oee-card { background: var(--bg-card); padding: 20px; border-radius: 16px; border: 1px solid var(--border-color); text-align: center; }
         .oee-title { font-size: 12px; color: var(--text-muted); font-weight: 700; letter-spacing: 1px; margin-bottom: 10px; }
         .oee-value { font-size: 28px; font-weight: 800; }
         .oee-desc { font-size: 11px; color: var(--text-muted); margin-top: 5px; }
 
-        .summary-card { background: var(--bg-card); border: 1px solid var(--border-color); padding: 25px; border-radius: 16px; min-width: 280px; width: 280px; flex-shrink: 0; box-shadow: var(--shadow); }
+        .summary-card { background: var(--bg-card); border: 1px solid var(--border-color); padding: 25px; border-radius: 16px; min-width: 280px; width: 280px; flex-shrink: 0; }
         .summary-header { font-size: 16px; font-weight: 700; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid var(--border-color); }
         .summary-row { margin-bottom: 15px; }
         .summary-label { font-size: 12px; color: var(--text-muted); margin-bottom: 4px; }
         .summary-value { font-size: 24px; font-weight: 700; }
 
-        .grid { flex-grow: 1; display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; }
-        .card { background: var(--bg-card); padding: 20px; border-radius: 16px; border: 1px solid var(--border-color); transition: transform 0.2s, box-shadow 0.2s; position: relative; overflow: hidden; }
-        .card:hover { transform: translateY(-4px); box-shadow: 0 10px 20px rgba(0,0,0,0.1); border-color: var(--primary); }
+        .grid { flex-grow: 1; display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; }
+        
+        /* CARD LINE (UPDATED) */
+        .card { background: var(--bg-card); padding: 20px; border-radius: 16px; border: 1px solid var(--border-color); transition: transform 0.2s; position: relative; overflow: hidden; cursor: pointer;}
+        .card:hover { transform: translateY(-4px); border-color: var(--primary); }
         .card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px; }
         .card-title { margin: 0; font-size: 15px; font-weight: 700; color: var(--text-muted); }
         .rate-badge { font-size: 10px; background: var(--bg-body); padding: 3px 8px; border-radius: 6px; color: var(--text-muted); border: 1px solid var(--border-color); }
-        .card table { width: 100%; border-collapse: collapse; cursor: pointer; }
-        .card th { font-size: 11px; text-align: center; color: var(--text-muted); font-weight: 600; padding-bottom: 5px; }
-        .card td { font-size: 20px; font-weight: 700; text-align: center; color: var(--text-main); }
+        
+        .card table { width: 100%; border-collapse: collapse; margin-bottom: 15px; }
+        .card th { font-size: 10px; text-align: center; color: var(--text-muted); font-weight: 600; padding-bottom: 5px; }
+        .card td { font-size: 18px; font-weight: 700; text-align: center; color: var(--text-main); }
         .val-actual { color: var(--success); }
 
-        .chart-container { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 16px; padding: 25px; flex-grow: 1; min-height: 420px; box-shadow: var(--shadow); }
+        /* OEE Mini Grid inside Card */
+        .card-oee-row { 
+            display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; 
+            border-top: 1px dashed var(--border-color); padding-top: 10px; 
+        }
+        .mini-stat { text-align: center; }
+        .mini-label { font-size: 9px; color: var(--text-muted); font-weight: 700; margin-bottom: 2px; }
+        .mini-val { font-size: 12px; font-weight: 700; }
+
+        .chart-container { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 16px; padding: 25px; flex-grow: 1; min-height: 420px; }
         .chart-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
         .chart-controls button { background: var(--bg-body); border: 1px solid var(--border-color); color: var(--text-muted); padding: 6px 16px; border-radius: 20px; font-size: 12px; margin-left: 5px; }
         .chart-controls button.active { background: var(--purple); color: white; border-color: var(--purple); }
@@ -120,7 +154,7 @@
         footer { text-align: center; padding: 30px; color: var(--text-muted); font-size: 12px; }
 
         /* --- SETTINGS MODAL --- */
-        .modal { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.7); backdrop-filter: blur(5px); }
+        .modal { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.8); backdrop-filter: blur(5px); animation: fadeIn 0.3s; }
         .modal-content { background-color: var(--bg-card); margin: 5% auto; padding: 0; border: 1px solid var(--border-color); width: 90%; max-width: 600px; border-radius: 16px; color: var(--text-main); }
         .modal-header { padding: 20px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; }
         .modal-close { font-size: 28px; font-weight: bold; color: var(--text-muted); cursor: pointer; background: none; border: none; }
@@ -179,16 +213,41 @@
 
 <body>
 
-<div id="loginOverlay" class="login-overlay">
-    <div class="login-box">
-        <button class="close-login" onclick="toggleLoginModal()">&times;</button>
-        <img src="phi.png" alt="Logo" class="login-logo">
-        <h2>ADMINISTRATOR</h2>
-        <p style="color: var(--text-muted); margin-bottom: 20px; font-size: 14px;">Masuk untuk mengubah pengaturan</p>
-        <input id="username" placeholder="Username" type="text" autocomplete="off">
-        <input id="password" type="password" placeholder="Password">
-        <button onclick="doLogin()">LOGIN</button>
-        <p id="error" style="margin-top:15px; font-size:13px; color:var(--danger)"></p>
+<div id="generalLoginOverlay" class="auth-overlay">
+    <div class="auth-box">
+        <img src="phi.png" alt="Logo" class="auth-logo">
+        <h2 class="auth-title">PRODUCTION DASHBOARD</h2>
+        <p class="auth-subtitle">Silakan login untuk mengakses data</p>
+        
+        <div class="input-group">
+            <label class="input-label">USERNAME</label>
+            <input id="genUser" type="text" class="auth-input" placeholder="User">
+        </div>
+        <div class="input-group">
+            <label class="input-label">PASSWORD</label>
+            <input id="genPass" type="password" class="auth-input" placeholder="Password">
+        </div>
+        <button onclick="doGeneralLogin()" class="btn-auth">MASUK</button>
+        <p id="genError" style="margin-top:15px; font-size:12px; color:var(--danger)"></p>
+    </div>
+</div>
+
+<div id="adminLoginOverlay" class="auth-overlay" style="display:none">
+    <div class="auth-box" style="border-color: var(--primary);">
+        <button class="close-modal" onclick="toggleAdminModal()">&times;</button>
+        <h2 class="auth-title" style="color:var(--primary)">ADMINISTRATOR</h2>
+        <p class="auth-subtitle">Verifikasi untuk mengubah pengaturan</p>
+        
+        <div class="input-group">
+            <label class="input-label">USERNAME</label>
+            <input id="admUser" type="text" class="auth-input" placeholder="Admin">
+        </div>
+        <div class="input-group">
+            <label class="input-label">PASSWORD</label>
+            <input id="admPass" type="password" class="auth-input" placeholder="Password">
+        </div>
+        <button onclick="doAdminLogin()" class="btn-auth" style="background:var(--primary)">VERIFIKASI</button>
+        <p id="admError" style="margin-top:15px; font-size:12px; color:var(--danger)"></p>
     </div>
 </div>
 
@@ -200,7 +259,7 @@
         </div>
         <nav>
             <span id="clock" style="font-family: monospace; font-weight:600; color:var(--text-main)"></span>
-            <button onclick="toggleLoginModal()" class="guest-only">Administrator</button>
+            <button onclick="toggleAdminModal()" class="guest-only">Administrator</button>
             <div class="admin-only" style="display:none; gap:10px; align-items:center;">
                 <select id="machineSelect">
                     <option value="machine01|L1">Machine 01</option>
@@ -227,7 +286,7 @@
 
     <div class="mobile-overlay" id="mobileOverlay" onclick="toggleKebabMenu()"></div>
     <div class="mobile-kebab-menu" id="kebabMenu">
-        <button class="kebab-item" onclick="toggleLoginModal()">Login Admin</button>
+        <button class="kebab-item guest-only" onclick="toggleAdminModal()">Login Admin</button>
         <button class="kebab-item admin-only" onclick="manualSave(); toggleKebabMenu()">Simpan & Reset</button>
         <button class="kebab-item admin-only" onclick="resetCounter(); toggleKebabMenu()">Reset Counter</button>
         <button class="kebab-item" onclick="showHistory(); toggleKebabMenu()">Riwayat Data</button>
@@ -244,7 +303,7 @@
 
         <div class="section-header m-hide-total m-hide-grafik">
             <span class="badge bg-purple">OEE ANALYTICS</span>
-            <span class="section-title">OVERALL EQUIPMENT EFFECTIVENESS</span>
+            <span class="section-title">GLOBAL PLANT OEE</span>
         </div>
 
         <div class="oee-grid m-hide-dashboard m-hide-grafik">
@@ -344,35 +403,17 @@
                 <div style="background:var(--primary-bg); padding:15px; border-radius:8px; margin-bottom:15px; border:1px solid var(--primary)">
                     <span style="font-weight:700; color:var(--primary); font-size:13px; display:block; margin-bottom:10px;">JAM KERJA (SHIFT)</span>
                     <div class="form-row">
-                        <div class="form-col">
-                            <div class="form-group">
-                                <label class="form-label">MULAI SHIFT</label>
-                                <input type="time" id="setStart" class="modal-input">
-                            </div>
-                        </div>
-                        <div class="form-col">
-                            <div class="form-group">
-                                <label class="form-label">SELESAI SHIFT</label>
-                                <input type="time" id="setStop" class="modal-input">
-                            </div>
-                        </div>
+                        <div class="form-col"><div class="form-group"><label class="form-label">MULAI SHIFT</label><input type="time" id="setStart" class="modal-input"></div></div>
+                        <div class="form-col"><div class="form-group"><label class="form-label">SELESAI SHIFT</label><input type="time" id="setStop" class="modal-input"></div></div>
                     </div>
-                    <div class="form-group">
-                        <label class="form-label">TARGET SPEED (CPM)</label>
-                        <input type="number" id="setSpeed" class="modal-input" placeholder="70">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">JUMLAH REJECT (Pcs)</label>
-                        <input type="number" id="setRejects" class="modal-input" placeholder="0">
-                    </div>
+                    <div class="form-group"><label class="form-label">TARGET SPEED (CPM)</label><input type="number" id="setSpeed" class="modal-input" placeholder="70"></div>
+                    <div class="form-group"><label class="form-label">JUMLAH REJECT (Pcs)</label><input type="number" id="setRejects" class="modal-input" placeholder="0"></div>
                 </div>
 
                 <div class="downtime-section">
                     <span class="downtime-title">CATATAN DOWNTIME (JAM KEJADIAN)</span>
                     <small style="color:var(--text-muted); font-size:10px; margin-bottom:15px; display:block;">Isi jam mulai dan selesai kejadian. Kosongkan jika tidak ada kejadian.</small>
-                    
-                    <div id="downtimeInputsContainer">
-                        </div>
+                    <div id="downtimeInputsContainer"></div>
                 </div>
             </div>
             <div class="modal-footer">
@@ -408,16 +449,7 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-app.js";
     import { getDatabase, ref, set, onValue, push, get } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-database.js";
 
-    const firebaseConfig = {
-        apiKey: "AIzaSyAC8Il1tbSGONHO6mLdEoe698XVnYmoJTY",
-        authDomain: "iot-cntr.firebaseapp.com",
-        databaseURL: "https://iot-cntr-default-rtdb.asia-southeast1.firebasedatabase.app",
-        projectId: "iot-cntr",
-        storageBucket: "iot-phi.firebasestorage.app",
-        messagingSenderId: "634140620662",
-        appId: "1:634140620662:web:12912eb4d52002f1966c57"
-    };
-
+    const firebaseConfig = { apiKey: "AIzaSyAC8Il1tbSGONHO6mLdEoe698XVnYmoJTY", authDomain: "iot-cntr.firebaseapp.com", databaseURL: "https://iot-cntr-default-rtdb.asia-southeast1.firebasedatabase.app", projectId: "iot-cntr", storageBucket: "iot-phi.firebasestorage.app", messagingSenderId: "634140620662", appId: "1:634140620662:web:12912eb4d52002f1966c57" };
     const app = initializeApp(firebaseConfig);
     const database = getDatabase(app);
 
@@ -430,7 +462,6 @@
     let lineConfigs = {}; 
     const defaultCPM = 70;
 
-    // DAFTAR TIPE DOWNTIME (Untuk Generate Input)
     const downtimeTypes = [
         { id: 'dtUnuse', label: 'Unuse / Idle' },
         { id: 'dtExt', label: 'External Stop' },
@@ -448,53 +479,71 @@
         if (!startStr || !endStr) return 0;
         const [h1, m1] = startStr.split(':').map(Number);
         const [h2, m2] = endStr.split(':').map(Number);
-        
         const date1 = new Date(); date1.setHours(h1, m1, 0, 0);
         const date2 = new Date(); date2.setHours(h2, m2, 0, 0);
-        
-        // Handle cross-day (e.g. 23:00 to 01:00)
         if (date2 < date1) date2.setDate(date2.getDate() + 1);
-        
         return Math.floor((date2 - date1) / 60000);
     }
 
-    /* --- MOBILE & UI --- */
+    /* --- AUTH & UI HELPERS --- */
     window.toggleKebabMenu = () => { document.getElementById("kebabMenu").classList.toggle("show"); document.getElementById("mobileOverlay").classList.toggle("show"); };
-    window.toggleLoginModal = () => { const m = document.getElementById("loginOverlay"); m.style.display = m.style.display === "flex" ? "none" : "flex"; };
-    window.switchMobileTab = (tabName, btn) => {
-        document.querySelectorAll('.bottom-nav .nav-item').forEach(b => b.classList.remove('active'));
-        if(btn) btn.classList.add('active');
-        document.getElementById('dashboardView').setAttribute('data-mobile-tab', tabName);
-        window.scrollTo(0,0);
-        if(tabName === 'grafik' && myChart) setTimeout(() => { myChart.resize(); }, 100);
+    window.toggleAdminModal = () => { const m = document.getElementById("adminLoginOverlay"); m.style.display = m.style.display === "flex" ? "none" : "flex"; };
+    
+    // LAYER 1 LOGIN: WEBSITE
+    window.doGeneralLogin = () => {
+        const u = document.getElementById("genUser").value;
+        const p = document.getElementById("genPass").value;
+        if(u === "user" && p === "user123") {
+            sessionStorage.setItem("generalAuth", "true");
+            document.getElementById("generalLoginOverlay").style.display = "none";
+            document.getElementById("dashboardPage").style.display = "block";
+        } else { document.getElementById("genError").innerText = "Username/Password salah!"; }
     };
-    window.toggleTheme = () => {
-        const html = document.documentElement;
-        const next = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
-        html.setAttribute('data-theme', next);
-        localStorage.setItem('theme', next);
-        if(myChart) {
-            myChart.options.scales.x.ticks.color = getVar('--text-muted');
-            myChart.options.scales.y.ticks.color = getVar('--text-muted');
-            myChart.options.scales.y.grid.color = getVar('--border-color');
-            myChart.update();
-        }
-    };
-    const savedTheme = localStorage.getItem('theme') || 'dark';
-    document.documentElement.setAttribute('data-theme', savedTheme);
 
-    const animateValue = (obj, start, end, duration) => {
-        if (start === end) return;
-        let startTimestamp = null;
-        const step = (timestamp) => {
-            if (!startTimestamp) startTimestamp = timestamp;
-            const progress = Math.min((timestamp - startTimestamp) / duration, 1);
-            obj.innerHTML = Math.floor(progress * (end - start) + start).toLocaleString();
-            if (progress < 1) window.requestAnimationFrame(step);
-        };
-        window.requestAnimationFrame(step);
+    // LAYER 2 LOGIN: ADMIN
+    window.doAdminLogin = () => {
+        const u = document.getElementById("admUser").value;
+        const p = document.getElementById("admPass").value;
+        if(u === "admin" && p === "admin123") {
+            sessionStorage.setItem("role", "admin");
+            window.toggleAdminModal();
+            checkAuth();
+            alert("Mode Admin Aktif");
+        } else { document.getElementById("admError").innerText = "Username/Password salah!"; }
+    };
+
+    function checkAuth() {
+        // Check Layer 1
+        if(!sessionStorage.getItem("generalAuth")) {
+            document.getElementById("generalLoginOverlay").style.display = "flex";
+            document.getElementById("dashboardPage").style.display = "none";
+        } else {
+            document.getElementById("generalLoginOverlay").style.display = "none";
+            document.getElementById("dashboardPage").style.display = "block";
+        }
+
+        // Check Layer 2
+        const role = sessionStorage.getItem("role");
+        if(role === 'admin') {
+            document.body.classList.add("is-admin");
+            document.querySelectorAll('.admin-only').forEach(e => e.style.display = 'flex'); 
+        } else {
+            document.body.classList.remove("is-admin");
+            document.querySelectorAll('.admin-only').forEach(e => e.style.display = 'none');
+        }
     }
 
+    window.logout = () => { sessionStorage.removeItem("role"); location.reload(); };
+
+    window.onload = () => {
+        checkAuth(); // First check
+        generateAllCards(); syncConfig(); loadLastCacheFromFirebase(); fetchHistoryForChart();
+        setInterval(checkAutoSchedule, 10000); setInterval(updateUI, 1000);
+        
+        window.onclick = function(event) { if (event.target == document.getElementById("settingsModal")) closeSettings(); }
+    };
+
+    // --- MAIN LOGIC ---
     function syncConfig() {
         onValue(ref(database, 'config/productionStartTime'), (snap) => {
             const val = snap.val();
@@ -514,7 +563,6 @@
         });
     }
 
-    // --- MODAL & SETTINGS ---
     window.openSettings = (lineId) => {
         const conf = lineConfigs[`L${lineId}`] || {};
         document.getElementById("setLineId").value = lineId;
@@ -525,31 +573,22 @@
         document.getElementById("setStop").value = conf.stopTime || "";
         document.getElementById("setRejects").value = conf.rejects || 0;
         
-        // Generate Downtime Inputs Dynamically
         const container = document.getElementById("downtimeInputsContainer");
         container.innerHTML = "";
         
         downtimeTypes.forEach(type => {
             const savedVal = conf[type.id] || ""; 
             const [startVal, endVal] = savedVal.split("|");
-
             const html = `
             <div style="margin-bottom:15px; border-bottom:1px dashed var(--border-color); padding-bottom:10px;">
                 <label class="form-label" style="color:var(--text-main)">${type.label}</label>
                 <div class="form-row">
-                    <div class="form-col">
-                        <span style="font-size:10px; color:var(--text-muted)">Mulai</span>
-                        <input type="time" id="${type.id}_start" class="modal-input" value="${startVal || ''}">
-                    </div>
-                    <div class="form-col">
-                        <span style="font-size:10px; color:var(--text-muted)">Selesai</span>
-                        <input type="time" id="${type.id}_end" class="modal-input" value="${endVal || ''}">
-                    </div>
+                    <div class="form-col"><span style="font-size:10px; color:var(--text-muted)">Mulai</span><input type="time" id="${type.id}_start" class="modal-input" value="${startVal || ''}"></div>
+                    <div class="form-col"><span style="font-size:10px; color:var(--text-muted)">Selesai</span><input type="time" id="${type.id}_end" class="modal-input" value="${endVal || ''}"></div>
                 </div>
             </div>`;
             container.innerHTML += html;
         });
-        
         document.getElementById("settingsModal").style.display = "block";
     };
 
@@ -557,15 +596,12 @@
 
     window.saveSettings = async () => {
         const lineId = document.getElementById("setLineId").value;
-        
-        // Gather Downtime Data
         let downtimeData = {};
         downtimeTypes.forEach(type => {
             const s = document.getElementById(`${type.id}_start`).value;
             const e = document.getElementById(`${type.id}_end`).value;
             downtimeData[type.id] = (s && e) ? `${s}|${e}` : "";
         });
-
         const newConfig = {
             cpm: parseInt(document.getElementById("setSpeed").value) || defaultCPM,
             startTime: document.getElementById("setStart").value,
@@ -573,113 +609,11 @@
             rejects: parseInt(document.getElementById("setRejects").value) || 0,
             ...downtimeData
         };
-        
         await set(ref(database, `lineSettings/L${lineId}`), newConfig);
         closeSettings();
         lineConfigs[`L${lineId}`] = newConfig;
         updateUI();
     };
-
-    function checkAuth() {
-        const role = sessionStorage.getItem("role");
-        if(role === 'admin') {
-            document.body.classList.add("is-admin");
-            document.querySelectorAll('.admin-only').forEach(e => e.style.display = 'flex'); 
-        } else {
-            document.body.classList.remove("is-admin");
-            document.querySelectorAll('.admin-only').forEach(e => e.style.display = 'none');
-        }
-    }
-
-    window.doLogin = () => {
-        if(document.getElementById("username").value === "admin" && document.getElementById("password").value === "admin123") {
-            sessionStorage.setItem("role", "admin");
-            window.toggleLoginModal();
-            checkAuth();
-            alert("Login Berhasil!");
-        } else { document.getElementById("error").innerText = "Username/Password salah!"; }
-    };
-    window.logout = () => { sessionStorage.clear(); location.reload(); };
-
-    window.onload = () => {
-        generateAllCards(); syncConfig(); loadLastCacheFromFirebase(); fetchHistoryForChart(); checkAuth();
-        setInterval(checkAutoSchedule, 10000); setInterval(updateUI, 1000);
-        window.onclick = function(event) { if (event.target == document.getElementById("settingsModal")) closeSettings(); }
-    };
-
-    // --- CHART & EXPORT ---
-    window.exportToExcel = () => {
-        if (historyDataCache.length === 0) return alert("No data.");
-        let csv = "\uFEFFWaktu;Total Actual;Total Teorythical";
-        for (let i = 1; i <= 15; i++) { if(i!==13) csv += `;Line ${i}`; }
-        csv += "\n";
-        [...historyDataCache].reverse().forEach(item => {
-            let row = `"${item.time.replace(/,/g, '')}";${item.total||0};${item.totalTeorythical||0}`;
-            for (let i = 1; i <= 15; i++) { if(i!==13) row += `;${item.counter ? (item.counter[`L${i}`]||0) : 0}`; }
-            csv += row + "\n";
-        });
-        const link = document.createElement("a");
-        link.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }));
-        link.download = `SardinesPHI_History.csv`;
-        link.click();
-    };
-
-    window.updateChartPeriod = (period, btn) => {
-        document.querySelectorAll('.btn-chart').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        processAndRenderChart(period);
-    };
-
-    async function fetchHistoryForChart() {
-        const snap = await get(ref(database, 'history'));
-        if(snap.exists()) { historyDataCache = Object.values(snap.val()); processAndRenderChart('daily'); }
-    }
-
-    function processAndRenderChart(period) {
-        if(historyDataCache.length === 0) return;
-        const grouped = {};
-        const months = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"];
-        historyDataCache.forEach(entry => {
-            let d = entry.timestamp ? new Date(entry.timestamp) : new Date();
-            let key;
-            if (period === 'daily') key = d.toLocaleDateString('id-ID', {day:'numeric', month:'short'});
-            else if (period === 'weekly') {
-                const start = new Date(d.getFullYear(), d.getMonth(), 1);
-                const week = Math.ceil((d.getDate() + start.getDay()) / 7);
-                key = `W${week} (${months[d.getMonth()]})`;
-            } else key = `${months[d.getMonth()]} ${d.getFullYear()}`;
-            if(!grouped[key]) grouped[key] = { act: 0, teorythical: 0 };
-            grouped[key].act += (entry.total || 0);
-            grouped[key].teorythical += (entry.totalTeorythical !== undefined ? entry.totalTeorythical : 470000);
-        });
-        const lbls = Object.keys(grouped);
-        const acts = lbls.map(k => grouped[k].act);
-        const teorythicals = lbls.map(k => grouped[k].teorythical);
-        renderChart(lbls, acts, teorythicals);
-    }
-
-    function renderChart(labels, actuals, teorythicals) {
-        const ctx = document.getElementById('productionChart').getContext('2d');
-        if (myChart) myChart.destroy();
-        myChart = new Chart(ctx, {
-            data: { labels: labels, datasets: [{ type: 'line', label: 'Target', data: teorythicals, borderColor: getVar('--warning'), backgroundColor: getVar('--warning'), borderWidth: 2, borderDash: [6, 4], pointRadius: 0, tension: 0.3, order: 1 }, { type: 'bar', label: 'Actual', data: actuals, backgroundColor: ctx => { const i = ctx.dataIndex; return actuals[i] >= teorythicals[i] ? getVar('--success') : getVar('--danger'); }, borderRadius: 6, order: 2, barPercentage: 0.6 }] },
-            options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, grace: '5%', grid: { color: getVar('--border-color'), borderDash: [4, 4] }, ticks: { color: getVar('--text-muted') } }, x: { grid: { display: false }, ticks: { color: getVar('--text-muted') } } }, plugins: { legend: { display: false }, tooltip: { backgroundColor: getVar('--bg-header'), titleColor: getVar('--text-main'), bodyColor: getVar('--text-main'), borderColor: getVar('--border-color'), borderWidth: 1 } } }
-        });
-    }
-
-    const client = mqtt.connect("wss://72ebeae451364089a9ebe5b5f5702548.s1.eu.hivemq.cloud:8884/mqtt", { username: "admin", password: "Admin123", reconnectPeriod: 2000 });
-    client.on("connect", () => { document.getElementById("status").innerText = "Connected"; for(let i=1; i<=6; i++) client.subscribe(`iot/esp32/machine0${i}/counter`); });
-    client.on("message", (t, m) => {
-        try {
-            const d = JSON.parse(m.toString());
-            const mach = t.split('/')[2];
-            if(Object.values(d.counter).every(v=>v===0) && d.reset_source!=="web") {}
-            Object.assign(latestCounter, d.counter);
-            set(ref(database, `lastCache/${mach}`), d);
-            document.getElementById("firebaseStatus").innerText = "Synced";
-            updateUI();
-        } catch(e) { console.error(e); }
-    });
 
     function generateAllCards() {
         const c1 = document.getElementById("clubCanContainer"); const c2 = document.getElementById("roundCanContainer");
@@ -696,13 +630,20 @@
                     <div style="display:flex; flex-direction:column;"><h3 class="card-title">LINE ${i.toString().padStart(2,'0')}</h3><span id="cpmBadge${i}" class="rate-badge" style="width:fit-content">${conf.cpm || defaultCPM} cpm</span></div>
                     <div><button class="btn-settings" onclick="openSettings(${i})" title="Settings">⚙️</button></div>
                 </div>
-                <div onclick="showSensorHistory(${i})"><table><tr><th>ACTUAL</th><th>TEORYTHICAL.</th><th>EFF.</th></tr><tr><td class="val-actual" id="L${i}">0</td><td id="P${i}" style="${style}">0</td><td id="E${i}">0%</td></tr></table></div>
+                <div onclick="showSensorHistory(${i})">
+                    <table><tr><th>ACTUAL</th><th>TEORYTHICAL.</th><th>EFF.</th></tr><tr><td class="val-actual" id="L${i}">0</td><td id="P${i}" style="${style}">0</td><td id="E${i}">0%</td></tr></table>
+                    <div class="card-oee-row">
+                        <div class="mini-stat"><div class="mini-label">AVAIL</div><div class="mini-val" id="L${i}_avail" style="color:var(--success)">0%</div></div>
+                        <div class="mini-stat"><div class="mini-label">PERF</div><div class="mini-val" id="L${i}_perf" style="color:var(--info)">0%</div></div>
+                        <div class="mini-stat"><div class="mini-label">QUAL</div><div class="mini-val" id="L${i}_qual" style="color:var(--warning)">0%</div></div>
+                        <div class="mini-stat"><div class="mini-label">OEE</div><div class="mini-val" id="L${i}_oee" style="color:var(--purple)">0%</div></div>
+                    </div>
+                </div>
             </div>`;
             if(isP) c2.innerHTML+=html; else c1.innerHTML+=html;
         }
     }
 
-    // --- MAIN OEE LOGIC ---
     function updateUI() {
         if(!globalStartTime) return;
         const now = new Date();
@@ -717,25 +658,21 @@
             const speed = parseInt(conf.cpm) || defaultCPM;
             const rejects = parseInt(conf.rejects) || 0;
 
-            // 1. Planned Time (From Shift Start/Stop or Global)
+            // 1. Time Calculation
             let plannedMinutes = globalMins; 
             if(conf.startTime) {
-                // Time from Shift Start until NOW (or Stop)
                 const [h, m] = conf.startTime.split(':');
                 const startDt = new Date(); startDt.setHours(h, m, 0, 0);
-                
-                // End limit
                 let limitDt = now;
                 if(conf.stopTime) {
                     const [sh, sm] = conf.stopTime.split(':');
                     const stopDt = new Date(); stopDt.setHours(sh, sm, 0, 0);
                     if(now > stopDt) limitDt = stopDt;
                 }
-                
                 plannedMinutes = Math.max(0, limitDt - startDt) / 60000;
             }
 
-            // 2. Downtime Calculation (Using HH:mm inputs)
+            // 2. Downtime
             let totalDowntime = 0;
             downtimeTypes.forEach(type => {
                 const val = conf[type.id];
@@ -753,26 +690,25 @@
             const act = latestCounter[`L${i}`] || 0;
             const goodCount = Math.max(0, act - rejects);
 
-            // OEE Metrics
-            let availPct = 0; if (plannedMinutes > 0) availPct = (operatingTime / plannedMinutes);
-            let perfPct = 0; 
+            // 5. OEE Metrics
+            let availPct = (plannedMinutes > 0) ? (operatingTime / plannedMinutes) : 0;
             const targetOutput = operatingTime * speed;
-            if (targetOutput > 0) perfPct = (act / targetOutput);
-            
-            let qualPct = 0; if (act > 0) qualPct = (goodCount / act); else if(operatingTime > 0) qualPct = 1;
+            let perfPct = (targetOutput > 0) ? (act / targetOutput) : (act > 0 ? 1 : 0);
+            let qualPct = (act > 0) ? (goodCount / act) : 1;
+            const oeePct = availPct * perfPct * qualPct;
 
+            // Accumulate Global
             totalAvail += availPct; totalPerf += perfPct; totalQual += qualPct;
 
-            // --- Card Display Logic ---
-            // Theoretical = Gross Target (No Downtime)
-            const teorythicalDisplay = Math.floor(speed * plannedMinutes);
-            // Efficiency (Displayed on card) = Performance % (Output vs Potential in Run Time)
-            const cardEffStr = (perfPct * 100).toFixed(1) + '%';
+            // Display Values
+            const teorythicalDisplay = Math.floor(speed * plannedMinutes); // Gross Target
+            const cardEffStr = (perfPct * 100).toFixed(1) + '%'; // Showing Perf as Efficiency
 
             const isP = (i===5||i===6);
             if(isP) { pAct+=act; rTeo+=teorythicalDisplay; } else { cAct+=act; cTeo+=teorythicalDisplay; }
             gTot+=act;
 
+            // DOM Update
             const el = document.getElementById(`L${i}`);
             if(el) {
                 const curr = parseInt(el.innerText.replace(/[^0-9]/g, '')) || 0;
@@ -781,20 +717,26 @@
                 const eEl = document.getElementById(`E${i}`);
                 eEl.innerText = cardEffStr;
                 eEl.style.color = (perfPct*100)>=90 ? getVar('--success') : (perfPct*100)>=70 ? getVar('--warning') : getVar('--danger');
+
+                // Update Mini OEE Stats per Card
+                document.getElementById(`L${i}_avail`).innerText = (availPct*100).toFixed(0) + '%';
+                document.getElementById(`L${i}_perf`).innerText = (perfPct*100).toFixed(0) + '%';
+                document.getElementById(`L${i}_qual`).innerText = (qualPct*100).toFixed(0) + '%';
+                document.getElementById(`L${i}_oee`).innerText = (oeePct*100).toFixed(0) + '%';
             }
         }
 
-        // Global OEE
+        // Global Stats
         if(countLines > 0) {
-            const avgAvail = (totalAvail / countLines) * 100;
-            const avgPerf = (totalPerf / countLines) * 100;
-            const avgQual = (totalQual / countLines) * 100;
-            const avgOee = (avgAvail/100) * (avgPerf/100) * (avgQual/100) * 100;
+            const avgAvail = (totalAvail / countLines);
+            const avgPerf = (totalPerf / countLines);
+            const avgQual = (totalQual / countLines);
+            const avgOee = avgAvail * avgPerf * avgQual;
 
-            document.getElementById("oeeAvail").innerText = avgAvail.toFixed(1) + "%";
-            document.getElementById("oeePerf").innerText = avgPerf.toFixed(1) + "%";
-            document.getElementById("oeeQual").innerText = avgQual.toFixed(1) + "%";
-            document.getElementById("oeeScore").innerText = avgOee.toFixed(1) + "%";
+            document.getElementById("oeeAvail").innerText = (avgAvail*100).toFixed(1) + "%";
+            document.getElementById("oeePerf").innerText = (avgPerf*100).toFixed(1) + "%";
+            document.getElementById("oeeQual").innerText = (avgQual*100).toFixed(1) + "%";
+            document.getElementById("oeeScore").innerText = (avgOee*100).toFixed(1) + "%";
         }
 
         const final = gTot + manualOffset;
@@ -814,18 +756,34 @@
         if(el) { el.innerText = eff; el.style.color = parseFloat(eff)>=90 ? getVar('--success') : parseFloat(eff)>=70 ? getVar('--warning') : getVar('--danger'); }
     }
 
-    // --- RESET ---
+    window.switchMobileTab = (tabName, btn) => {
+        document.querySelectorAll('.bottom-nav .nav-item').forEach(b => b.classList.remove('active'));
+        if(btn) btn.classList.add('active');
+        document.getElementById('dashboardView').setAttribute('data-mobile-tab', tabName);
+        window.scrollTo(0,0);
+        if(tabName === 'grafik' && myChart) setTimeout(() => { myChart.resize(); }, 100);
+    };
+    window.toggleTheme = () => {
+        const html = document.documentElement;
+        const next = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+        html.setAttribute('data-theme', next);
+        localStorage.setItem('theme', next);
+        if(myChart) {
+            myChart.options.scales.x.ticks.color = getVar('--text-muted');
+            myChart.options.scales.y.ticks.color = getVar('--text-muted');
+            myChart.options.scales.y.grid.color = getVar('--border-color');
+            myChart.update();
+        }
+    };
+
     window.resetCounter = async () => {
         const val = document.getElementById("machineSelect").value;
         const [mach, line] = val.split("|"); 
         let pairs = [];
         if (mach === "machine01") pairs = ["L1", "L2"]; else if (mach === "machine02") pairs = ["L3", "L4"]; else if (mach === "machine03") pairs = ["L5", "L6"]; else if (mach === "machine04") pairs = ["L7", "L8"]; else if (mach === "machine05") pairs = ["L9", "L10"]; else if (mach === "machine06") pairs = ["L11", "L12"];
-        
         let valueToSave = 0;
         pairs.forEach(l => { valueToSave += (latestCounter[l] || 0); });
-
         if (valueToSave === 0) { if(confirm(`Reset ${mach}?`)) { client.publish(`iot/esp32/${mach}/cmd`, JSON.stringify({cmd:"RESET", reset_source:"web"})); pairs.forEach(l => latestCounter[l] = 0); updateUI(); } return; }
-
         if(confirm(`RESET ${mach}? Total: ${valueToSave}`)) {
             try {
                 const newOffset = manualOffset + valueToSave;
@@ -890,10 +848,16 @@
         });
     };
 
-    async function loadLastCacheFromFirebase() {
-        const snap = await get(ref(database, 'lastCache'));
-        if(snap.exists()) { Object.keys(snap.val()).forEach(m => { if(snap.val()[m].counter) Object.assign(latestCounter, snap.val()[m].counter); }); updateUI(); }
-    }
+    window.updateChartPeriod = (period, btn) => { document.querySelectorAll('.btn-chart').forEach(b => b.classList.remove('active')); btn.classList.add('active'); processAndRenderChart(period); };
+    async function fetchHistoryForChart() { const snap = await get(ref(database, 'history')); if(snap.exists()) { historyDataCache = Object.values(snap.val()); processAndRenderChart('daily'); } }
+    function processAndRenderChart(period) { if(historyDataCache.length === 0) return; const grouped = {}; const months = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"]; historyDataCache.forEach(entry => { let d = entry.timestamp ? new Date(entry.timestamp) : new Date(); let key; if (period === 'daily') key = d.toLocaleDateString('id-ID', {day:'numeric', month:'short'}); else if (period === 'weekly') { const start = new Date(d.getFullYear(), d.getMonth(), 1); const week = Math.ceil((d.getDate() + start.getDay()) / 7); key = `W${week} (${months[d.getMonth()]})`; } else key = `${months[d.getMonth()]} ${d.getFullYear()}`; if(!grouped[key]) grouped[key] = { act: 0, teorythical: 0 }; grouped[key].act += (entry.total || 0); grouped[key].teorythical += (entry.totalTeorythical !== undefined ? entry.totalTeorythical : 470000); }); const lbls = Object.keys(grouped); const acts = lbls.map(k => grouped[k].act); const teorythicals = lbls.map(k => grouped[k].teorythical); renderChart(lbls, acts, teorythicals); }
+    function renderChart(labels, actuals, teorythicals) { const ctx = document.getElementById('productionChart').getContext('2d'); if (myChart) myChart.destroy(); myChart = new Chart(ctx, { data: { labels: labels, datasets: [{ type: 'line', label: 'Target', data: teorythicals, borderColor: getVar('--warning'), backgroundColor: getVar('--warning'), borderWidth: 2, borderDash: [6, 4], pointRadius: 0, tension: 0.3, order: 1 }, { type: 'bar', label: 'Actual', data: actuals, backgroundColor: ctx => { const i = ctx.dataIndex; return actuals[i] >= teorythicals[i] ? getVar('--success') : getVar('--danger'); }, borderRadius: 6, order: 2, barPercentage: 0.6 }] }, options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, grace: '5%', grid: { color: getVar('--border-color'), borderDash: [4, 4] }, ticks: { stepSize: 1000, color: getVar('--text-muted'), callback: v => v >= 1000 ? (v/1000).toFixed(0)+'k' : v } }, x: { grid: { display: false }, ticks: { color: getVar('--text-muted') } } }, plugins: { legend: { display: false }, tooltip: { backgroundColor: getVar('--bg-header'), titleColor: getVar('--text-main'), bodyColor: getVar('--text-main'), borderColor: getVar('--border-color'), borderWidth: 1 } } } }); }
+    
+    const client = mqtt.connect("wss://72ebeae451364089a9ebe5b5f5702548.s1.eu.hivemq.cloud:8884/mqtt", { username: "admin", password: "Admin123", reconnectPeriod: 2000 });
+    client.on("connect", () => { document.getElementById("status").innerText = "Connected"; for(let i=1; i<=6; i++) client.subscribe(`iot/esp32/machine0${i}/counter`); });
+    client.on("message", (t, m) => { try { const d = JSON.parse(m.toString()); const mach = t.split('/')[2]; if(Object.values(d.counter).every(v=>v===0) && d.reset_source!=="web") {} Object.assign(latestCounter, d.counter); set(ref(database, `lastCache/${mach}`), d); document.getElementById("firebaseStatus").innerText = "Synced"; updateUI(); } catch(e) { console.error(e); } });
+    async function loadLastCacheFromFirebase() { const snap = await get(ref(database, 'lastCache')); if(snap.exists()) { Object.keys(snap.val()).forEach(m => { if(snap.val()[m].counter) Object.assign(latestCounter, snap.val()[m].counter); }); updateUI(); } }
+    window.exportToExcel = () => { if (historyDataCache.length === 0) return alert("No data."); let csv = "\uFEFFWaktu;Total Actual;Total Teorythical"; for (let i = 1; i <= 15; i++) { if(i!==13) csv += `;Line ${i}`; } csv += "\n"; [...historyDataCache].reverse().forEach(item => { let row = `"${item.time.replace(/,/g, '')}";${item.total||0};${item.totalTeorythical||0}`; for (let i = 1; i <= 15; i++) { if(i!==13) row += `;${item.counter ? (item.counter[`L${i}`]||0) : 0}`; } csv += row + "\n"; }); const link = document.createElement("a"); link.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' })); link.download = `SardinesPHI_History.csv`; link.click(); };
 </script>
 </body>
 </html>
