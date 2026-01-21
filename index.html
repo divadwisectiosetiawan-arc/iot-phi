@@ -437,6 +437,7 @@
 
                 <div class="downtime-section">
                     <span class="downtime-title">LOSS TIME & DOWNTIME (Menit)</span>
+                    <small style="color:var(--text-muted); font-size:10px; margin-bottom:10px; display:block;">Input ini hanya mengurangi nilai EFFICIENCY, bukan nilai Theoretical.</small>
                     
                     <div class="form-row">
                         <div class="form-col"><div class="form-group"><label class="form-label">Unuse</label><input type="number" id="dtUnuse" class="modal-input" placeholder="0"></div></div>
@@ -630,11 +631,9 @@
         // NEW: Load Setting Per Line
         onValue(ref(database, 'lineSettings'), (snap) => {
             lineConfigs = snap.val() || {};
-            // Jangan generate ulang kartu agar tidak flicker, cukup updateUI
-            // Kita bisa panggil updateUI langsung untuk merefresh perhitungan CPM
             updateUI();
             
-            // Khusus untuk update badge CPM di card, kita perlu update DOM element spesifik
+            // Khusus untuk update badge CPM di card
             for(let i=1; i<=15; i++) {
                 if(i===13) continue;
                 const conf = lineConfigs[`L${i}`] || { cpm: defaultCPM };
@@ -687,7 +686,6 @@
         
         await set(ref(database, `lineSettings/L${lineId}`), newConfig);
         closeSettings();
-        // Update UI langsung untuk feedback cepat (optimistic update)
         lineConfigs[`L${lineId}`] = newConfig;
         updateUI();
     };
@@ -697,7 +695,7 @@
         const role = sessionStorage.getItem("role");
         if(role === 'admin') {
             document.body.classList.add("is-admin");
-            document.querySelectorAll('.admin-only').forEach(e => e.style.display = 'flex'); // Show admin controls
+            document.querySelectorAll('.admin-only').forEach(e => e.style.display = 'flex'); 
         } else {
             document.body.classList.remove("is-admin");
             document.querySelectorAll('.admin-only').forEach(e => e.style.display = 'none');
@@ -707,7 +705,7 @@
     window.doLogin = () => {
         const u = document.getElementById("username").value;
         const p = document.getElementById("password").value;
-        if(u === "phi" && p === "phi12345") {
+        if(u === "admin" && p === "admin123") {
             sessionStorage.setItem("role", "admin");
             window.toggleLoginModal();
             checkAuth();
@@ -717,23 +715,18 @@
         }
     };
 
-    window.logout = () => { 
-        sessionStorage.clear(); 
-        location.reload(); 
-    };
+    window.logout = () => { sessionStorage.clear(); location.reload(); };
 
     window.onload = () => {
-        // Dashboard selalu terbuka untuk umum
         generateAllCards(); 
         syncConfig(); 
         loadLastCacheFromFirebase(); 
         fetchHistoryForChart();
-        checkAuth(); // Cek apakah admin atau viewer
+        checkAuth(); 
 
         setInterval(checkAutoSchedule, 10000); 
         setInterval(updateUI, 1000);
 
-        // Close modal jika klik di luar
         window.onclick = function(event) {
             const modal = document.getElementById("settingsModal");
             if (event.target == modal) closeSettings();
@@ -850,7 +843,7 @@
         } catch(e) { console.error(e); }
     });
 
-    // --- GENERATE CARDS (WITH SETTINGS BUTTON - Hidden by Default) ---
+    // --- GENERATE CARDS ---
     function generateAllCards() {
         const c1 = document.getElementById("clubCanContainer"); const c2 = document.getElementById("roundCanContainer");
         c1.innerHTML = ""; c2.innerHTML = "";
@@ -885,7 +878,7 @@
         }
     }
 
-    // --- CORE CALCULATION LOGIC (FIXED) ---
+    // --- CORE CALCULATION LOGIC (REVISED) ---
     function updateUI() {
         if(!globalStartTime) return;
         
@@ -899,51 +892,58 @@
 
             // Load Config
             const conf = lineConfigs[`L${i}`] || {};
-            // FIX: Pastikan CPM di-parse sebagai Integer
             const speed = parseInt(conf.cpm) || defaultCPM;
             
-            // 1. Hitung Durasi Operasional
-            let opMins = globalMins; // Default global
+            // 1. Hitung Durasi Operasional (UNTUK THEORETICAL DISPLAY)
+            let opMins = globalMins; 
             
-            // Custom Start Time
+            // Custom Start Time Logic
             if(conf.startTime) {
                 const [h, m] = conf.startTime.split(':');
                 const startDt = new Date();
                 startDt.setHours(h, m, 0, 0);
                 opMins = Math.max(0, now - startDt) / 60000;
             }
-            
-            // Custom Stop Time
             if(conf.stopTime) {
                 const [h, m] = conf.stopTime.split(':');
                 const stopDt = new Date();
                 stopDt.setHours(h, m, 0, 0);
-                
                 if(now > stopDt) {
-                     // Jika sudah lewat jam stop, kunci waktu
                      const startReference = conf.startTime ? (() => {
                         const [sh, sm] = conf.startTime.split(':');
                         const s = new Date(); s.setHours(sh,sm,0,0); return s;
                      })() : new Date(globalStartTime);
-                     
                      opMins = Math.max(0, stopDt - startReference) / 60000;
                 }
             }
 
-            // 2. Kurangi Downtime
+            // 2. Kalkulasi Total Downtime (HANYA UNTUK EFFICIENCY)
             const totalDowntime = (parseInt(conf.dtUnuse)||0) + (parseInt(conf.dtExt)||0) + (parseInt(conf.dtPlan)||0) + 
                                   (parseInt(conf.dtTrial)||0) + (parseInt(conf.dtBreakdown)||0) + (parseInt(conf.dtSpeed)||0) + (parseInt(conf.dtMinor)||0);
             
+            // 3. Kalkulasi Nilai
+            const act = latestCounter[`L${i}`] || 0;
+            
+            // Theoretical (Target Display) = Murni Waktu * Speed (Gross Target)
+            const teorythical = Math.floor(speed * opMins);
+            
+            // Efficiency = Actual / (Waktu Bersih * Speed)
             let netRunTime = opMins - totalDowntime;
             if(netRunTime < 0) netRunTime = 0;
-
-            // 3. Kalkulasi
-            const act = latestCounter[`L${i}`] || 0;
-            const teorythical = Math.floor(speed * netRunTime);
             
-            const effVal = teorythical>0 ? ((act/teorythical)*100) : 0;
+            const netTarget = Math.floor(speed * netRunTime);
+            
+            let effVal = 0;
+            if (netTarget > 0) {
+                effVal = (act / netTarget) * 100;
+            } else if (act > 0) {
+                // Jika net target 0 tapi ada actual (misal start time salah), eff anggap 100%
+                effVal = 100;
+            }
+            
             const effStr = effVal.toFixed(1)+'%';
             
+            // Accumulate
             const isP = (i===5||i===6);
             if(isP) { pAct+=act; rTeo+=teorythical; } else { cAct+=act; cTeo+=teorythical; }
             gTot+=act;
@@ -979,6 +979,10 @@
         const elTeo = document.getElementById(`${id}Teorythical`);
         if(elTeo) elTeo.innerText = teorythical.toLocaleString();
         
+        // Efficiency Summary juga mengikuti logika Gross Target di sini (atau bisa disesuaikan)
+        // Untuk konsistensi visual dashboard, biasanya Summary Eff = Actual / Gross Theoretical
+        // TAPI karena user minta downtime affect OEE, maka summary eff di sini mungkin terlihat lebih rendah
+        // daripada rata-rata eff per line. Ini wajar.
         const eff = teorythical>0 ? ((act/teorythical)*100).toFixed(1)+'%' : '0%';
         const el = document.getElementById(`${id}Eff`); 
         if(el) {
@@ -1047,7 +1051,6 @@
     async function executeSaveAndReset() {
         let act = manualOffset, teorythical = 0;
         
-        // Kalkulasi manual untuk total teorythical saat reset akhir shift
         const now = new Date();
         const globalMins = globalStartTime ? Math.max(0, now.getTime() - globalStartTime) / 60000 : 0;
 
@@ -1058,7 +1061,7 @@
             const conf = lineConfigs[`L${i}`] || {};
             const speed = parseInt(conf.cpm) || defaultCPM;
             
-            // Simplified logic for report
+            // Simpan Gross Target ke History agar sesuai tampilan card
             teorythical += Math.floor(speed * globalMins); 
         }
 
