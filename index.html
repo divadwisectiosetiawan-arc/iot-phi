@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>PASIFIK HARVEST INDONESIA - OEE MONITORING</title>
+    <title>PASIFIK HARVEST INDONESIA - OEE SYSTEM</title>
     
     <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
 
     <style>
-        /* --- 1. CSS UTAMA (DESKTOP) --- */
+        /* --- CSS UTAMA --- */
         :root {
             --bg-body: #0f172a;
             --bg-card: #1e293b;
@@ -25,11 +25,9 @@
             --danger: #ef4444;
             --purple: #a855f7;
             --info: #0ea5e9;
-            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-            --radius: 12px;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
             
             /* Mobile Variables */
-            --nav-height: 60px;
             --whatsapp-header: #1f2c34;
             --whatsapp-bg: #111b21;
         }
@@ -48,54 +46,34 @@
             --danger: #dc2626;
             --purple: #7c3aed;
             --info: #0284c7;
-            --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-            
-            /* Mobile Light */
-            --whatsapp-header: #0284c7;
-            --whatsapp-bg: #f0f2f5;
         }
 
         * { box-sizing: border-box; }
-        body { margin: 0; font-family: 'Inter', sans-serif; background-color: var(--bg-body); color: var(--text-main); transition: background-color 0.3s, color 0.3s; -webkit-font-smoothing: antialiased; }
-
+        body { margin: 0; font-family: 'Inter', sans-serif; background-color: var(--bg-body); color: var(--text-main); transition: background-color 0.3s, color 0.3s; }
         button { cursor: pointer; font-family: inherit; transition: all 0.2s ease; }
         button:active { transform: scale(0.98); }
 
-        /* Login Modal (ADMIN) */
-        .login-overlay { 
-            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
-            background: rgba(0,0,0,0.8); backdrop-filter: blur(5px); z-index: 3000;
-            align-items: center; justify-content: center;
-        }
-        .login-box { background: var(--bg-card); padding: 40px; width: 100%; max-width: 400px; border-radius: 16px; border: 1px solid var(--border-color); box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1); text-align: center; position: relative;}
+        /* Login */
+        .login-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); backdrop-filter: blur(5px); z-index: 3000; align-items: center; justify-content: center; }
+        .login-box { background: var(--bg-card); padding: 40px; width: 100%; max-width: 400px; border-radius: 16px; border: 1px solid var(--border-color); text-align: center; position: relative;}
         .login-logo { height: 80px; width: auto; margin-bottom: 20px; filter: drop-shadow(0 0 10px var(--primary-bg)); }
-        .login-box h2 { color: var(--primary); margin: 0 0 20px 0; font-size: 24px; }
         .login-box input { width: 100%; padding: 14px; margin-bottom: 15px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-body); color: var(--text-main); outline: none; }
-        .login-box input:focus { border-color: var(--primary); }
-        .login-box button { width: 100%; padding: 14px; background: var(--primary); color: white; border: none; border-radius: 8px; font-weight: 600; font-size: 16px; }
+        .login-box button { width: 100%; padding: 14px; background: var(--primary); color: white; border: none; border-radius: 8px; font-weight: 600; }
         .close-login { position: absolute; top: 10px; right: 15px; font-size: 24px; color: var(--text-muted); background: none; border: none; cursor: pointer; }
 
-        /* Dashboard & Header (DESKTOP DEFAULT) */
+        /* Layout */
         #dashboardPage { display: block; animation: fadeIn 0.5s ease; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* HEADER ASLI */
         header.desktop-header { background: var(--bg-header); backdrop-filter: blur(10px); padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; border-bottom: 1px solid var(--border-color); box-shadow: var(--shadow); }
         .header-left { display: flex; align-items: center; gap: 15px; }
         .header-logo { height: 40px; width: auto; }
-        .header-title { font-size: 20px; font-weight: 700; color: var(--primary); letter-spacing: -0.5px; }
+        .header-title { font-size: 20px; font-weight: 700; color: var(--primary); }
         nav { display: flex; align-items: center; gap: 12px; }
         nav select, nav button { padding: 8px 16px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-main); font-size: 13px; font-weight: 500; }
-        nav button:hover { background: var(--bg-body); border-color: var(--primary); }
         .btn-theme { padding: 8px !important; display: flex; align-items: center; justify-content: center; }
 
         .container { padding: 30px; max-width: 1400px; margin: auto; }
-
-        /* Components */
-        .total-box { background: linear-gradient(135deg, var(--bg-card), var(--bg-body)); padding: 30px; border-radius: 20px; text-align: center; margin-bottom: 40px; border: 1px solid var(--border-color); box-shadow: var(--shadow); position: relative; overflow: hidden; }
-        .total-box::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px; background: linear-gradient(90deg, var(--primary), var(--purple)); }
-        .total-box .label { color: var(--text-muted); font-size: 13px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; }
-        .total-box h1 { margin: 10px 0 0; font-size: 56px; color: var(--primary); font-weight: 800; letter-spacing: -2px; }
 
         .section-header { display: flex; align-items: center; gap: 12px; margin: 40px 0 20px; padding-bottom: 10px; border-bottom: 1px solid var(--border-color); }
         .section-title { font-size: 18px; font-weight: 700; color: var(--text-main); }
@@ -104,21 +82,20 @@
 
         .layout-row { display: flex; gap: 25px; align-items: flex-start; }
         
-        .summary-card { background: var(--bg-card); border: 1px solid var(--border-color); padding: 25px; border-radius: 16px; min-width: 280px; width: 280px; flex-shrink: 0; box-shadow: var(--shadow); }
-        .summary-header { font-size: 16px; font-weight: 700; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid var(--border-color); }
-        .summary-row { margin-bottom: 15px; }
-        .summary-label { font-size: 12px; color: var(--text-muted); margin-bottom: 4px; }
-        .summary-value { font-size: 24px; font-weight: 700; }
-
-        /* OEE SPECIFIC */
+        /* OEE Analytics */
         .oee-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-bottom: 30px; }
         .oee-card { background: var(--bg-card); padding: 20px; border-radius: 16px; border: 1px solid var(--border-color); text-align: center; }
         .oee-title { font-size: 12px; color: var(--text-muted); font-weight: 700; letter-spacing: 1px; margin-bottom: 10px; }
         .oee-value { font-size: 28px; font-weight: 800; }
         .oee-desc { font-size: 11px; color: var(--text-muted); margin-top: 5px; }
 
-        .grid { flex-grow: 1; display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; }
+        .summary-card { background: var(--bg-card); border: 1px solid var(--border-color); padding: 25px; border-radius: 16px; min-width: 280px; width: 280px; flex-shrink: 0; box-shadow: var(--shadow); }
+        .summary-header { font-size: 16px; font-weight: 700; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid var(--border-color); }
+        .summary-row { margin-bottom: 15px; }
+        .summary-label { font-size: 12px; color: var(--text-muted); margin-bottom: 4px; }
+        .summary-value { font-size: 24px; font-weight: 700; }
 
+        .grid { flex-grow: 1; display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; }
         .card { background: var(--bg-card); padding: 20px; border-radius: 16px; border: 1px solid var(--border-color); transition: transform 0.2s, box-shadow 0.2s; position: relative; overflow: hidden; }
         .card:hover { transform: translateY(-4px); box-shadow: 0 10px 20px rgba(0,0,0,0.1); border-color: var(--primary); }
         .card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px; }
@@ -142,85 +119,47 @@
 
         footer { text-align: center; padding: 30px; color: var(--text-muted); font-size: 12px; }
 
-        /* --- CSS SETTINGS MODAL --- */
-        .modal {
-            display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%;
-            overflow: auto; background-color: rgba(0,0,0,0.7); backdrop-filter: blur(5px);
-            animation: fadeIn 0.3s;
-        }
-        .modal-content {
-            background-color: var(--bg-card); margin: 5% auto; padding: 0; border: 1px solid var(--border-color);
-            width: 90%; max-width: 600px; border-radius: 16px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-            color: var(--text-main);
-        }
-        .modal-header {
-            padding: 20px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;
-        }
-        .modal-header h2 { margin: 0; font-size: 18px; color: var(--primary); }
+        /* --- SETTINGS MODAL --- */
+        .modal { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.7); backdrop-filter: blur(5px); }
+        .modal-content { background-color: var(--bg-card); margin: 5% auto; padding: 0; border: 1px solid var(--border-color); width: 90%; max-width: 600px; border-radius: 16px; color: var(--text-main); }
+        .modal-header { padding: 20px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; }
         .modal-close { font-size: 28px; font-weight: bold; color: var(--text-muted); cursor: pointer; background: none; border: none; }
         .modal-body { padding: 20px; max-height: 70vh; overflow-y: auto; }
         .form-group { margin-bottom: 15px; }
         .form-label { display: block; margin-bottom: 5px; font-size: 12px; color: var(--text-muted); font-weight: 600; }
         .form-row { display: flex; gap: 15px; }
         .form-col { flex: 1; }
-        .modal-input {
-            width: 100%; padding: 10px; border-radius: 8px; border: 1px solid var(--border-color);
-            background: var(--bg-body); color: var(--text-main); font-family: inherit;
-        }
+        .modal-input { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-body); color: var(--text-main); font-family: inherit; }
         .modal-input:focus { outline: none; border-color: var(--primary); }
-        .downtime-section {
-            background: rgba(239, 68, 68, 0.05); padding: 15px; border-radius: 8px; border: 1px solid rgba(239, 68, 68, 0.2); margin-top: 10px;
-        }
-        .downtime-title { color: var(--danger); font-size: 13px; font-weight: 700; margin-bottom: 10px; display: block; border-bottom: 1px solid rgba(239, 68, 68, 0.2); padding-bottom: 5px;}
+        .downtime-section { background: rgba(239, 68, 68, 0.05); padding: 15px; border-radius: 8px; border: 1px solid rgba(239, 68, 68, 0.2); margin-top: 10px; }
+        .downtime-title { color: var(--danger); font-size: 13px; font-weight: 700; margin-bottom: 10px; display: block; border-bottom: 1px solid rgba(239, 68, 68, 0.2); padding-bottom: 5px; }
         .modal-footer { padding: 20px; border-top: 1px solid var(--border-color); text-align: right; }
         
         /* ADMIN CONTROLS */
         .btn-settings, .admin-only { display: none; }
-        body.is-admin .btn-settings { display: block; background: transparent; border: none; color: var(--text-muted); cursor: pointer; padding: 5px; transition: color 0.2s; }
+        body.is-admin .btn-settings { display: block; background: transparent; border: none; color: var(--text-muted); cursor: pointer; padding: 5px; }
         body.is-admin .btn-settings:hover { color: var(--primary); }
         body.is-admin .admin-only { display: inline-block; }
         body.is-admin .guest-only { display: none; }
 
-
-        /* --- 3. MOBILE CSS --- */
+        /* MOBILE */
         .mobile-header, .bottom-nav, .mobile-kebab-menu, .mobile-overlay { display: none; }
-        
         @media (max-width: 900px) {
             body { background-color: var(--whatsapp-bg); padding-bottom: 70px; } 
             .container { padding: 10px; margin-top: 55px; }
             .desktop-header { display: none !important; }
-            .header-title { display: block; font-size: 16px; } 
-            .mobile-header {
-                display: flex; position: fixed; top: 0; left: 0; right: 0; height: 56px;
-                background: var(--whatsapp-header); color: white;
-                align-items: center; justify-content: space-between; padding: 0 16px;
-                z-index: 1000; box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-            }
+            .mobile-header { display: flex; position: fixed; top: 0; left: 0; right: 0; height: 56px; background: var(--whatsapp-header); color: white; align-items: center; justify-content: space-between; padding: 0 16px; z-index: 1000; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
             .mobile-title { font-weight: 600; font-size: 20px; }
             .mobile-actions button { background: none; border: none; color: white; font-size: 20px; padding: 8px; }
-            .mobile-kebab-menu {
-                display: none; flex-direction: column; position: fixed; top: 5px; right: 5px;
-                background: var(--bg-card); width: 200px; border-radius: 4px;
-                box-shadow: 0 5px 15px rgba(0,0,0,0.5); z-index: 2000;
-                transform-origin: top right; animation: scaleIn 0.2s ease;
-            }
+            .mobile-kebab-menu { display: none; flex-direction: column; position: fixed; top: 5px; right: 5px; background: var(--bg-card); width: 200px; border-radius: 4px; box-shadow: 0 5px 15px rgba(0,0,0,0.5); z-index: 2000; }
             .mobile-kebab-menu.show { display: flex; }
             .kebab-item { padding: 14px 16px; color: var(--text-main); font-size: 14px; text-align: left; background: none; border: none; }
-            .kebab-item:hover { background: var(--bg-body); }
             .mobile-overlay { display: none; position: fixed; inset: 0; z-index: 1500; }
             .mobile-overlay.show { display: block; }
-            .bottom-nav {
-                display: flex; position: fixed; bottom: 0; left: 0; right: 0; height: 65px;
-                background: var(--bg-card); border-top: 1px solid var(--border-color);
-                z-index: 1000; justify-content: space-around; align-items: center;
-            }
-            .nav-item {
-                flex: 1; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center;
-                background: none; border: none; color: var(--text-muted); gap: 4px;
-            }
+            .bottom-nav { display: flex; position: fixed; bottom: 0; left: 0; right: 0; height: 65px; background: var(--bg-card); border-top: 1px solid var(--border-color); z-index: 1000; justify-content: space-around; align-items: center; }
+            .nav-item { flex: 1; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; background: none; border: none; color: var(--text-muted); gap: 4px; }
             .nav-item.active { color: var(--success); }
             .nav-item.active .nav-indicator { width: 100%; height: 3px; background: var(--success); position: absolute; top: 0; }
-            .nav-icon { font-size: 20px; }
             .nav-label { font-size: 12px; font-weight: 500; }
             [data-mobile-tab="dashboard"] .m-hide-dashboard { display: none !important; }
             [data-mobile-tab="total"] .m-hide-total { display: none !important; }
@@ -230,15 +169,11 @@
             .grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
             .card { padding: 12px; }
             .card td { font-size: 16px; }
-            .total-box h1 { font-size: 40px; }
-            .chart-container { min-height: 300px; padding: 10px; }
-            .section-header { margin-top: 15px; margin-bottom: 15px; }
-            .chart-legend-custom { display: none; }
             .oee-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
             .oee-value { font-size: 20px; }
+            .chart-container { min-height: 300px; padding: 10px; }
+            .chart-legend-custom { display: none; }
         }
-
-        @keyframes scaleIn { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
     </style>
 </head>
 
@@ -266,7 +201,6 @@
         <nav>
             <span id="clock" style="font-family: monospace; font-weight:600; color:var(--text-main)"></span>
             <button onclick="toggleLoginModal()" class="guest-only">Administrator</button>
-            
             <div class="admin-only" style="display:none; gap:10px; align-items:center;">
                 <select id="machineSelect">
                     <option value="machine01|L1">Machine 01</option>
@@ -280,7 +214,6 @@
                 <button onclick="resetCounter()" style="color:var(--danger); border-color:var(--danger)">Reset</button>
                 <button onclick="logout()">Logout</button>
             </div>
-            
             <button onclick="showDashboard()" title="Dashboard">Dashboard</button>
             <button onclick="showHistory()" title="History">History</button>
             <button onclick="toggleTheme()" class="btn-theme" title="Switch Theme">◑</button>
@@ -289,9 +222,7 @@
 
     <div class="mobile-header">
         <span class="mobile-title">SARDINES PRODUCTION PHI</span>
-        <div class="mobile-actions">
-            <button onclick="toggleKebabMenu()">&#8942;</button>
-        </div>
+        <div class="mobile-actions"><button onclick="toggleKebabMenu()">&#8942;</button></div>
     </div>
 
     <div class="mobile-overlay" id="mobileOverlay" onclick="toggleKebabMenu()"></div>
@@ -347,18 +278,9 @@
         <div class="layout-row">
             <div class="summary-card m-hide-dashboard m-hide-grafik" style="border-left: 4px solid var(--primary);">
                 <div class="summary-header" style="color: var(--primary)">OVERALL CLUB CAN</div>
-                <div class="summary-row">
-                    <div class="summary-label">Total Actual</div>
-                    <div class="summary-value" id="totalClubActual" style="color: var(--text-main)">0</div>
-                </div>
-                <div class="summary-row">
-                    <div class="summary-label">Total Teorythical</div>
-                    <div class="summary-value" id="totalClubTeorythical" style="color: var(--primary)">0</div>
-                </div>
-                <div class="summary-row">
-                    <div class="summary-label">Avg Efficiency</div>
-                    <div class="summary-value" id="totalClubEff">0%</div>
-                </div>
+                <div class="summary-row"><div class="summary-label">Total Actual</div><div class="summary-value" id="totalClubActual" style="color: var(--text-main)">0</div></div>
+                <div class="summary-row"><div class="summary-label">Total Teorythical</div><div class="summary-value" id="totalClubTeorythical" style="color: var(--primary)">0</div></div>
+                <div class="summary-row"><div class="summary-label">Avg Efficiency</div><div class="summary-value" id="totalClubEff">0%</div></div>
             </div>
             <div class="grid m-hide-total m-hide-grafik" id="clubCanContainer"></div>
         </div>
@@ -371,18 +293,9 @@
         <div class="layout-row">
             <div class="summary-card m-hide-dashboard m-hide-grafik" style="border-left: 4px solid var(--warning);">
                 <div class="summary-header" style="color: var(--warning)">OVERALL ROUND CAN</div>
-                <div class="summary-row">
-                    <div class="summary-label">Total Actual</div>
-                    <div class="summary-value" id="totalRoundActual" style="color: var(--text-main)">0</div>
-                </div>
-                <div class="summary-row">
-                    <div class="summary-label">Total Teorythical</div>
-                    <div class="summary-value" id="totalRoundTeorythical" style="color: var(--warning)">0</div>
-                </div>
-                <div class="summary-row">
-                    <div class="summary-label">Avg Efficiency</div>
-                    <div class="summary-value" id="totalRoundEff">0%</div>
-                </div>
+                <div class="summary-row"><div class="summary-label">Total Actual</div><div class="summary-value" id="totalRoundActual" style="color: var(--text-main)">0</div></div>
+                <div class="summary-row"><div class="summary-label">Total Teorythical</div><div class="summary-value" id="totalRoundTeorythical" style="color: var(--warning)">0</div></div>
+                <div class="summary-row"><div class="summary-label">Avg Efficiency</div><div class="summary-value" id="totalRoundEff">0%</div></div>
             </div>
             <div class="grid m-hide-total m-hide-grafik" id="roundCanContainer"></div>
         </div>
@@ -395,20 +308,10 @@
         <div class="layout-row">
             <div class="summary-card m-hide-dashboard m-hide-grafik" style="border-left: 4px solid var(--purple);">
                 <div class="summary-header" style="color: var(--purple)">OVERALL PERFORMANCE</div>
-                <div class="summary-row">
-                    <div class="summary-label">Overall Actual</div>
-                    <div class="summary-value" id="grandTotalActual" style="color: var(--purple)">0</div>
-                </div>
-                <div class="summary-row">
-                    <div class="summary-label">Overall Teorythical</div>
-                    <div class="summary-value" id="grandTotalTeorythical" style="color: var(--text-main)">0</div>
-                </div>
-                <div class="summary-row">
-                    <div class="summary-label">Overall Efficiency</div>
-                    <div class="summary-value" id="grandTotalEff">0%</div>
-                </div>
+                <div class="summary-row"><div class="summary-label">Overall Actual</div><div class="summary-value" id="grandTotalActual" style="color: var(--purple)">0</div></div>
+                <div class="summary-row"><div class="summary-label">Overall Teorythical</div><div class="summary-value" id="grandTotalTeorythical" style="color: var(--text-main)">0</div></div>
+                <div class="summary-row"><div class="summary-label">Overall Efficiency</div><div class="summary-value" id="grandTotalEff">0%</div></div>
             </div>
-            
             <div class="chart-container m-hide-dashboard m-hide-total">
                 <div class="chart-header">
                     <div class="chart-legend-custom">
@@ -438,63 +341,38 @@
             <div class="modal-body">
                 <input type="hidden" id="setLineId">
                 
-                <div class="form-row">
-                    <div class="form-col">
-                        <div class="form-group">
-                            <label class="form-label">TARGET SPEED (CPM)</label>
-                            <input type="number" id="setSpeed" class="modal-input" placeholder="70">
-                            <small style="color:var(--text-muted); font-size:10px;">Untuk hitung PERFORMANCE</small>
+                <div style="background:var(--primary-bg); padding:15px; border-radius:8px; margin-bottom:15px; border:1px solid var(--primary)">
+                    <span style="font-weight:700; color:var(--primary); font-size:13px; display:block; margin-bottom:10px;">JAM KERJA (SHIFT)</span>
+                    <div class="form-row">
+                        <div class="form-col">
+                            <div class="form-group">
+                                <label class="form-label">MULAI SHIFT</label>
+                                <input type="time" id="setStart" class="modal-input">
+                            </div>
+                        </div>
+                        <div class="form-col">
+                            <div class="form-group">
+                                <label class="form-label">SELESAI SHIFT</label>
+                                <input type="time" id="setStop" class="modal-input">
+                            </div>
                         </div>
                     </div>
-                    <div class="form-col">
-                        <div class="form-group">
-                            <label class="form-label">DURASI SHIFT (JAM)</label>
-                            <input type="number" id="setShiftHours" class="modal-input" placeholder="8">
-                            <small style="color:var(--text-muted); font-size:10px;">Untuk hitung AVAILABILITY</small>
-                        </div>
+                    <div class="form-group">
+                        <label class="form-label">TARGET SPEED (CPM)</label>
+                        <input type="number" id="setSpeed" class="modal-input" placeholder="70">
                     </div>
-                </div>
-
-                <div class="form-row">
-                    <div class="form-col">
-                        <div class="form-group">
-                            <label class="form-label">START TIME</label>
-                            <input type="time" id="setStart" class="modal-input">
-                        </div>
+                    <div class="form-group">
+                        <label class="form-label">JUMLAH REJECT (Pcs)</label>
+                        <input type="number" id="setRejects" class="modal-input" placeholder="0">
                     </div>
-                    <div class="form-col">
-                        <div class="form-group">
-                            <label class="form-label">STOP TIME</label>
-                            <input type="time" id="setStop" class="modal-input">
-                        </div>
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label">JUMLAH REJECT / CACAT (Pcs)</label>
-                    <input type="number" id="setRejects" class="modal-input" placeholder="0">
-                    <small style="color:var(--text-muted); font-size:10px;">Untuk hitung QUALITY</small>
                 </div>
 
                 <div class="downtime-section">
-                    <span class="downtime-title">LOSS TIME & DOWNTIME (Menit)</span>
-                    <small style="color:var(--text-muted); font-size:10px; margin-bottom:10px; display:block;">Mengurangi Operating Time (Availability)</small>
+                    <span class="downtime-title">CATATAN DOWNTIME (JAM KEJADIAN)</span>
+                    <small style="color:var(--text-muted); font-size:10px; margin-bottom:15px; display:block;">Isi jam mulai dan selesai kejadian. Kosongkan jika tidak ada kejadian.</small>
                     
-                    <div class="form-row">
-                        <div class="form-col"><div class="form-group"><label class="form-label">Unuse</label><input type="number" id="dtUnuse" class="modal-input" placeholder="0"></div></div>
-                        <div class="form-col"><div class="form-group"><label class="form-label">Ext. Stop</label><input type="number" id="dtExt" class="modal-input" placeholder="0"></div></div>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-col"><div class="form-group"><label class="form-label">Plan DT</label><input type="number" id="dtPlan" class="modal-input" placeholder="0"></div></div>
-                        <div class="form-col"><div class="form-group"><label class="form-label">Trial</label><input type="number" id="dtTrial" class="modal-input" placeholder="0"></div></div>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-col"><div class="form-group"><label class="form-label">Breakdown</label><input type="number" id="dtBreakdown" class="modal-input" placeholder="0"></div></div>
-                        <div class="form-col"><div class="form-group"><label class="form-label">Speed Loss</label><input type="number" id="dtSpeed" class="modal-input" placeholder="0"></div></div>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-col"><div class="form-group"><label class="form-label">Minor Stop</label><input type="number" id="dtMinor" class="modal-input" placeholder="0"></div></div>
-                    </div>
+                    <div id="downtimeInputsContainer">
+                        </div>
                 </div>
             </div>
             <div class="modal-footer">
@@ -505,70 +383,25 @@
     </div>
 
     <div class="bottom-nav">
-        <button class="nav-item active" onclick="switchMobileTab('dashboard', this)">
-            <span class="nav-indicator"></span>
-            <span class="nav-icon">🗒</span>
-            <span class="nav-label">Dashboard</span>
-        </button>
-        <button class="nav-item" onclick="switchMobileTab('total', this)">
-            <span class="nav-indicator"></span>
-            <span class="nav-icon">∑</span>
-            <span class="nav-label">Total</span>
-        </button>
-        <button class="nav-item" onclick="switchMobileTab('grafik', this)">
-            <span class="nav-indicator"></span>
-            <span class="nav-icon">📈</span>
-            <span class="nav-label">Grafik</span>
-        </button>
+        <button class="nav-item active" onclick="switchMobileTab('dashboard', this)"><span class="nav-indicator"></span><span class="nav-icon">🗒</span><span class="nav-label">Dashboard</span></button>
+        <button class="nav-item" onclick="switchMobileTab('total', this)"><span class="nav-indicator"></span><span class="nav-icon">∑</span><span class="nav-label">Total</span></button>
+        <button class="nav-item" onclick="switchMobileTab('grafik', this)"><span class="nav-indicator"></span><span class="nav-icon">📈</span><span class="nav-label">Grafik</span></button>
     </div>
 
     <div class="container" id="historyView" style="display:none">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-            <div>
-                <h2 style="margin:0; color:var(--text-main)">Data Logger </h2>
-                <span style="font-size:13px; color:var(--text-muted)">Riwayat data penyimpanan akhir shift</span>
-            </div>
-            <div style="display:flex; gap:10px">
-                <button onclick="exportToExcel()" style="background:#10b981; border:none; color:white; padding:10px 20px; border-radius:8px;">Download Excel</button>
-                <button onclick="showDashboard()">Back</button>
-            </div>
+            <div><h2 style="margin:0; color:var(--text-main)">Data Logger </h2><span style="font-size:13px; color:var(--text-muted)">Riwayat data penyimpanan akhir shift</span></div>
+            <div style="display:flex; gap:10px"><button onclick="exportToExcel()" style="background:#10b981; border:none; color:white; padding:10px 20px; border-radius:8px;">Download Excel</button><button onclick="showDashboard()">Back</button></div>
         </div>
-        <div class="table-responsive">
-            <table class="full-table" id="historyTable">
-                <thead>
-                    <tr>
-                        <th style="min-width: 160px; text-align:left;">Waktu</th>
-                        <th style="min-width: 100px;">Total Actual</th>
-                        <th style="min-width: 100px;">Total Teorythical.</th>
-                        <th>L1</th><th>L2</th><th>L3</th><th>L4</th>
-                        <th style="background:var(--bg-card); border-bottom:2px solid var(--warning)">L5</th>
-                        <th style="background:var(--bg-card); border-bottom:2px solid var(--warning)">L6</th>
-                        <th>L7</th><th>L8</th><th>L9</th><th>L10</th><th>L11</th><th>L12</th><th>L14</th><th>L15</th>
-                    </tr>
-                </thead>
-                <tbody id="historyBody"></tbody>
-            </table>
-        </div>
+        <div class="table-responsive"><table class="full-table" id="historyTable"><thead><tr><th style="min-width: 160px; text-align:left;">Waktu</th><th style="min-width: 100px;">Total Actual</th><th style="min-width: 100px;">Total Teorythical.</th><th>L1</th><th>L2</th><th>L3</th><th>L4</th><th style="background:var(--bg-card); border-bottom:2px solid var(--warning)">L5</th><th style="background:var(--bg-card); border-bottom:2px solid var(--warning)">L6</th><th>L7</th><th>L8</th><th>L9</th><th>L10</th><th>L11</th><th>L12</th><th>L14</th><th>L15</th></tr></thead><tbody id="historyBody"></tbody></table></div>
     </div>
 
     <div class="container" id="sensorHistoryView" style="display:none">
-        <div style="margin-bottom:20px; display:flex; justify-content:space-between; align-items:center;">
-            <h2 id="sensorTitle" style="color:var(--text-main); margin:0;">Line Detail</h2>
-            <button onclick="showDashboard()">Back</button>
-        </div>
-        <div class="table-responsive">
-            <table class="full-table">
-                <thead><tr><th style="text-align:left">Waktu</th><th style="text-align:left">Nilai</th></tr></thead>
-                <tbody id="sensorHistoryTable"></tbody>
-            </table>
-        </div>
+        <div style="margin-bottom:20px; display:flex; justify-content:space-between; align-items:center;"><h2 id="sensorTitle" style="color:var(--text-main); margin:0;">Line Detail</h2><button onclick="showDashboard()">Back</button></div>
+        <div class="table-responsive"><table class="full-table"><thead><tr><th style="text-align:left">Waktu</th><th style="text-align:left">Nilai</th></tr></thead><tbody id="sensorHistoryTable"></tbody></table></div>
     </div>
 
-    <footer>
-        System: <span id="status" style="color:var(--success)">Connecting...</span> | 
-        Cloud: <span id="firebaseStatus" style="color:var(--primary)">Syncing...</span> | 
-        PASIFIK HARVEST INDONESIA &copy; 2026
-    </footer>
+    <footer>System: <span id="status" style="color:var(--success)">Connecting...</span> | Cloud: <span id="firebaseStatus" style="color:var(--primary)">Syncing...</span> | PASIFIK HARVEST INDONESIA &copy; 2026</footer>
 </div>
 
 <script type="module">
@@ -588,7 +421,6 @@
     const app = initializeApp(firebaseConfig);
     const database = getDatabase(app);
 
-    // --- STATE VARIABLES ---
     let latestCounter = {};
     let globalStartTime = null; 
     let manualOffset = 0; 
@@ -598,38 +430,49 @@
     let lineConfigs = {}; 
     const defaultCPM = 70;
 
+    // DAFTAR TIPE DOWNTIME (Untuk Generate Input)
+    const downtimeTypes = [
+        { id: 'dtUnuse', label: 'Unuse / Idle' },
+        { id: 'dtExt', label: 'External Stop' },
+        { id: 'dtPlan', label: 'Planned Downtime' },
+        { id: 'dtTrial', label: 'Trial / Setup' },
+        { id: 'dtBreakdown', label: 'Breakdown / Rusak' },
+        { id: 'dtSpeed', label: 'Speed Loss' },
+        { id: 'dtMinor', label: 'Minor Stop' }
+    ];
+
     const getVar = (name) => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
 
-    /* --- MOBILE & UI HELPERS --- */
-    window.toggleKebabMenu = () => {
-        const menu = document.getElementById("kebabMenu");
-        const overlay = document.getElementById("mobileOverlay");
-        menu.classList.toggle("show");
-        overlay.classList.toggle("show");
-    };
-
-    window.toggleLoginModal = () => {
-        const modal = document.getElementById("loginOverlay");
-        modal.style.display = modal.style.display === "flex" ? "none" : "flex";
+    // --- HELPER TIME CALCULATION ---
+    function calcTimeDiff(startStr, endStr) {
+        if (!startStr || !endStr) return 0;
+        const [h1, m1] = startStr.split(':').map(Number);
+        const [h2, m2] = endStr.split(':').map(Number);
+        
+        const date1 = new Date(); date1.setHours(h1, m1, 0, 0);
+        const date2 = new Date(); date2.setHours(h2, m2, 0, 0);
+        
+        // Handle cross-day (e.g. 23:00 to 01:00)
+        if (date2 < date1) date2.setDate(date2.getDate() + 1);
+        
+        return Math.floor((date2 - date1) / 60000);
     }
 
+    /* --- MOBILE & UI --- */
+    window.toggleKebabMenu = () => { document.getElementById("kebabMenu").classList.toggle("show"); document.getElementById("mobileOverlay").classList.toggle("show"); };
+    window.toggleLoginModal = () => { const m = document.getElementById("loginOverlay"); m.style.display = m.style.display === "flex" ? "none" : "flex"; };
     window.switchMobileTab = (tabName, btn) => {
         document.querySelectorAll('.bottom-nav .nav-item').forEach(b => b.classList.remove('active'));
         if(btn) btn.classList.add('active');
         document.getElementById('dashboardView').setAttribute('data-mobile-tab', tabName);
         window.scrollTo(0,0);
-        if(tabName === 'grafik' && myChart) {
-            setTimeout(() => { myChart.resize(); }, 100);
-        }
+        if(tabName === 'grafik' && myChart) setTimeout(() => { myChart.resize(); }, 100);
     };
-
     window.toggleTheme = () => {
         const html = document.documentElement;
-        const current = html.getAttribute('data-theme');
-        const next = current === 'dark' ? 'light' : 'dark';
+        const next = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
         html.setAttribute('data-theme', next);
         localStorage.setItem('theme', next);
-        
         if(myChart) {
             myChart.options.scales.x.ticks.color = getVar('--text-muted');
             myChart.options.scales.y.ticks.color = getVar('--text-muted');
@@ -637,7 +480,6 @@
             myChart.update();
         }
     };
-
     const savedTheme = localStorage.getItem('theme') || 'dark';
     document.documentElement.setAttribute('data-theme', savedTheme);
 
@@ -647,30 +489,22 @@
         const step = (timestamp) => {
             if (!startTimestamp) startTimestamp = timestamp;
             const progress = Math.min((timestamp - startTimestamp) / duration, 1);
-            const currentVal = Math.floor(progress * (end - start) + start);
-            obj.innerHTML = currentVal.toLocaleString(); 
-            if (progress < 1) {
-                window.requestAnimationFrame(step);
-            }
+            obj.innerHTML = Math.floor(progress * (end - start) + start).toLocaleString();
+            if (progress < 1) window.requestAnimationFrame(step);
         };
         window.requestAnimationFrame(step);
     }
 
-    // --- SYNC CONFIG ---
     function syncConfig() {
         onValue(ref(database, 'config/productionStartTime'), (snap) => {
             const val = snap.val();
             if (val) { globalStartTime = val; updateUI(); } 
             else { set(ref(database, 'config/productionStartTime'), Date.now()); }
         });
-        onValue(ref(database, 'config/manualOffset'), (snap) => {
-            manualOffset = snap.val() || 0;
-            updateUI();
-        });
+        onValue(ref(database, 'config/manualOffset'), (snap) => { manualOffset = snap.val() || 0; updateUI(); });
         onValue(ref(database, 'lineSettings'), (snap) => {
             lineConfigs = snap.val() || {};
             updateUI();
-            
             for(let i=1; i<=15; i++) {
                 if(i===13) continue;
                 const conf = lineConfigs[`L${i}`] || { cpm: defaultCPM };
@@ -680,26 +514,41 @@
         });
     }
 
-    // --- MODAL SETTINGS ---
+    // --- MODAL & SETTINGS ---
     window.openSettings = (lineId) => {
         const conf = lineConfigs[`L${lineId}`] || {};
-        
         document.getElementById("setLineId").value = lineId;
         document.getElementById("modalTitle").innerText = `Settings Line ${lineId.toString().padStart(2,'0')}`;
         
         document.getElementById("setSpeed").value = conf.cpm || defaultCPM;
-        document.getElementById("setShiftHours").value = conf.shiftHours || ""; // Input Jam
         document.getElementById("setStart").value = conf.startTime || "";
         document.getElementById("setStop").value = conf.stopTime || "";
-        document.getElementById("setRejects").value = conf.rejects || 0; // Input Reject
+        document.getElementById("setRejects").value = conf.rejects || 0;
         
-        document.getElementById("dtUnuse").value = conf.dtUnuse || "";
-        document.getElementById("dtExt").value = conf.dtExt || "";
-        document.getElementById("dtPlan").value = conf.dtPlan || "";
-        document.getElementById("dtTrial").value = conf.dtTrial || "";
-        document.getElementById("dtBreakdown").value = conf.dtBreakdown || "";
-        document.getElementById("dtSpeed").value = conf.dtSpeed || "";
-        document.getElementById("dtMinor").value = conf.dtMinor || "";
+        // Generate Downtime Inputs Dynamically
+        const container = document.getElementById("downtimeInputsContainer");
+        container.innerHTML = "";
+        
+        downtimeTypes.forEach(type => {
+            const savedVal = conf[type.id] || ""; 
+            const [startVal, endVal] = savedVal.split("|");
+
+            const html = `
+            <div style="margin-bottom:15px; border-bottom:1px dashed var(--border-color); padding-bottom:10px;">
+                <label class="form-label" style="color:var(--text-main)">${type.label}</label>
+                <div class="form-row">
+                    <div class="form-col">
+                        <span style="font-size:10px; color:var(--text-muted)">Mulai</span>
+                        <input type="time" id="${type.id}_start" class="modal-input" value="${startVal || ''}">
+                    </div>
+                    <div class="form-col">
+                        <span style="font-size:10px; color:var(--text-muted)">Selesai</span>
+                        <input type="time" id="${type.id}_end" class="modal-input" value="${endVal || ''}">
+                    </div>
+                </div>
+            </div>`;
+            container.innerHTML += html;
+        });
         
         document.getElementById("settingsModal").style.display = "block";
     };
@@ -708,19 +557,21 @@
 
     window.saveSettings = async () => {
         const lineId = document.getElementById("setLineId").value;
+        
+        // Gather Downtime Data
+        let downtimeData = {};
+        downtimeTypes.forEach(type => {
+            const s = document.getElementById(`${type.id}_start`).value;
+            const e = document.getElementById(`${type.id}_end`).value;
+            downtimeData[type.id] = (s && e) ? `${s}|${e}` : "";
+        });
+
         const newConfig = {
             cpm: parseInt(document.getElementById("setSpeed").value) || defaultCPM,
-            shiftHours: parseFloat(document.getElementById("setShiftHours").value) || 0, // Simpan Jam
             startTime: document.getElementById("setStart").value,
             stopTime: document.getElementById("setStop").value,
-            rejects: parseInt(document.getElementById("setRejects").value) || 0, // Simpan Reject
-            dtUnuse: parseInt(document.getElementById("dtUnuse").value) || 0,
-            dtExt: parseInt(document.getElementById("dtExt").value) || 0,
-            dtPlan: parseInt(document.getElementById("dtPlan").value) || 0,
-            dtTrial: parseInt(document.getElementById("dtTrial").value) || 0,
-            dtBreakdown: parseInt(document.getElementById("dtBreakdown").value) || 0,
-            dtSpeed: parseInt(document.getElementById("dtSpeed").value) || 0,
-            dtMinor: parseInt(document.getElementById("dtMinor").value) || 0,
+            rejects: parseInt(document.getElementById("setRejects").value) || 0,
+            ...downtimeData
         };
         
         await set(ref(database, `lineSettings/L${lineId}`), newConfig);
@@ -729,7 +580,6 @@
         updateUI();
     };
 
-    // --- AUTH ---
     function checkAuth() {
         const role = sessionStorage.getItem("role");
         if(role === 'admin') {
@@ -742,56 +592,35 @@
     }
 
     window.doLogin = () => {
-        const u = document.getElementById("username").value;
-        const p = document.getElementById("password").value;
-        if(u === "admin" && p === "admin123") {
+        if(document.getElementById("username").value === "admin" && document.getElementById("password").value === "admin123") {
             sessionStorage.setItem("role", "admin");
             window.toggleLoginModal();
             checkAuth();
-            alert("Login Berhasil! Mode Administrator Aktif.");
-        } else { 
-            document.getElementById("error").innerText = "Username atau Password salah!"; 
-        }
+            alert("Login Berhasil!");
+        } else { document.getElementById("error").innerText = "Username/Password salah!"; }
     };
-
     window.logout = () => { sessionStorage.clear(); location.reload(); };
 
     window.onload = () => {
-        generateAllCards(); 
-        syncConfig(); 
-        loadLastCacheFromFirebase(); 
-        fetchHistoryForChart();
-        checkAuth(); 
-
-        setInterval(checkAutoSchedule, 10000); 
-        setInterval(updateUI, 1000);
-
-        window.onclick = function(event) {
-            const modal = document.getElementById("settingsModal");
-            if (event.target == modal) closeSettings();
-        }
+        generateAllCards(); syncConfig(); loadLastCacheFromFirebase(); fetchHistoryForChart(); checkAuth();
+        setInterval(checkAutoSchedule, 10000); setInterval(updateUI, 1000);
+        window.onclick = function(event) { if (event.target == document.getElementById("settingsModal")) closeSettings(); }
     };
 
-    // --- EXPORT & HISTORY ---
+    // --- CHART & EXPORT ---
     window.exportToExcel = () => {
-        if (historyDataCache.length === 0) return alert("Tidak ada data history.");
+        if (historyDataCache.length === 0) return alert("No data.");
         let csv = "\uFEFFWaktu;Total Actual;Total Teorythical";
-        for (let i = 1; i <= 15; i++) {
-            if(i === 13) continue;
-            csv += `;Line ${i}`;
-        }
+        for (let i = 1; i <= 15; i++) { if(i!==13) csv += `;Line ${i}`; }
         csv += "\n";
         [...historyDataCache].reverse().forEach(item => {
             let row = `"${item.time.replace(/,/g, '')}";${item.total||0};${item.totalTeorythical||0}`;
-            for (let i = 1; i <= 15; i++) {
-                if(i === 13) continue;
-                row += `;${item.counter ? (item.counter[`L${i}`]||0) : 0}`;
-            }
+            for (let i = 1; i <= 15; i++) { if(i!==13) row += `;${item.counter ? (item.counter[`L${i}`]||0) : 0}`; }
             csv += row + "\n";
         });
         const link = document.createElement("a");
         link.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }));
-        link.download = `SardinesPHI_History_${new Date().toISOString().slice(0,10)}.csv`;
+        link.download = `SardinesPHI_History.csv`;
         link.click();
     };
 
@@ -810,7 +639,6 @@
         if(historyDataCache.length === 0) return;
         const grouped = {};
         const months = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"];
-        
         historyDataCache.forEach(entry => {
             let d = entry.timestamp ? new Date(entry.timestamp) : new Date();
             let key;
@@ -820,12 +648,10 @@
                 const week = Math.ceil((d.getDate() + start.getDay()) / 7);
                 key = `W${week} (${months[d.getMonth()]})`;
             } else key = `${months[d.getMonth()]} ${d.getFullYear()}`;
-
             if(!grouped[key]) grouped[key] = { act: 0, teorythical: 0 };
             grouped[key].act += (entry.total || 0);
             grouped[key].teorythical += (entry.totalTeorythical !== undefined ? entry.totalTeorythical : 470000);
         });
-
         const lbls = Object.keys(grouped);
         const acts = lbls.map(k => grouped[k].act);
         const teorythicals = lbls.map(k => grouped[k].teorythical);
@@ -835,31 +661,9 @@
     function renderChart(labels, actuals, teorythicals) {
         const ctx = document.getElementById('productionChart').getContext('2d');
         if (myChart) myChart.destroy();
-        
         myChart = new Chart(ctx, {
-            data: {
-                labels: labels,
-                datasets: [
-                    { type: 'line', label: 'Target', data: teorythicals, borderColor: getVar('--warning'), backgroundColor: getVar('--warning'), borderWidth: 2, borderDash: [6, 4], pointRadius: 0, tension: 0.3, order: 1 },
-                    { type: 'bar', label: 'Actual', data: actuals, backgroundColor: ctx => {
-                        const i = ctx.dataIndex; return actuals[i] >= teorythicals[i] ? getVar('--success') : getVar('--danger');
-                    }, borderRadius: 6, order: 2, barPercentage: 0.6 }
-                ]
-            },
-            options: {
-                responsive: true, 
-                maintainAspectRatio: false,
-                scales: {
-                    y: { 
-                        beginAtZero: true, 
-                        grace: '5%', 
-                        grid: { color: getVar('--border-color'), borderDash: [4, 4] }, 
-                        ticks: { stepSize: 1000, color: getVar('--text-muted'), callback: v => v >= 1000 ? (v/1000).toFixed(0)+'k' : v } 
-                    },
-                    x: { grid: { display: false }, ticks: { color: getVar('--text-muted') } }
-                },
-                plugins: { legend: { display: false }, tooltip: { backgroundColor: getVar('--bg-header'), titleColor: getVar('--text-main'), bodyColor: getVar('--text-main'), borderColor: getVar('--border-color'), borderWidth: 1 } }
-            }
+            data: { labels: labels, datasets: [{ type: 'line', label: 'Target', data: teorythicals, borderColor: getVar('--warning'), backgroundColor: getVar('--warning'), borderWidth: 2, borderDash: [6, 4], pointRadius: 0, tension: 0.3, order: 1 }, { type: 'bar', label: 'Actual', data: actuals, backgroundColor: ctx => { const i = ctx.dataIndex; return actuals[i] >= teorythicals[i] ? getVar('--success') : getVar('--danger'); }, borderRadius: 6, order: 2, barPercentage: 0.6 }] },
+            options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, grace: '5%', grid: { color: getVar('--border-color'), borderDash: [4, 4] }, ticks: { color: getVar('--text-muted') } }, x: { grid: { display: false }, ticks: { color: getVar('--text-muted') } } }, plugins: { legend: { display: false }, tooltip: { backgroundColor: getVar('--bg-header'), titleColor: getVar('--text-main'), bodyColor: getVar('--text-main'), borderColor: getVar('--border-color'), borderWidth: 1 } } }
         });
     }
 
@@ -880,128 +684,90 @@
     function generateAllCards() {
         const c1 = document.getElementById("clubCanContainer"); const c2 = document.getElementById("roundCanContainer");
         c1.innerHTML = ""; c2.innerHTML = "";
-        
         for(let i=1; i<=15; i++) {
             if(i === 13) continue;
-
             const conf = lineConfigs[`L${i}`] || { cpm: defaultCPM };
             const isP = (i===5||i===6);
             const style = isP ? "color:var(--warning)" : "color:var(--primary)";
             const borderStyle = isP ? 'border-left:4px solid var(--warning)' : 'border-left:4px solid var(--primary)';
-            
             const html = `
             <div class="card" style="${borderStyle}">
                 <div class="card-header">
-                    <div style="display:flex; flex-direction:column;">
-                        <h3 class="card-title">LINE ${i.toString().padStart(2,'0')}</h3>
-                        <span id="cpmBadge${i}" class="rate-badge" style="width:fit-content">${conf.cpm || defaultCPM} cpm</span>
-                    </div>
-                    <div>
-                         <button class="btn-settings" onclick="openSettings(${i})" title="Settings">⚙️</button>
-                    </div>
+                    <div style="display:flex; flex-direction:column;"><h3 class="card-title">LINE ${i.toString().padStart(2,'0')}</h3><span id="cpmBadge${i}" class="rate-badge" style="width:fit-content">${conf.cpm || defaultCPM} cpm</span></div>
+                    <div><button class="btn-settings" onclick="openSettings(${i})" title="Settings">⚙️</button></div>
                 </div>
-                <div onclick="showSensorHistory(${i})">
-                    <table>
-                        <tr><th>ACTUAL</th><th>TEORYTHICAL.</th><th>EFF.</th></tr>
-                        <tr><td class="val-actual" id="L${i}">0</td><td id="P${i}" style="${style}">0</td><td id="E${i}">0%</td></tr>
-                    </table>
-                </div>
+                <div onclick="showSensorHistory(${i})"><table><tr><th>ACTUAL</th><th>TEORYTHICAL.</th><th>EFF.</th></tr><tr><td class="val-actual" id="L${i}">0</td><td id="P${i}" style="${style}">0</td><td id="E${i}">0%</td></tr></table></div>
             </div>`;
             if(isP) c2.innerHTML+=html; else c1.innerHTML+=html;
         }
     }
 
-    // --- MAIN OEE CALCULATION LOGIC ---
+    // --- MAIN OEE LOGIC ---
     function updateUI() {
         if(!globalStartTime) return;
-        
         const now = new Date();
         const globalMins = Math.max(0, now.getTime() - globalStartTime) / 60000;
-        
         let gTot=0, cAct=0, cTeo=0, pAct=0, rTeo=0;
-        
-        // Variables for Global OEE Aggregation
-        let totalAvail = 0, countLines = 0;
-        let totalPerf = 0;
-        let totalQual = 0;
+        let totalAvail=0, totalPerf=0, totalQual=0, countLines=0;
 
         for(let i=1; i<=15; i++) {
             if(i === 13) continue;
             countLines++;
-
-            // Load Config
             const conf = lineConfigs[`L${i}`] || {};
             const speed = parseInt(conf.cpm) || defaultCPM;
             const rejects = parseInt(conf.rejects) || 0;
-            const shiftHours = parseFloat(conf.shiftHours) || 0;
 
-            // 1. Determine Total Planned Time (Minutes)
-            // Priority: Shift Hours Input > Custom Start/Stop > Global Timer
-            let plannedMinutes = globalMins;
-            
-            if (shiftHours > 0) {
-                // If user sets "8 Hours", we use that as the basis for Availability
-                plannedMinutes = shiftHours * 60;
-            } else if(conf.startTime) {
+            // 1. Planned Time (From Shift Start/Stop or Global)
+            let plannedMinutes = globalMins; 
+            if(conf.startTime) {
+                // Time from Shift Start until NOW (or Stop)
                 const [h, m] = conf.startTime.split(':');
                 const startDt = new Date(); startDt.setHours(h, m, 0, 0);
-                plannedMinutes = Math.max(0, now - startDt) / 60000;
                 
+                // End limit
+                let limitDt = now;
                 if(conf.stopTime) {
                     const [sh, sm] = conf.stopTime.split(':');
                     const stopDt = new Date(); stopDt.setHours(sh, sm, 0, 0);
-                    if(now > stopDt) {
-                         // Capped at stop time
-                         plannedMinutes = Math.max(0, stopDt - startDt) / 60000;
-                    }
+                    if(now > stopDt) limitDt = stopDt;
                 }
+                
+                plannedMinutes = Math.max(0, limitDt - startDt) / 60000;
             }
 
-            // 2. Downtime (Minutes)
-            const totalDowntime = (parseInt(conf.dtUnuse)||0) + (parseInt(conf.dtExt)||0) + (parseInt(conf.dtPlan)||0) + 
-                                  (parseInt(conf.dtTrial)||0) + (parseInt(conf.dtBreakdown)||0) + (parseInt(conf.dtSpeed)||0) + (parseInt(conf.dtMinor)||0);
-            
-            // 3. Operating Time (Run Time)
+            // 2. Downtime Calculation (Using HH:mm inputs)
+            let totalDowntime = 0;
+            downtimeTypes.forEach(type => {
+                const val = conf[type.id];
+                if(val && val.includes('|')) {
+                    const [s, e] = val.split('|');
+                    totalDowntime += calcTimeDiff(s, e);
+                }
+            });
+
+            // 3. Operating Time
             let operatingTime = plannedMinutes - totalDowntime;
             if(operatingTime < 0) operatingTime = 0;
 
             // 4. Counts
-            const act = latestCounter[`L${i}`] || 0;     // Total Output (Good + Bad if sensor counts all)
+            const act = latestCounter[`L${i}`] || 0;
             const goodCount = Math.max(0, act - rejects);
 
-            // --- OEE CALCULATIONS PER LINE ---
-            
-            // Availability % = Operating Time / Planned Time
-            let availPct = 0;
-            if (plannedMinutes > 0) availPct = (operatingTime / plannedMinutes);
-
-            // Performance % = Total Output / (Operating Time * Ideal Speed)
-            let perfPct = 0;
+            // OEE Metrics
+            let availPct = 0; if (plannedMinutes > 0) availPct = (operatingTime / plannedMinutes);
+            let perfPct = 0; 
             const targetOutput = operatingTime * speed;
             if (targetOutput > 0) perfPct = (act / targetOutput);
-
-            // Quality % = Good Count / Total Output
-            let qualPct = 0;
-            if (act > 0) qualPct = (goodCount / act);
-            else if (operatingTime > 0) qualPct = 1; // If running but no output yet, assume 100% Q or 0? Usually 100 until bad part found.
-
-            // OEE %
-            const oeePct = availPct * perfPct * qualPct;
-
-            // Accumulate for Global Average
-            totalAvail += availPct;
-            totalPerf += perfPct;
-            totalQual += qualPct;
-
-            // --- DISPLAY LOGIC FOR CARDS (EXISTING) ---
-            // "Theoretical" on card = Gross Target (Time * Speed) without downtime
-            const teorythicalDisplay = Math.floor(speed * plannedMinutes);
             
-            // "Efficiency" on card = OEE or Performance? 
-            // Based on previous request: Efficiency = Performance affected by downtime.
-            // Let's use the Performance % calculation but display as percentage string
-            const cardEffStr = (perfPct * 100).toFixed(1) + '%'; 
-            // Note: User logic in previous turn was slightly different, but this aligns with OEE Performance.
+            let qualPct = 0; if (act > 0) qualPct = (goodCount / act); else if(operatingTime > 0) qualPct = 1;
+
+            totalAvail += availPct; totalPerf += perfPct; totalQual += qualPct;
+
+            // --- Card Display Logic ---
+            // Theoretical = Gross Target (No Downtime)
+            const teorythicalDisplay = Math.floor(speed * plannedMinutes);
+            // Efficiency (Displayed on card) = Performance % (Output vs Potential in Run Time)
+            const cardEffStr = (perfPct * 100).toFixed(1) + '%';
 
             const isP = (i===5||i===6);
             if(isP) { pAct+=act; rTeo+=teorythicalDisplay; } else { cAct+=act; cTeo+=teorythicalDisplay; }
@@ -1011,7 +777,6 @@
             if(el) {
                 const curr = parseInt(el.innerText.replace(/[^0-9]/g, '')) || 0;
                 if(curr !== act) animateValue(el, curr, act, 500);
-
                 document.getElementById(`P${i}`).innerText = teorythicalDisplay.toLocaleString();
                 const eEl = document.getElementById(`E${i}`);
                 eEl.innerText = cardEffStr;
@@ -1019,7 +784,7 @@
             }
         }
 
-        // --- GLOBAL OEE UPDATE ---
+        // Global OEE
         if(countLines > 0) {
             const avgAvail = (totalAvail / countLines) * 100;
             const avgPerf = (totalPerf / countLines) * 100;
@@ -1038,49 +803,28 @@
         if(currTotal !== final) animateValue(elTotal, currTotal, final, 1000);
 
         document.getElementById("clock").innerText = new Date().toLocaleString('id-ID');
-        updSum("totalClub", cAct, cTeo); 
-        updSum("totalRound", pAct, rTeo); 
-        updSum("grandTotal", final, cTeo+rTeo);
+        updSum("totalClub", cAct, cTeo); updSum("totalRound", pAct, rTeo); updSum("grandTotal", final, cTeo+rTeo);
     }
 
     function updSum(id, act, teorythical) {
-        const elAct = document.getElementById(`${id}Actual`);
-        if(elAct) elAct.innerText = act.toLocaleString();
-        
-        const elTeo = document.getElementById(`${id}Teorythical`);
-        if(elTeo) elTeo.innerText = teorythical.toLocaleString();
-        
+        document.getElementById(`${id}Actual`).innerText = act.toLocaleString();
+        document.getElementById(`${id}Teorythical`).innerText = teorythical.toLocaleString();
         const eff = teorythical>0 ? ((act/teorythical)*100).toFixed(1)+'%' : '0%';
-        const el = document.getElementById(`${id}Eff`); 
-        if(el) {
-            el.innerText = eff;
-            el.style.color = parseFloat(eff)>=90 ? getVar('--success') : parseFloat(eff)>=70 ? getVar('--warning') : getVar('--danger');
-        }
+        const el = document.getElementById(`${id}Eff`);
+        if(el) { el.innerText = eff; el.style.color = parseFloat(eff)>=90 ? getVar('--success') : parseFloat(eff)>=70 ? getVar('--warning') : getVar('--danger'); }
     }
 
-    // --- RESET & SAVE ---
+    // --- RESET ---
     window.resetCounter = async () => {
         const val = document.getElementById("machineSelect").value;
         const [mach, line] = val.split("|"); 
         let pairs = [];
-        if (mach === "machine01") pairs = ["L1", "L2"];
-        else if (mach === "machine02") pairs = ["L3", "L4"];
-        else if (mach === "machine03") pairs = ["L5", "L6"];
-        else if (mach === "machine04") pairs = ["L7", "L8"];
-        else if (mach === "machine05") pairs = ["L9", "L10"];
-        else if (mach === "machine06") pairs = ["L11", "L12"];
+        if (mach === "machine01") pairs = ["L1", "L2"]; else if (mach === "machine02") pairs = ["L3", "L4"]; else if (mach === "machine03") pairs = ["L5", "L6"]; else if (mach === "machine04") pairs = ["L7", "L8"]; else if (mach === "machine05") pairs = ["L9", "L10"]; else if (mach === "machine06") pairs = ["L11", "L12"];
         
         let valueToSave = 0;
         pairs.forEach(l => { valueToSave += (latestCounter[l] || 0); });
 
-        if (valueToSave === 0) {
-            if(confirm(`Reset ${mach} (Nilai sudah 0)?`)) {
-                client.publish(`iot/esp32/${mach}/cmd`, JSON.stringify({cmd:"RESET", reset_source:"web"}));
-                pairs.forEach(l => latestCounter[l] = 0);
-                updateUI();
-            }
-            return;
-        }
+        if (valueToSave === 0) { if(confirm(`Reset ${mach}?`)) { client.publish(`iot/esp32/${mach}/cmd`, JSON.stringify({cmd:"RESET", reset_source:"web"})); pairs.forEach(l => latestCounter[l] = 0); updateUI(); } return; }
 
         if(confirm(`RESET ${mach}? Total: ${valueToSave}`)) {
             try {
@@ -1088,8 +832,7 @@
                 await set(ref(database, 'config/manualOffset'), newOffset);
                 client.publish(`iot/esp32/${mach}/cmd`, JSON.stringify({cmd:"RESET", reset_source:"web"}));
                 pairs.forEach(l => { latestCounter[l] = 0; });
-                manualOffset = newOffset; 
-                updateUI(); 
+                manualOffset = newOffset; updateUI(); 
             } catch (err) { console.error(err); }
         }
     };
@@ -1104,7 +847,6 @@
         let act = manualOffset, teorythical = 0;
         const now = new Date();
         const globalMins = globalStartTime ? Math.max(0, now.getTime() - globalStartTime) / 60000 : 0;
-
         for(let i=1; i<=15; i++) { 
             if(i===13) continue;
             act += (latestCounter[`L${i}`]||0); 
@@ -1112,7 +854,6 @@
             const speed = parseInt(conf.cpm) || defaultCPM;
             teorythical += Math.floor(speed * globalMins); 
         }
-
         try {
             await push(ref(database, 'history'), { time: new Date().toLocaleString('id-ID'), timestamp: Date.now(), total: act, totalTeorythical: teorythical, counter: {...latestCounter} });
             for(let i=1; i<=6; i++) client.publish(`iot/esp32/machine0${i}/cmd`, JSON.stringify({cmd:"RESET", reset_source:"web"}));
@@ -1132,11 +873,7 @@
             historyDataCache = Object.values(snap.val());
             [...historyDataCache].reverse().forEach(h => {
                 let row = `<tr><td style="text-align:left; font-weight:600">${h.time}</td><td style="font-weight:700; color:var(--text-main)">${h.total?.toLocaleString()||0}</td><td style="color:var(--text-muted)">${h.totalTeorythical?.toLocaleString()||'-'}</td>`;
-                for(let i=1; i<=15; i++) {
-                    if(i===13) continue;
-                    let v = h.counter?h.counter[`L${i}`]||0:0;
-                    row+=`<td class="${v>0?'val-active':'val-zero'}" style="${(i===5||i===6)?'background:rgba(245, 158, 11, 0.1)':''}">${v}</td>`;
-                }
+                for(let i=1; i<=15; i++) { if(i===13) continue; let v = h.counter?h.counter[`L${i}`]||0:0; row+=`<td class="${v>0?'val-active':'val-zero'}" style="${(i===5||i===6)?'background:rgba(245, 158, 11, 0.1)':''}">${v}</td>`; }
                 tbody.innerHTML += row + "</tr>";
             });
         }
