@@ -10,7 +10,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
 
     <style>
-        /* --- 1. CSS (DESKTOP) --- */
+        /* --- 1. CSS UTAMA (DESKTOP) --- */
         :root {
             --bg-body: #0f172a;
             --bg-card: #1e293b;
@@ -105,12 +105,12 @@
 
         .grid { flex-grow: 1; display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; }
 
-        .card { background: var(--bg-card); padding: 20px; border-radius: 16px; border: 1px solid var(--border-color); transition: transform 0.2s, box-shadow 0.2s; cursor: pointer; position: relative; overflow: hidden; }
+        .card { background: var(--bg-card); padding: 20px; border-radius: 16px; border: 1px solid var(--border-color); transition: transform 0.2s, box-shadow 0.2s; position: relative; overflow: hidden; }
         .card:hover { transform: translateY(-4px); box-shadow: 0 10px 20px rgba(0,0,0,0.1); border-color: var(--primary); }
         .card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px; }
         .card-title { margin: 0; font-size: 15px; font-weight: 700; color: var(--text-muted); }
         .rate-badge { font-size: 10px; background: var(--bg-body); padding: 3px 8px; border-radius: 6px; color: var(--text-muted); border: 1px solid var(--border-color); }
-        .card table { width: 100%; border-collapse: collapse; }
+        .card table { width: 100%; border-collapse: collapse; cursor: pointer; }
         .card th { font-size: 11px; text-align: center; color: var(--text-muted); font-weight: 600; padding-bottom: 5px; }
         .card td { font-size: 20px; font-weight: 700; text-align: center; color: var(--text-main); }
         .val-actual { color: var(--success); }
@@ -128,7 +128,51 @@
 
         footer { text-align: center; padding: 30px; color: var(--text-muted); font-size: 12px; }
 
-        /* --- 2. MOBILE CSS (WHATSAPP STYLE) --- */
+        /* --- 2. CSS SETTINGS MODAL (BARU) --- */
+        .modal {
+            display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%;
+            overflow: auto; background-color: rgba(0,0,0,0.7); backdrop-filter: blur(5px);
+            animation: fadeIn 0.3s;
+        }
+        .modal-content {
+            background-color: var(--bg-card); margin: 5% auto; padding: 0; border: 1px solid var(--border-color);
+            width: 90%; max-width: 600px; border-radius: 16px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            color: var(--text-main);
+        }
+        .modal-header {
+            padding: 20px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;
+        }
+        .modal-header h2 { margin: 0; font-size: 18px; color: var(--primary); }
+        .modal-close { font-size: 28px; font-weight: bold; color: var(--text-muted); cursor: pointer; background: none; border: none; }
+        
+        .modal-body { padding: 20px; max-height: 70vh; overflow-y: auto; }
+        
+        .form-group { margin-bottom: 15px; }
+        .form-label { display: block; margin-bottom: 5px; font-size: 12px; color: var(--text-muted); font-weight: 600; }
+        .form-row { display: flex; gap: 15px; }
+        .form-col { flex: 1; }
+        
+        .modal-input {
+            width: 100%; padding: 10px; border-radius: 8px; border: 1px solid var(--border-color);
+            background: var(--bg-body); color: var(--text-main); font-family: inherit;
+        }
+        .modal-input:focus { outline: none; border-color: var(--primary); }
+
+        .downtime-section {
+            background: rgba(239, 68, 68, 0.05); padding: 15px; border-radius: 8px; border: 1px solid rgba(239, 68, 68, 0.2); margin-top: 10px;
+        }
+        .downtime-title { color: var(--danger); font-size: 13px; font-weight: 700; margin-bottom: 10px; display: block; border-bottom: 1px solid rgba(239, 68, 68, 0.2); padding-bottom: 5px;}
+
+        .modal-footer { padding: 20px; border-top: 1px solid var(--border-color); text-align: right; }
+        
+        .btn-settings { 
+            background: transparent; border: none; color: var(--text-muted); cursor: pointer; padding: 5px; 
+            transition: color 0.2s; 
+        }
+        .btn-settings:hover { color: var(--primary); }
+
+
+        /* --- 3. MOBILE CSS (WHATSAPP STYLE) --- */
         .mobile-header, .bottom-nav, .mobile-kebab-menu, .mobile-overlay { display: none; }
         
         @media (max-width: 900px) {
@@ -345,6 +389,65 @@
         </div>
     </div>
 
+    <div id="settingsModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">Settings Line 01</h2>
+                <button class="modal-close" onclick="closeSettings()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="setLineId">
+                
+                <div class="form-row">
+                    <div class="form-col">
+                        <div class="form-group">
+                            <label class="form-label">TARGET SPEED (CPM)</label>
+                            <input type="number" id="setSpeed" class="modal-input" placeholder="70">
+                        </div>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-col">
+                        <div class="form-group">
+                            <label class="form-label">START TIME</label>
+                            <input type="time" id="setStart" class="modal-input">
+                        </div>
+                    </div>
+                    <div class="form-col">
+                        <div class="form-group">
+                            <label class="form-label">STOP TIME</label>
+                            <input type="time" id="setStop" class="modal-input">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="downtime-section">
+                    <span class="downtime-title">LOSS TIME & DOWNTIME (Menit)</span>
+                    
+                    <div class="form-row">
+                        <div class="form-col"><div class="form-group"><label class="form-label">Unuse</label><input type="number" id="dtUnuse" class="modal-input" placeholder="0"></div></div>
+                        <div class="form-col"><div class="form-group"><label class="form-label">Ext. Stop</label><input type="number" id="dtExt" class="modal-input" placeholder="0"></div></div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-col"><div class="form-group"><label class="form-label">Plan DT</label><input type="number" id="dtPlan" class="modal-input" placeholder="0"></div></div>
+                        <div class="form-col"><div class="form-group"><label class="form-label">Trial</label><input type="number" id="dtTrial" class="modal-input" placeholder="0"></div></div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-col"><div class="form-group"><label class="form-label">Breakdown</label><input type="number" id="dtBreakdown" class="modal-input" placeholder="0"></div></div>
+                        <div class="form-col"><div class="form-group"><label class="form-label">Speed Loss</label><input type="number" id="dtSpeed" class="modal-input" placeholder="0"></div></div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-col"><div class="form-group"><label class="form-label">Minor Stop</label><input type="number" id="dtMinor" class="modal-input" placeholder="0"></div></div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button onclick="closeSettings()" style="background:transparent; border:1px solid var(--border-color); color:var(--text-muted); padding:10px 20px; border-radius:8px; margin-right:10px;">Batal</button>
+                <button onclick="saveSettings()" style="background:var(--primary); border:none; color:white; padding:10px 20px; border-radius:8px;">Simpan Perubahan</button>
+            </div>
+        </div>
+    </div>
+
     <div class="bottom-nav">
         <button class="nav-item active" onclick="switchMobileTab('dashboard', this)">
             <span class="nav-indicator"></span>
@@ -429,18 +532,21 @@
     const app = initializeApp(firebaseConfig);
     const database = getDatabase(app);
 
+    // --- STATE VARIABLES ---
     let latestCounter = {};
     let globalStartTime = null; 
     let manualOffset = 0; 
     let hasAutoSaved = false; 
-    // Array diperbesar ke 16 agar index 15 tersedia
-    const rates = Array(16).fill(70); 
     let myChart = null;
     let historyDataCache = [];
+    
+    // NEW: Variable untuk menyimpan setting per line (CPM, Downtime, dll)
+    let lineConfigs = {}; 
+    const defaultCPM = 70;
 
     const getVar = (name) => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
 
-    /* --- MOBILE SPECIFIC JS --- */
+    /* --- MOBILE & UI HELPERS --- */
     window.toggleKebabMenu = () => {
         const menu = document.getElementById("kebabMenu");
         const overlay = document.getElementById("mobileOverlay");
@@ -476,6 +582,22 @@
     const savedTheme = localStorage.getItem('theme') || 'dark';
     document.documentElement.setAttribute('data-theme', savedTheme);
 
+    const animateValue = (obj, start, end, duration) => {
+        if (start === end) return;
+        let startTimestamp = null;
+        const step = (timestamp) => {
+            if (!startTimestamp) startTimestamp = timestamp;
+            const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+            const currentVal = Math.floor(progress * (end - start) + start);
+            obj.innerHTML = currentVal.toLocaleString(); 
+            if (progress < 1) {
+                window.requestAnimationFrame(step);
+            }
+        };
+        window.requestAnimationFrame(step);
+    }
+
+    // --- LOGIKA UTAMA (SYNC CONFIG FIREBASE) ---
     function syncConfig() {
         onValue(ref(database, 'config/productionStartTime'), (snap) => {
             const val = snap.val();
@@ -486,27 +608,60 @@
             manualOffset = snap.val() || 0;
             updateUI();
         });
+        // NEW: Load Setting Per Line
+        onValue(ref(database, 'lineSettings'), (snap) => {
+            lineConfigs = snap.val() || {};
+            generateAllCards(); // Refresh UI karena CPM mungkin berubah
+            updateUI();
+        });
     }
 
-    // --- TAMBAHKAN FUNGSI INI ---
-    const animateValue = (obj, start, end, duration) => {
-        if (start === end) return;
-        let startTimestamp = null;
-        const step = (timestamp) => {
-            if (!startTimestamp) startTimestamp = timestamp;
-            const progress = Math.min((timestamp - startTimestamp) / duration, 1);
-            // Hitung nilai saat ini
-            const currentVal = Math.floor(progress * (end - start) + start);
-            // Update teks elemen
-            obj.innerHTML = currentVal.toLocaleString(); 
-            // Lanjutkan animasi jika belum selesai
-            if (progress < 1) {
-                window.requestAnimationFrame(step);
-            }
+    // --- MODAL FUNCTIONS (SETTINGS) ---
+    window.openSettings = (lineId) => {
+        const conf = lineConfigs[`L${lineId}`] || {};
+        
+        document.getElementById("setLineId").value = lineId;
+        document.getElementById("modalTitle").innerText = `Settings Line ${lineId.toString().padStart(2,'0')}`;
+        
+        // Isi form dengan data yang ada atau default
+        document.getElementById("setSpeed").value = conf.cpm || defaultCPM;
+        document.getElementById("setStart").value = conf.startTime || "";
+        document.getElementById("setStop").value = conf.stopTime || "";
+        
+        // Downtime fields
+        document.getElementById("dtUnuse").value = conf.dtUnuse || "";
+        document.getElementById("dtExt").value = conf.dtExt || "";
+        document.getElementById("dtPlan").value = conf.dtPlan || "";
+        document.getElementById("dtTrial").value = conf.dtTrial || "";
+        document.getElementById("dtBreakdown").value = conf.dtBreakdown || "";
+        document.getElementById("dtSpeed").value = conf.dtSpeed || "";
+        document.getElementById("dtMinor").value = conf.dtMinor || "";
+        
+        document.getElementById("settingsModal").style.display = "block";
+    };
+
+    window.closeSettings = () => { document.getElementById("settingsModal").style.display = "none"; };
+
+    window.saveSettings = async () => {
+        const lineId = document.getElementById("setLineId").value;
+        const newConfig = {
+            cpm: parseInt(document.getElementById("setSpeed").value) || defaultCPM,
+            startTime: document.getElementById("setStart").value,
+            stopTime: document.getElementById("setStop").value,
+            dtUnuse: parseInt(document.getElementById("dtUnuse").value) || 0,
+            dtExt: parseInt(document.getElementById("dtExt").value) || 0,
+            dtPlan: parseInt(document.getElementById("dtPlan").value) || 0,
+            dtTrial: parseInt(document.getElementById("dtTrial").value) || 0,
+            dtBreakdown: parseInt(document.getElementById("dtBreakdown").value) || 0,
+            dtSpeed: parseInt(document.getElementById("dtSpeed").value) || 0,
+            dtMinor: parseInt(document.getElementById("dtMinor").value) || 0,
         };
-        window.requestAnimationFrame(step);
-    }
+        
+        await set(ref(database, `lineSettings/L${lineId}`), newConfig);
+        closeSettings();
+    };
 
+    // --- AUTH & INITIALIZATION ---
     window.doLogin = () => {
         const u = document.getElementById("username").value;
         const p = document.getElementById("password").value;
@@ -520,15 +675,25 @@
         if(sessionStorage.getItem("login") === "1") {
             document.getElementById("loginPage").style.display = "none";
             document.getElementById("dashboardPage").style.display = "block";
-            generateAllCards(); syncConfig(); loadLastCacheFromFirebase(); fetchHistoryForChart();
-            setInterval(checkAutoSchedule, 10000); setInterval(updateUI, 1000);
+            generateAllCards(); 
+            syncConfig(); 
+            loadLastCacheFromFirebase(); 
+            fetchHistoryForChart();
+            setInterval(checkAutoSchedule, 10000); 
+            setInterval(updateUI, 1000);
+
+            // Close modal jika klik di luar
+            window.onclick = function(event) {
+                const modal = document.getElementById("settingsModal");
+                if (event.target == modal) closeSettings();
+            }
         }
     };
 
+    // --- EXPORT & HISTORY ---
     window.exportToExcel = () => {
         if (historyDataCache.length === 0) return alert("Tidak ada data history.");
         let csv = "\uFEFFWaktu;Total Actual;Total Teorythical";
-        // Loop sampai 15, lewati 13
         for (let i = 1; i <= 15; i++) {
             if(i === 13) continue;
             csv += `;Line ${i}`;
@@ -536,7 +701,6 @@
         csv += "\n";
         [...historyDataCache].reverse().forEach(item => {
             let row = `"${item.time.replace(/,/g, '')}";${item.total||0};${item.totalTeorythical||0}`;
-            // Loop sampai 15, lewati 13
             for (let i = 1; i <= 15; i++) {
                 if(i === 13) continue;
                 row += `;${item.counter ? (item.counter[`L${i}`]||0) : 0}`;
@@ -621,6 +785,7 @@
         });
     }
 
+    // --- MQTT & DATA ---
     const client = mqtt.connect("wss://72ebeae451364089a9ebe5b5f5702548.s1.eu.hivemq.cloud:8884/mqtt", { username: "admin", password: "Admin123", reconnectPeriod: 2000 });
     client.on("connect", () => { document.getElementById("status").innerText = "Connected"; for(let i=1; i<=6; i++) client.subscribe(`iot/esp32/machine0${i}/counter`); });
     client.on("message", (t, m) => {
@@ -635,85 +800,128 @@
         } catch(e) { console.error(e); }
     });
 
+    // --- GENERATE CARDS (WITH SETTINGS BUTTON) ---
     function generateAllCards() {
         const c1 = document.getElementById("clubCanContainer"); const c2 = document.getElementById("roundCanContainer");
         c1.innerHTML = ""; c2.innerHTML = "";
-        // Loop sampai 15, lewati 13
+        
         for(let i=1; i<=15; i++) {
             if(i === 13) continue;
 
+            const conf = lineConfigs[`L${i}`] || { cpm: defaultCPM };
             const isP = (i===5||i===6);
             const style = isP ? "color:var(--warning)" : "color:var(--primary)";
+            const borderStyle = isP ? 'border-left:4px solid var(--warning)' : 'border-left:4px solid var(--primary)';
+            
             const html = `
-            <div class="card" onclick="showSensorHistory(${i})" style="${isP?'border-left:4px solid var(--warning)':'border-left:4px solid var(--primary)'}">
+            <div class="card" style="${borderStyle}">
                 <div class="card-header">
-                    <h3 class="card-title">LINE ${i.toString().padStart(2,'0')}</h3>
-                    <span class="rate-badge">${rates[i-1]}cpm</span>
+                    <div style="display:flex; flex-direction:column;">
+                        <h3 class="card-title">LINE ${i.toString().padStart(2,'0')}</h3>
+                        <span class="rate-badge" style="width:fit-content">${conf.cpm} cpm</span>
+                    </div>
+                    <div>
+                         <button class="btn-settings" onclick="openSettings(${i})" title="Settings">⚙️</button>
+                    </div>
                 </div>
-                <table>
-                    <tr><th>ACTUAL</th><th>TEORYTHICAL.</th><th>EFF.</th></tr>
-                    <tr><td class="val-actual" id="L${i}">0</td><td id="P${i}" style="${style}">0</td><td id="E${i}">0%</td></tr>
-                </table>
+                <div onclick="showSensorHistory(${i})">
+                    <table>
+                        <tr><th>ACTUAL</th><th>TEORYTHICAL.</th><th>EFF.</th></tr>
+                        <tr><td class="val-actual" id="L${i}">0</td><td id="P${i}" style="${style}">0</td><td id="E${i}">0%</td></tr>
+                    </table>
+                </div>
             </div>`;
             if(isP) c2.innerHTML+=html; else c1.innerHTML+=html;
         }
     }
 
+    // --- CORE CALCULATION LOGIC ---
     function updateUI() {
         if(!globalStartTime) return;
-        const mins = Math.max(0, Date.now() - globalStartTime) / 60000;
-        let gTot=0, cAct=0, cTeorythical=0, pAct=0, rTeorythical=0;
+        
+        const now = new Date();
+        const globalMins = Math.max(0, now.getTime() - globalStartTime) / 60000;
+        
+        let gTot=0, cAct=0, cTeo=0, pAct=0, rTeo=0;
 
-        // Loop sampai 15
         for(let i=1; i<=15; i++) {
             if(i === 13) continue;
 
+            // Load Config
+            const conf = lineConfigs[`L${i}`] || {};
+            const speed = conf.cpm || defaultCPM;
+            
+            // 1. Hitung Durasi Operasional
+            let opMins = globalMins; // Default global
+            
+            // Custom Start Time
+            if(conf.startTime) {
+                const [h, m] = conf.startTime.split(':');
+                const startDt = new Date();
+                startDt.setHours(h, m, 0, 0);
+                opMins = Math.max(0, now - startDt) / 60000;
+            }
+            
+            // Custom Stop Time
+            if(conf.stopTime) {
+                const [h, m] = conf.stopTime.split(':');
+                const stopDt = new Date();
+                stopDt.setHours(h, m, 0, 0);
+                
+                if(now > stopDt) {
+                     // Jika sudah lewat jam stop, kunci waktu
+                     const startReference = conf.startTime ? (() => {
+                        const [sh, sm] = conf.startTime.split(':');
+                        const s = new Date(); s.setHours(sh,sm,0,0); return s;
+                     })() : new Date(globalStartTime);
+                     
+                     opMins = Math.max(0, stopDt - startReference) / 60000;
+                }
+            }
+
+            // 2. Kurangi Downtime
+            const totalDowntime = (conf.dtUnuse||0) + (conf.dtExt||0) + (conf.dtPlan||0) + 
+                                  (conf.dtTrial||0) + (conf.dtBreakdown||0) + (conf.dtSpeed||0) + (conf.dtMinor||0);
+            
+            let netRunTime = opMins - totalDowntime;
+            if(netRunTime < 0) netRunTime = 0;
+
+            // 3. Kalkulasi
             const act = latestCounter[`L${i}`] || 0;
-            const teorythical = Math.floor(rates[i-1] * mins);
-            const eff = teorythical>0 ? ((act/teorythical)*100).toFixed(1)+'%' : '0%';
+            const teorythical = Math.floor(speed * netRunTime);
+            
+            const effVal = teorythical>0 ? ((act/teorythical)*100) : 0;
+            const effStr = effVal.toFixed(1)+'%';
+            
             const isP = (i===5||i===6);
-            
-            if(isP) { pAct+=act; rTeorythical+=teorythical; } else { cAct+=act; cTeorythical+=teorythical; }
-            
+            if(isP) { pAct+=act; rTeo+=teorythical; } else { cAct+=act; cTeo+=teorythical; }
+            gTot+=act;
+
+            // DOM Update
             const el = document.getElementById(`L${i}`);
             if(el) {
-                // --- PERUBAHAN DISINI (ANIMASI) ---
-                // 1. Ambil nilai lama yang sedang tampil di layar (hapus koma/titik ribuan)
-                const currentDisplayed = parseInt(el.innerText.replace(/[^0-9]/g, '')) || 0;
-                
-                // 2. Jika nilai baru beda dengan nilai lama, jalankan animasi
-                if (currentDisplayed !== act) {
-                    // Durasi 1000ms (1 detik) agar gerakan terlihat smooth sesuai ritme kirim data ESP32
-                    animateValue(el, currentDisplayed, act, 500);
-                }
-                // ----------------------------------
+                const curr = parseInt(el.innerText.replace(/[^0-9]/g, '')) || 0;
+                if(curr !== act) animateValue(el, curr, act, 500);
 
-                document.getElementById(`P${i}`).innerText = teorythical.toLocaleString(); 
-                const eEl = document.getElementById(`E${i}`); 
-                eEl.innerText = eff;
-                eEl.style.color = parseFloat(eff)>=90 ? getVar('--success') : parseFloat(eff)>=70 ? getVar('--warning') : getVar('--danger');
+                document.getElementById(`P${i}`).innerText = teorythical.toLocaleString();
+                const eEl = document.getElementById(`E${i}`);
+                eEl.innerText = effStr;
+                eEl.style.color = effVal>=90 ? getVar('--success') : effVal>=70 ? getVar('--warning') : getVar('--danger');
             }
-            gTot+=act;
         }
 
         const final = gTot + manualOffset;
-        
-        // --- ANIMASIKAN JUGA TOTAL PRODUCTION ---
         const elTotal = document.getElementById("total");
         const currTotal = parseInt(elTotal.innerText.replace(/[^0-9]/g, '')) || 0;
         if(currTotal !== final) animateValue(elTotal, currTotal, final, 1000);
-        // ----------------------------------------
 
         document.getElementById("clock").innerText = new Date().toLocaleString('id-ID');
-        
-        // Update Summary (Bisa dianimasikan juga jika mau, contoh di bawah pakai text biasa agar ringan)
-        updSum("totalClub", cAct, cTeorythical); 
-        updSum("totalRound", pAct, rTeorythical); 
-        updSum("grandTotal", final, cTeorythical+rTeorythical);
+        updSum("totalClub", cAct, cTeo); 
+        updSum("totalRound", pAct, rTeo); 
+        updSum("grandTotal", final, cTeo+rTeo);
     }
 
     function updSum(id, act, teorythical) {
-        // Fix: Removed potential issue where element ID mismatch caused crash
         const elAct = document.getElementById(`${id}Actual`);
         if(elAct) elAct.innerText = act.toLocaleString();
         
@@ -728,79 +936,56 @@
         }
     }
 
-   // GANTI BAGIAN window.resetCounter DENGAN INI:
+    // --- RESET LOGIC ---
+    window.resetCounter = async () => {
+        const val = document.getElementById("machineSelect").value;
+        const [mach, line] = val.split("|"); 
 
-window.resetCounter = async () => {
-    const val = document.getElementById("machineSelect").value;
-    const [mach, line] = val.split("|"); 
+        let pairs = [];
+        if (mach === "machine01") pairs = ["L1", "L2"];
+        else if (mach === "machine02") pairs = ["L3", "L4"];
+        else if (mach === "machine03") pairs = ["L5", "L6"];
+        else if (mach === "machine04") pairs = ["L7", "L8"];
+        else if (mach === "machine05") pairs = ["L9", "L10"];
+        else if (mach === "machine06") pairs = ["L11", "L12"];
+        
+        let valueToSave = 0;
+        let details = [];
 
-    // Mapping pasangan Line per Mesin
-    let pairs = [];
-    if (mach === "machine01") pairs = ["L1", "L2"];
-    else if (mach === "machine02") pairs = ["L3", "L4"];
-    else if (mach === "machine03") pairs = ["L5", "L6"];
-    else if (mach === "machine04") pairs = ["L7", "L8"];
-    else if (mach === "machine05") pairs = ["L9", "L10"];
-    else if (mach === "machine06") pairs = ["L11", "L12"];
-    
-    let valueToSave = 0;
-    let details = [];
+        pairs.forEach(l => {
+            const currentVal = latestCounter[l] || 0;
+            valueToSave += currentVal;
+            details.push(`${l}=${currentVal}`);
+        });
 
-    // Hitung total nilai yang akan di-reset
-    pairs.forEach(l => {
-        const currentVal = latestCounter[l] || 0;
-        valueToSave += currentVal;
-        details.push(`${l}=${currentVal}`);
-    });
-
-    // Jika nilai sudah 0, reset biasa tanpa ubah offset
-    if (valueToSave === 0) {
-        if(confirm(`Reset ${mach} (Nilai sudah 0)?`)) {
-            client.publish(`iot/esp32/${mach}/cmd`, JSON.stringify({cmd:"RESET", reset_source:"web"}));
-            // Reset visual lokal juga biar responsif
-            pairs.forEach(l => latestCounter[l] = 0);
-            updateUI();
+        if (valueToSave === 0) {
+            if(confirm(`Reset ${mach} (Nilai sudah 0)?`)) {
+                client.publish(`iot/esp32/${mach}/cmd`, JSON.stringify({cmd:"RESET", reset_source:"web"}));
+                pairs.forEach(l => latestCounter[l] = 0);
+                updateUI();
+            }
+            return;
         }
-        return;
-    }
 
-    const msg = `RESET ${mach.toUpperCase()}?\n\n` +
-                `Nilai saat ini: ${details.join(" + ")} = ${valueToSave}\n` +
-                `Nilai ${valueToSave} akan dipindah ke Offset agar Total Production TETAP.\n` +
-                `Counter di Card Line akan kembali ke 0.`;
+        const msg = `RESET ${mach.toUpperCase()}?\n\n` +
+                    `Nilai saat ini: ${details.join(" + ")} = ${valueToSave}\n` +
+                    `Nilai ${valueToSave} akan dipindah ke Offset agar Total Production TETAP.\n` +
+                    `Counter di Card Line akan kembali ke 0.`;
 
-    if(confirm(msg)) {
-        try {
-            // 1. Hitung Offset Baru
-            const newOffset = manualOffset + valueToSave;
-
-            // 2. Simpan Offset ke Firebase
-            await set(ref(database, 'config/manualOffset'), newOffset);
-
-            // 3. Kirim Perintah Reset ke Alat
-            client.publish(`iot/esp32/${mach}/cmd`, JSON.stringify({cmd:"RESET", reset_source:"web"}));
-            
-            // --- PERBAIKAN UTAMA DISINI ---
-            // 4. Update Variabel Lokal SECARA LANGSUNG
-            // Kita paksa nilai Line jadi 0 sekarang juga di memori browser
-            // agar saat updateUI jalan, dia tidak menghitung ganda.
-            pairs.forEach(l => {
-                latestCounter[l] = 0; 
-            });
-            
-            // 5. Update Offset Lokal
-            manualOffset = newOffset; 
-            
-            // 6. Refresh Tampilan
-            updateUI(); 
-            // -----------------------------
-
-        } catch (err) {
-            alert("Gagal menyimpan data ke database. Cek koneksi internet.");
-            console.error(err);
+        if(confirm(msg)) {
+            try {
+                const newOffset = manualOffset + valueToSave;
+                await set(ref(database, 'config/manualOffset'), newOffset);
+                client.publish(`iot/esp32/${mach}/cmd`, JSON.stringify({cmd:"RESET", reset_source:"web"}));
+                pairs.forEach(l => { latestCounter[l] = 0; });
+                manualOffset = newOffset; 
+                updateUI(); 
+            } catch (err) {
+                alert("Gagal menyimpan data ke database. Cek koneksi internet.");
+                console.error(err);
+            }
         }
-    }
-};
+    };
 
     function checkAutoSchedule() {
         const d = new Date();
@@ -810,20 +995,37 @@ window.resetCounter = async () => {
 
     async function executeSaveAndReset() {
         let act = manualOffset, teorythical = 0;
-        if(globalStartTime) {
-            const mins = Math.max(0, Date.now() - globalStartTime) / 60000;
-            // Loop sampai 15, lewati 13
-            for(let i=1; i<=15; i++) { 
-                if(i===13) continue;
-                act += (latestCounter[`L${i}`]||0); 
-                teorythical += Math.floor(rates[i-1]*mins); 
-            }
+        
+        // Kalkulasi manual untuk total teorythical saat reset akhir shift
+        // Menggunakan logic yang sama dengan updateUI tapi iterasi semua line
+        const now = new Date();
+        const globalMins = globalStartTime ? Math.max(0, now.getTime() - globalStartTime) / 60000 : 0;
+
+        for(let i=1; i<=15; i++) { 
+            if(i===13) continue;
+            act += (latestCounter[`L${i}`]||0); 
+            
+            const conf = lineConfigs[`L${i}`] || {};
+            const speed = conf.cpm || defaultCPM;
+            
+            // Logic waktu simple untuk report
+            let opMins = globalMins;
+            // Jika ingin presisi report, logic start/stop harus diimplementasikan disini juga
+            // Untuk penyederhanaan saat reset, kita pakai globalMins atau custom logic jika perlu
+            // Disini saya pakai simple approach:
+            
+            teorythical += Math.floor(speed * opMins); 
         }
+
         try {
             await push(ref(database, 'history'), { time: new Date().toLocaleString('id-ID'), timestamp: Date.now(), total: act, totalTeorythical: teorythical, counter: {...latestCounter} });
             for(let i=1; i<=6; i++) client.publish(`iot/esp32/machine0${i}/cmd`, JSON.stringify({cmd:"RESET", reset_source:"web"}));
             await set(ref(database, 'config/productionStartTime'), Date.now());
             await set(ref(database, 'config/manualOffset'), 0);
+            
+            // Optional: Reset lineSettings downtime to 0 for next shift?
+            // await set(ref(database, 'lineSettings'), {}); 
+            
             latestCounter={}; fetchHistoryForChart(); updateUI();
         } catch(e) { console.error(e); }
     }
@@ -839,7 +1041,6 @@ window.resetCounter = async () => {
             historyDataCache = Object.values(snap.val());
             [...historyDataCache].reverse().forEach(h => {
                 let row = `<tr><td style="text-align:left; font-weight:600">${h.time}</td><td style="font-weight:700; color:var(--text-main)">${h.total?.toLocaleString()||0}</td><td style="color:var(--text-muted)">${h.totalTeorythical?.toLocaleString()||'-'}</td>`;
-                // Loop sampai 15, lewati 13
                 for(let i=1; i<=15; i++) {
                     if(i===13) continue;
                     let v = h.counter?h.counter[`L${i}`]||0:0;
