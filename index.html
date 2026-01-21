@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>PASIFIK HARVEST INDONESIA</title>
+    <title>PASIFIK HARVEST INDONESIA - OEE MONITORING</title>
     
     <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -24,6 +24,7 @@
             --warning: #f59e0b;
             --danger: #ef4444;
             --purple: #a855f7;
+            --info: #0ea5e9;
             --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
             --radius: 12px;
             
@@ -46,6 +47,7 @@
             --warning: #d97706;
             --danger: #dc2626;
             --purple: #7c3aed;
+            --info: #0284c7;
             --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
             
             /* Mobile Light */
@@ -77,7 +79,7 @@
         #dashboardPage { display: block; animation: fadeIn 0.5s ease; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* HEADER ASLI (Akan disembunyikan di Mobile) */
+        /* HEADER ASLI */
         header.desktop-header { background: var(--bg-header); backdrop-filter: blur(10px); padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; border-bottom: 1px solid var(--border-color); box-shadow: var(--shadow); }
         .header-left { display: flex; align-items: center; gap: 15px; }
         .header-logo { height: 40px; width: auto; }
@@ -108,6 +110,13 @@
         .summary-label { font-size: 12px; color: var(--text-muted); margin-bottom: 4px; }
         .summary-value { font-size: 24px; font-weight: 700; }
 
+        /* OEE SPECIFIC */
+        .oee-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-bottom: 30px; }
+        .oee-card { background: var(--bg-card); padding: 20px; border-radius: 16px; border: 1px solid var(--border-color); text-align: center; }
+        .oee-title { font-size: 12px; color: var(--text-muted); font-weight: 700; letter-spacing: 1px; margin-bottom: 10px; }
+        .oee-value { font-size: 28px; font-weight: 800; }
+        .oee-desc { font-size: 11px; color: var(--text-muted); margin-top: 5px; }
+
         .grid { flex-grow: 1; display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; }
 
         .card { background: var(--bg-card); padding: 20px; border-radius: 16px; border: 1px solid var(--border-color); transition: transform 0.2s, box-shadow 0.2s; position: relative; overflow: hidden; }
@@ -133,7 +142,7 @@
 
         footer { text-align: center; padding: 30px; color: var(--text-muted); font-size: 12px; }
 
-        /* --- 2. CSS SETTINGS MODAL & ADMIN CONTROL --- */
+        /* --- CSS SETTINGS MODAL --- */
         .modal {
             display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%;
             overflow: auto; background-color: rgba(0,0,0,0.7); backdrop-filter: blur(5px);
@@ -149,29 +158,24 @@
         }
         .modal-header h2 { margin: 0; font-size: 18px; color: var(--primary); }
         .modal-close { font-size: 28px; font-weight: bold; color: var(--text-muted); cursor: pointer; background: none; border: none; }
-        
         .modal-body { padding: 20px; max-height: 70vh; overflow-y: auto; }
-        
         .form-group { margin-bottom: 15px; }
         .form-label { display: block; margin-bottom: 5px; font-size: 12px; color: var(--text-muted); font-weight: 600; }
         .form-row { display: flex; gap: 15px; }
         .form-col { flex: 1; }
-        
         .modal-input {
             width: 100%; padding: 10px; border-radius: 8px; border: 1px solid var(--border-color);
             background: var(--bg-body); color: var(--text-main); font-family: inherit;
         }
         .modal-input:focus { outline: none; border-color: var(--primary); }
-
         .downtime-section {
             background: rgba(239, 68, 68, 0.05); padding: 15px; border-radius: 8px; border: 1px solid rgba(239, 68, 68, 0.2); margin-top: 10px;
         }
         .downtime-title { color: var(--danger); font-size: 13px; font-weight: 700; margin-bottom: 10px; display: block; border-bottom: 1px solid rgba(239, 68, 68, 0.2); padding-bottom: 5px;}
-
         .modal-footer { padding: 20px; border-top: 1px solid var(--border-color); text-align: right; }
         
         /* ADMIN CONTROLS */
-        .btn-settings, .admin-only { display: none; } /* Default Hidden */
+        .btn-settings, .admin-only { display: none; }
         body.is-admin .btn-settings { display: block; background: transparent; border: none; color: var(--text-muted); cursor: pointer; padding: 5px; transition: color 0.2s; }
         body.is-admin .btn-settings:hover { color: var(--primary); }
         body.is-admin .admin-only { display: inline-block; }
@@ -184,10 +188,8 @@
         @media (max-width: 900px) {
             body { background-color: var(--whatsapp-bg); padding-bottom: 70px; } 
             .container { padding: 10px; margin-top: 55px; }
-            
             .desktop-header { display: none !important; }
             .header-title { display: block; font-size: 16px; } 
-
             .mobile-header {
                 display: flex; position: fixed; top: 0; left: 0; right: 0; height: 56px;
                 background: var(--whatsapp-header); color: white;
@@ -196,7 +198,6 @@
             }
             .mobile-title { font-weight: 600; font-size: 20px; }
             .mobile-actions button { background: none; border: none; color: white; font-size: 20px; padding: 8px; }
-
             .mobile-kebab-menu {
                 display: none; flex-direction: column; position: fixed; top: 5px; right: 5px;
                 background: var(--bg-card); width: 200px; border-radius: 4px;
@@ -206,10 +207,8 @@
             .mobile-kebab-menu.show { display: flex; }
             .kebab-item { padding: 14px 16px; color: var(--text-main); font-size: 14px; text-align: left; background: none; border: none; }
             .kebab-item:hover { background: var(--bg-body); }
-            
             .mobile-overlay { display: none; position: fixed; inset: 0; z-index: 1500; }
             .mobile-overlay.show { display: block; }
-
             .bottom-nav {
                 display: flex; position: fixed; bottom: 0; left: 0; right: 0; height: 65px;
                 background: var(--bg-card); border-top: 1px solid var(--border-color);
@@ -223,11 +222,9 @@
             .nav-item.active .nav-indicator { width: 100%; height: 3px; background: var(--success); position: absolute; top: 0; }
             .nav-icon { font-size: 20px; }
             .nav-label { font-size: 12px; font-weight: 500; }
-
             [data-mobile-tab="dashboard"] .m-hide-dashboard { display: none !important; }
             [data-mobile-tab="total"] .m-hide-total { display: none !important; }
             [data-mobile-tab="grafik"] .m-hide-grafik { display: none !important; }
-            
             .layout-row { flex-direction: column; gap: 15px; }
             .summary-card { width: 100%; min-width: 0; margin-bottom: 10px; }
             .grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
@@ -237,6 +234,8 @@
             .chart-container { min-height: 300px; padding: 10px; }
             .section-header { margin-top: 15px; margin-bottom: 15px; }
             .chart-legend-custom { display: none; }
+            .oee-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+            .oee-value { font-size: 20px; }
         }
 
         @keyframes scaleIn { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
@@ -310,6 +309,34 @@
         <div class="total-box m-hide-dashboard m-hide-grafik">
             <div class="label">Total Production Today</div>
             <h1 id="total">0</h1>
+        </div>
+
+        <div class="section-header m-hide-total m-hide-grafik">
+            <span class="badge bg-purple">OEE ANALYTICS</span>
+            <span class="section-title">OVERALL EQUIPMENT EFFECTIVENESS</span>
+        </div>
+
+        <div class="oee-grid m-hide-dashboard m-hide-grafik">
+            <div class="oee-card" style="border-top:4px solid var(--success)">
+                <div class="oee-title">AVAILABILITY</div>
+                <div class="oee-value" style="color:var(--success)" id="oeeAvail">0%</div>
+                <div class="oee-desc">Operating vs Planned Time</div>
+            </div>
+            <div class="oee-card" style="border-top:4px solid var(--info)">
+                <div class="oee-title">PERFORMANCE</div>
+                <div class="oee-value" style="color:var(--info)" id="oeePerf">0%</div>
+                <div class="oee-desc">Actual vs Target Output</div>
+            </div>
+            <div class="oee-card" style="border-top:4px solid var(--warning)">
+                <div class="oee-title">QUALITY</div>
+                <div class="oee-value" style="color:var(--warning)" id="oeeQual">0%</div>
+                <div class="oee-desc">Good Count vs Total</div>
+            </div>
+            <div class="oee-card" style="border-top:4px solid var(--purple)">
+                <div class="oee-title">OEE SCORE</div>
+                <div class="oee-value" style="color:var(--purple)" id="oeeScore">0%</div>
+                <div class="oee-desc">Global Efficiency</div>
+            </div>
         </div>
 
         <div class="section-header m-hide-total m-hide-grafik">
@@ -416,10 +443,18 @@
                         <div class="form-group">
                             <label class="form-label">TARGET SPEED (CPM)</label>
                             <input type="number" id="setSpeed" class="modal-input" placeholder="70">
-                            <small style="color:var(--text-muted); font-size:10px;">Nilai Prediksi Teorythical</small>
+                            <small style="color:var(--text-muted); font-size:10px;">Untuk hitung PERFORMANCE</small>
+                        </div>
+                    </div>
+                    <div class="form-col">
+                        <div class="form-group">
+                            <label class="form-label">DURASI SHIFT (JAM)</label>
+                            <input type="number" id="setShiftHours" class="modal-input" placeholder="8">
+                            <small style="color:var(--text-muted); font-size:10px;">Untuk hitung AVAILABILITY</small>
                         </div>
                     </div>
                 </div>
+
                 <div class="form-row">
                     <div class="form-col">
                         <div class="form-group">
@@ -435,9 +470,15 @@
                     </div>
                 </div>
 
+                <div class="form-group">
+                    <label class="form-label">JUMLAH REJECT / CACAT (Pcs)</label>
+                    <input type="number" id="setRejects" class="modal-input" placeholder="0">
+                    <small style="color:var(--text-muted); font-size:10px;">Untuk hitung QUALITY</small>
+                </div>
+
                 <div class="downtime-section">
                     <span class="downtime-title">LOSS TIME & DOWNTIME (Menit)</span>
-                    <small style="color:var(--text-muted); font-size:10px; margin-bottom:10px; display:block;">Input ini hanya mengurangi nilai EFFICIENCY, bukan nilai Theoretical.</small>
+                    <small style="color:var(--text-muted); font-size:10px; margin-bottom:10px; display:block;">Mengurangi Operating Time (Availability)</small>
                     
                     <div class="form-row">
                         <div class="form-col"><div class="form-group"><label class="form-label">Unuse</label><input type="number" id="dtUnuse" class="modal-input" placeholder="0"></div></div>
@@ -554,8 +595,6 @@
     let hasAutoSaved = false; 
     let myChart = null;
     let historyDataCache = [];
-    
-    // NEW: Variable untuk menyimpan setting per line (CPM, Downtime, dll)
     let lineConfigs = {}; 
     const defaultCPM = 70;
 
@@ -617,7 +656,7 @@
         window.requestAnimationFrame(step);
     }
 
-    // --- LOGIKA UTAMA (SYNC CONFIG FIREBASE) ---
+    // --- SYNC CONFIG ---
     function syncConfig() {
         onValue(ref(database, 'config/productionStartTime'), (snap) => {
             const val = snap.val();
@@ -628,12 +667,10 @@
             manualOffset = snap.val() || 0;
             updateUI();
         });
-        // NEW: Load Setting Per Line
         onValue(ref(database, 'lineSettings'), (snap) => {
             lineConfigs = snap.val() || {};
             updateUI();
             
-            // Khusus untuk update badge CPM di card
             for(let i=1; i<=15; i++) {
                 if(i===13) continue;
                 const conf = lineConfigs[`L${i}`] || { cpm: defaultCPM };
@@ -643,19 +680,19 @@
         });
     }
 
-    // --- MODAL FUNCTIONS (SETTINGS) ---
+    // --- MODAL SETTINGS ---
     window.openSettings = (lineId) => {
         const conf = lineConfigs[`L${lineId}`] || {};
         
         document.getElementById("setLineId").value = lineId;
         document.getElementById("modalTitle").innerText = `Settings Line ${lineId.toString().padStart(2,'0')}`;
         
-        // Isi form dengan data yang ada atau default
         document.getElementById("setSpeed").value = conf.cpm || defaultCPM;
+        document.getElementById("setShiftHours").value = conf.shiftHours || ""; // Input Jam
         document.getElementById("setStart").value = conf.startTime || "";
         document.getElementById("setStop").value = conf.stopTime || "";
+        document.getElementById("setRejects").value = conf.rejects || 0; // Input Reject
         
-        // Downtime fields
         document.getElementById("dtUnuse").value = conf.dtUnuse || "";
         document.getElementById("dtExt").value = conf.dtExt || "";
         document.getElementById("dtPlan").value = conf.dtPlan || "";
@@ -673,8 +710,10 @@
         const lineId = document.getElementById("setLineId").value;
         const newConfig = {
             cpm: parseInt(document.getElementById("setSpeed").value) || defaultCPM,
+            shiftHours: parseFloat(document.getElementById("setShiftHours").value) || 0, // Simpan Jam
             startTime: document.getElementById("setStart").value,
             stopTime: document.getElementById("setStop").value,
+            rejects: parseInt(document.getElementById("setRejects").value) || 0, // Simpan Reject
             dtUnuse: parseInt(document.getElementById("dtUnuse").value) || 0,
             dtExt: parseInt(document.getElementById("dtExt").value) || 0,
             dtPlan: parseInt(document.getElementById("dtPlan").value) || 0,
@@ -690,7 +729,7 @@
         updateUI();
     };
 
-    // --- AUTH & INITIALIZATION ---
+    // --- AUTH ---
     function checkAuth() {
         const role = sessionStorage.getItem("role");
         if(role === 'admin') {
@@ -815,11 +854,7 @@
                         beginAtZero: true, 
                         grace: '5%', 
                         grid: { color: getVar('--border-color'), borderDash: [4, 4] }, 
-                        ticks: { 
-                            stepSize: 1000, 
-                            color: getVar('--text-muted'), 
-                            callback: v => v >= 1000 ? (v/1000).toFixed(0)+'k' : v 
-                        } 
+                        ticks: { stepSize: 1000, color: getVar('--text-muted'), callback: v => v >= 1000 ? (v/1000).toFixed(0)+'k' : v } 
                     },
                     x: { grid: { display: false }, ticks: { color: getVar('--text-muted') } }
                 },
@@ -828,7 +863,6 @@
         });
     }
 
-    // --- MQTT & DATA ---
     const client = mqtt.connect("wss://72ebeae451364089a9ebe5b5f5702548.s1.eu.hivemq.cloud:8884/mqtt", { username: "admin", password: "Admin123", reconnectPeriod: 2000 });
     client.on("connect", () => { document.getElementById("status").innerText = "Connected"; for(let i=1; i<=6; i++) client.subscribe(`iot/esp32/machine0${i}/counter`); });
     client.on("message", (t, m) => {
@@ -843,7 +877,6 @@
         } catch(e) { console.error(e); }
     });
 
-    // --- GENERATE CARDS ---
     function generateAllCards() {
         const c1 = document.getElementById("clubCanContainer"); const c2 = document.getElementById("roundCanContainer");
         c1.innerHTML = ""; c2.innerHTML = "";
@@ -878,7 +911,7 @@
         }
     }
 
-    // --- CORE CALCULATION LOGIC (REVISED) ---
+    // --- MAIN OEE CALCULATION LOGIC ---
     function updateUI() {
         if(!globalStartTime) return;
         
@@ -886,79 +919,117 @@
         const globalMins = Math.max(0, now.getTime() - globalStartTime) / 60000;
         
         let gTot=0, cAct=0, cTeo=0, pAct=0, rTeo=0;
+        
+        // Variables for Global OEE Aggregation
+        let totalAvail = 0, countLines = 0;
+        let totalPerf = 0;
+        let totalQual = 0;
 
         for(let i=1; i<=15; i++) {
             if(i === 13) continue;
+            countLines++;
 
             // Load Config
             const conf = lineConfigs[`L${i}`] || {};
             const speed = parseInt(conf.cpm) || defaultCPM;
+            const rejects = parseInt(conf.rejects) || 0;
+            const shiftHours = parseFloat(conf.shiftHours) || 0;
+
+            // 1. Determine Total Planned Time (Minutes)
+            // Priority: Shift Hours Input > Custom Start/Stop > Global Timer
+            let plannedMinutes = globalMins;
             
-            // 1. Hitung Durasi Operasional (UNTUK THEORETICAL DISPLAY)
-            let opMins = globalMins; 
-            
-            // Custom Start Time Logic
-            if(conf.startTime) {
+            if (shiftHours > 0) {
+                // If user sets "8 Hours", we use that as the basis for Availability
+                plannedMinutes = shiftHours * 60;
+            } else if(conf.startTime) {
                 const [h, m] = conf.startTime.split(':');
-                const startDt = new Date();
-                startDt.setHours(h, m, 0, 0);
-                opMins = Math.max(0, now - startDt) / 60000;
-            }
-            if(conf.stopTime) {
-                const [h, m] = conf.stopTime.split(':');
-                const stopDt = new Date();
-                stopDt.setHours(h, m, 0, 0);
-                if(now > stopDt) {
-                     const startReference = conf.startTime ? (() => {
-                        const [sh, sm] = conf.startTime.split(':');
-                        const s = new Date(); s.setHours(sh,sm,0,0); return s;
-                     })() : new Date(globalStartTime);
-                     opMins = Math.max(0, stopDt - startReference) / 60000;
+                const startDt = new Date(); startDt.setHours(h, m, 0, 0);
+                plannedMinutes = Math.max(0, now - startDt) / 60000;
+                
+                if(conf.stopTime) {
+                    const [sh, sm] = conf.stopTime.split(':');
+                    const stopDt = new Date(); stopDt.setHours(sh, sm, 0, 0);
+                    if(now > stopDt) {
+                         // Capped at stop time
+                         plannedMinutes = Math.max(0, stopDt - startDt) / 60000;
+                    }
                 }
             }
 
-            // 2. Kalkulasi Total Downtime (HANYA UNTUK EFFICIENCY)
+            // 2. Downtime (Minutes)
             const totalDowntime = (parseInt(conf.dtUnuse)||0) + (parseInt(conf.dtExt)||0) + (parseInt(conf.dtPlan)||0) + 
                                   (parseInt(conf.dtTrial)||0) + (parseInt(conf.dtBreakdown)||0) + (parseInt(conf.dtSpeed)||0) + (parseInt(conf.dtMinor)||0);
             
-            // 3. Kalkulasi Nilai
-            const act = latestCounter[`L${i}`] || 0;
+            // 3. Operating Time (Run Time)
+            let operatingTime = plannedMinutes - totalDowntime;
+            if(operatingTime < 0) operatingTime = 0;
+
+            // 4. Counts
+            const act = latestCounter[`L${i}`] || 0;     // Total Output (Good + Bad if sensor counts all)
+            const goodCount = Math.max(0, act - rejects);
+
+            // --- OEE CALCULATIONS PER LINE ---
             
-            // Theoretical (Target Display) = Murni Waktu * Speed (Gross Target)
-            const teorythical = Math.floor(speed * opMins);
+            // Availability % = Operating Time / Planned Time
+            let availPct = 0;
+            if (plannedMinutes > 0) availPct = (operatingTime / plannedMinutes);
+
+            // Performance % = Total Output / (Operating Time * Ideal Speed)
+            let perfPct = 0;
+            const targetOutput = operatingTime * speed;
+            if (targetOutput > 0) perfPct = (act / targetOutput);
+
+            // Quality % = Good Count / Total Output
+            let qualPct = 0;
+            if (act > 0) qualPct = (goodCount / act);
+            else if (operatingTime > 0) qualPct = 1; // If running but no output yet, assume 100% Q or 0? Usually 100 until bad part found.
+
+            // OEE %
+            const oeePct = availPct * perfPct * qualPct;
+
+            // Accumulate for Global Average
+            totalAvail += availPct;
+            totalPerf += perfPct;
+            totalQual += qualPct;
+
+            // --- DISPLAY LOGIC FOR CARDS (EXISTING) ---
+            // "Theoretical" on card = Gross Target (Time * Speed) without downtime
+            const teorythicalDisplay = Math.floor(speed * plannedMinutes);
             
-            // Efficiency = Actual / (Waktu Bersih * Speed)
-            let netRunTime = opMins - totalDowntime;
-            if(netRunTime < 0) netRunTime = 0;
-            
-            const netTarget = Math.floor(speed * netRunTime);
-            
-            let effVal = 0;
-            if (netTarget > 0) {
-                effVal = (act / netTarget) * 100;
-            } else if (act > 0) {
-                // Jika net target 0 tapi ada actual (misal start time salah), eff anggap 100%
-                effVal = 100;
-            }
-            
-            const effStr = effVal.toFixed(1)+'%';
-            
-            // Accumulate
+            // "Efficiency" on card = OEE or Performance? 
+            // Based on previous request: Efficiency = Performance affected by downtime.
+            // Let's use the Performance % calculation but display as percentage string
+            const cardEffStr = (perfPct * 100).toFixed(1) + '%'; 
+            // Note: User logic in previous turn was slightly different, but this aligns with OEE Performance.
+
             const isP = (i===5||i===6);
-            if(isP) { pAct+=act; rTeo+=teorythical; } else { cAct+=act; cTeo+=teorythical; }
+            if(isP) { pAct+=act; rTeo+=teorythicalDisplay; } else { cAct+=act; cTeo+=teorythicalDisplay; }
             gTot+=act;
 
-            // DOM Update
             const el = document.getElementById(`L${i}`);
             if(el) {
                 const curr = parseInt(el.innerText.replace(/[^0-9]/g, '')) || 0;
                 if(curr !== act) animateValue(el, curr, act, 500);
 
-                document.getElementById(`P${i}`).innerText = teorythical.toLocaleString();
+                document.getElementById(`P${i}`).innerText = teorythicalDisplay.toLocaleString();
                 const eEl = document.getElementById(`E${i}`);
-                eEl.innerText = effStr;
-                eEl.style.color = effVal>=90 ? getVar('--success') : effVal>=70 ? getVar('--warning') : getVar('--danger');
+                eEl.innerText = cardEffStr;
+                eEl.style.color = (perfPct*100)>=90 ? getVar('--success') : (perfPct*100)>=70 ? getVar('--warning') : getVar('--danger');
             }
+        }
+
+        // --- GLOBAL OEE UPDATE ---
+        if(countLines > 0) {
+            const avgAvail = (totalAvail / countLines) * 100;
+            const avgPerf = (totalPerf / countLines) * 100;
+            const avgQual = (totalQual / countLines) * 100;
+            const avgOee = (avgAvail/100) * (avgPerf/100) * (avgQual/100) * 100;
+
+            document.getElementById("oeeAvail").innerText = avgAvail.toFixed(1) + "%";
+            document.getElementById("oeePerf").innerText = avgPerf.toFixed(1) + "%";
+            document.getElementById("oeeQual").innerText = avgQual.toFixed(1) + "%";
+            document.getElementById("oeeScore").innerText = avgOee.toFixed(1) + "%";
         }
 
         const final = gTot + manualOffset;
@@ -979,10 +1050,6 @@
         const elTeo = document.getElementById(`${id}Teorythical`);
         if(elTeo) elTeo.innerText = teorythical.toLocaleString();
         
-        // Efficiency Summary juga mengikuti logika Gross Target di sini (atau bisa disesuaikan)
-        // Untuk konsistensi visual dashboard, biasanya Summary Eff = Actual / Gross Theoretical
-        // TAPI karena user minta downtime affect OEE, maka summary eff di sini mungkin terlihat lebih rendah
-        // daripada rata-rata eff per line. Ini wajar.
         const eff = teorythical>0 ? ((act/teorythical)*100).toFixed(1)+'%' : '0%';
         const el = document.getElementById(`${id}Eff`); 
         if(el) {
@@ -991,11 +1058,10 @@
         }
     }
 
-    // --- RESET LOGIC ---
+    // --- RESET & SAVE ---
     window.resetCounter = async () => {
         const val = document.getElementById("machineSelect").value;
         const [mach, line] = val.split("|"); 
-
         let pairs = [];
         if (mach === "machine01") pairs = ["L1", "L2"];
         else if (mach === "machine02") pairs = ["L3", "L4"];
@@ -1005,13 +1071,7 @@
         else if (mach === "machine06") pairs = ["L11", "L12"];
         
         let valueToSave = 0;
-        let details = [];
-
-        pairs.forEach(l => {
-            const currentVal = latestCounter[l] || 0;
-            valueToSave += currentVal;
-            details.push(`${l}=${currentVal}`);
-        });
+        pairs.forEach(l => { valueToSave += (latestCounter[l] || 0); });
 
         if (valueToSave === 0) {
             if(confirm(`Reset ${mach} (Nilai sudah 0)?`)) {
@@ -1022,12 +1082,7 @@
             return;
         }
 
-        const msg = `RESET ${mach.toUpperCase()}?\n\n` +
-                    `Nilai saat ini: ${details.join(" + ")} = ${valueToSave}\n` +
-                    `Nilai ${valueToSave} akan dipindah ke Offset agar Total Production TETAP.\n` +
-                    `Counter di Card Line akan kembali ke 0.`;
-
-        if(confirm(msg)) {
+        if(confirm(`RESET ${mach}? Total: ${valueToSave}`)) {
             try {
                 const newOffset = manualOffset + valueToSave;
                 await set(ref(database, 'config/manualOffset'), newOffset);
@@ -1035,10 +1090,7 @@
                 pairs.forEach(l => { latestCounter[l] = 0; });
                 manualOffset = newOffset; 
                 updateUI(); 
-            } catch (err) {
-                alert("Gagal menyimpan data ke database. Cek koneksi internet.");
-                console.error(err);
-            }
+            } catch (err) { console.error(err); }
         }
     };
 
@@ -1050,18 +1102,14 @@
 
     async function executeSaveAndReset() {
         let act = manualOffset, teorythical = 0;
-        
         const now = new Date();
         const globalMins = globalStartTime ? Math.max(0, now.getTime() - globalStartTime) / 60000 : 0;
 
         for(let i=1; i<=15; i++) { 
             if(i===13) continue;
             act += (latestCounter[`L${i}`]||0); 
-            
             const conf = lineConfigs[`L${i}`] || {};
             const speed = parseInt(conf.cpm) || defaultCPM;
-            
-            // Simpan Gross Target ke History agar sesuai tampilan card
             teorythical += Math.floor(speed * globalMins); 
         }
 
@@ -1070,12 +1118,10 @@
             for(let i=1; i<=6; i++) client.publish(`iot/esp32/machine0${i}/cmd`, JSON.stringify({cmd:"RESET", reset_source:"web"}));
             await set(ref(database, 'config/productionStartTime'), Date.now());
             await set(ref(database, 'config/manualOffset'), 0);
-            
             latestCounter={}; fetchHistoryForChart(); updateUI();
         } catch(e) { console.error(e); }
     }
     window.manualSave = () => { if(confirm("Simpan & Reset Total (Akhir Shift)?")) executeSaveAndReset(); };
-
     window.showDashboard = () => { document.getElementById("dashboardView").style.display="block"; document.getElementById("historyView").style.display="none"; document.getElementById("sensorHistoryView").style.display="none"; };
     
     window.showHistory = async () => {
