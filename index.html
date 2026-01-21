@@ -26,8 +26,6 @@
             --purple: #a855f7;
             --info: #0ea5e9;
             --radius: 12px;
-            
-            /* Mobile Variables */
             --whatsapp-header: #1f2c34;
             --whatsapp-bg: #111b21;
         }
@@ -53,37 +51,20 @@
         button { cursor: pointer; font-family: inherit; transition: all 0.2s ease; }
         button:active { transform: scale(0.98); }
 
-        /* --- LOGIN STYLES (NEW) --- */
-        .auth-overlay { 
-            display: flex; position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
-            background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(8px); z-index: 9999; 
-            align-items: center; justify-content: center; animation: fadeIn 0.3s;
-        }
-        .auth-box { 
-            background: var(--bg-card); padding: 40px; width: 100%; max-width: 380px; 
-            border-radius: 20px; border: 1px solid var(--border-color); text-align: center; 
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); position: relative;
-        }
+        /* AUTH UI */
+        .auth-overlay { display: flex; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(8px); z-index: 9999; align-items: center; justify-content: center; animation: fadeIn 0.3s; }
+        .auth-box { background: var(--bg-card); padding: 40px; width: 100%; max-width: 380px; border-radius: 20px; border: 1px solid var(--border-color); text-align: center; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); position: relative; }
         .auth-logo { height: 60px; width: auto; margin-bottom: 20px; filter: drop-shadow(0 0 15px var(--primary-bg)); }
         .auth-title { font-size: 20px; font-weight: 700; color: var(--text-main); margin-bottom: 5px; }
         .auth-subtitle { font-size: 13px; color: var(--text-muted); margin-bottom: 30px; }
-        
         .input-group { margin-bottom: 15px; text-align: left; }
         .input-label { display: block; font-size: 12px; color: var(--text-muted); margin-bottom: 5px; font-weight: 600; }
-        .auth-input { 
-            width: 100%; padding: 12px; border-radius: 10px; border: 1px solid var(--border-color); 
-            background: var(--bg-body); color: var(--text-main); outline: none; transition: border-color 0.2s;
-        }
+        .auth-input { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid var(--border-color); background: var(--bg-body); color: var(--text-main); outline: none; transition: border-color 0.2s; }
         .auth-input:focus { border-color: var(--primary); }
-        
-        .btn-auth { 
-            width: 100%; padding: 12px; background: var(--primary); color: white; 
-            border: none; border-radius: 10px; font-weight: 600; font-size: 14px; margin-top: 10px; 
-        }
-        .btn-auth:hover { opacity: 0.9; }
+        .btn-auth { width: 100%; padding: 12px; background: var(--primary); color: white; border: none; border-radius: 10px; font-weight: 600; font-size: 14px; margin-top: 10px; }
         .close-modal { position: absolute; top: 15px; right: 20px; background: none; border: none; font-size: 24px; color: var(--text-muted); }
 
-        /* Layout */
+        /* LAYOUT */
         #dashboardPage { display: none; animation: fadeIn 0.5s ease; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
@@ -96,15 +77,13 @@
         .btn-theme { padding: 8px !important; display: flex; align-items: center; justify-content: center; }
 
         .container { padding: 30px; max-width: 1400px; margin: auto; }
-
         .section-header { display: flex; align-items: center; gap: 12px; margin: 40px 0 20px; padding-bottom: 10px; border-bottom: 1px solid var(--border-color); }
         .section-title { font-size: 18px; font-weight: 700; color: var(--text-main); }
         .badge { font-size: 11px; padding: 4px 10px; border-radius: 20px; color: white; font-weight: 600; }
         .bg-primary { background: var(--primary); } .bg-warning { background: var(--warning); } .bg-purple { background: var(--purple); }
-
         .layout-row { display: flex; gap: 25px; align-items: flex-start; }
-        
-        /* OEE GLOBAL */
+
+        /* OEE & CARDS */
         .oee-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-bottom: 30px; }
         .oee-card { background: var(--bg-card); padding: 20px; border-radius: 16px; border: 1px solid var(--border-color); text-align: center; }
         .oee-title { font-size: 12px; color: var(--text-muted); font-weight: 700; letter-spacing: 1px; margin-bottom: 10px; }
@@ -119,23 +98,17 @@
 
         .grid { flex-grow: 1; display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; }
         
-        /* CARD LINE (UPDATED) */
         .card { background: var(--bg-card); padding: 20px; border-radius: 16px; border: 1px solid var(--border-color); transition: transform 0.2s; position: relative; overflow: hidden; cursor: pointer;}
         .card:hover { transform: translateY(-4px); border-color: var(--primary); }
         .card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px; }
         .card-title { margin: 0; font-size: 15px; font-weight: 700; color: var(--text-muted); }
         .rate-badge { font-size: 10px; background: var(--bg-body); padding: 3px 8px; border-radius: 6px; color: var(--text-muted); border: 1px solid var(--border-color); }
-        
         .card table { width: 100%; border-collapse: collapse; margin-bottom: 15px; }
         .card th { font-size: 10px; text-align: center; color: var(--text-muted); font-weight: 600; padding-bottom: 5px; }
         .card td { font-size: 18px; font-weight: 700; text-align: center; color: var(--text-main); }
         .val-actual { color: var(--success); }
 
-        /* OEE Mini Grid inside Card */
-        .card-oee-row { 
-            display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; 
-            border-top: 1px dashed var(--border-color); padding-top: 10px; 
-        }
+        .card-oee-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; border-top: 1px dashed var(--border-color); padding-top: 10px; }
         .mini-stat { text-align: center; }
         .mini-label { font-size: 9px; color: var(--text-muted); font-weight: 700; margin-bottom: 2px; }
         .mini-val { font-size: 12px; font-weight: 700; }
@@ -153,7 +126,7 @@
 
         footer { text-align: center; padding: 30px; color: var(--text-muted); font-size: 12px; }
 
-        /* --- SETTINGS MODAL --- */
+        /* SETTINGS MODAL */
         .modal { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.8); backdrop-filter: blur(5px); animation: fadeIn 0.3s; }
         .modal-content { background-color: var(--bg-card); margin: 5% auto; padding: 0; border: 1px solid var(--border-color); width: 90%; max-width: 600px; border-radius: 16px; color: var(--text-main); }
         .modal-header { padding: 20px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; }
@@ -218,15 +191,8 @@
         <img src="phi.png" alt="Logo" class="auth-logo">
         <h2 class="auth-title">PRODUCTION DASHBOARD</h2>
         <p class="auth-subtitle">Silakan login untuk mengakses data</p>
-        
-        <div class="input-group">
-            <label class="input-label">USERNAME</label>
-            <input id="genUser" type="text" class="auth-input" placeholder="User">
-        </div>
-        <div class="input-group">
-            <label class="input-label">PASSWORD</label>
-            <input id="genPass" type="password" class="auth-input" placeholder="Password">
-        </div>
+        <div class="input-group"><label class="input-label">USERNAME</label><input id="genUser" type="text" class="auth-input" placeholder="User"></div>
+        <div class="input-group"><label class="input-label">PASSWORD</label><input id="genPass" type="password" class="auth-input" placeholder="Password"></div>
         <button onclick="doGeneralLogin()" class="btn-auth">MASUK</button>
         <p id="genError" style="margin-top:15px; font-size:12px; color:var(--danger)"></p>
     </div>
@@ -237,15 +203,8 @@
         <button class="close-modal" onclick="toggleAdminModal()">&times;</button>
         <h2 class="auth-title" style="color:var(--primary)">ADMINISTRATOR</h2>
         <p class="auth-subtitle">Verifikasi untuk mengubah pengaturan</p>
-        
-        <div class="input-group">
-            <label class="input-label">USERNAME</label>
-            <input id="admUser" type="text" class="auth-input" placeholder="Admin">
-        </div>
-        <div class="input-group">
-            <label class="input-label">PASSWORD</label>
-            <input id="admPass" type="password" class="auth-input" placeholder="Password">
-        </div>
+        <div class="input-group"><label class="input-label">USERNAME</label><input id="admUser" type="text" class="auth-input" placeholder="Admin"></div>
+        <div class="input-group"><label class="input-label">PASSWORD</label><input id="admPass" type="password" class="auth-input" placeholder="Password"></div>
         <button onclick="doAdminLogin()" class="btn-auth" style="background:var(--primary)">VERIFIKASI</button>
         <p id="admError" style="margin-top:15px; font-size:12px; color:var(--danger)"></p>
     </div>
@@ -474,7 +433,6 @@
 
     const getVar = (name) => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
 
-    // --- HELPER TIME CALCULATION ---
     function calcTimeDiff(startStr, endStr) {
         if (!startStr || !endStr) return 0;
         const [h1, m1] = startStr.split(':').map(Number);
@@ -513,7 +471,6 @@
     };
 
     function checkAuth() {
-        // Check Layer 1
         if(!sessionStorage.getItem("generalAuth")) {
             document.getElementById("generalLoginOverlay").style.display = "flex";
             document.getElementById("dashboardPage").style.display = "none";
@@ -521,8 +478,6 @@
             document.getElementById("generalLoginOverlay").style.display = "none";
             document.getElementById("dashboardPage").style.display = "block";
         }
-
-        // Check Layer 2
         const role = sessionStorage.getItem("role");
         if(role === 'admin') {
             document.body.classList.add("is-admin");
@@ -536,10 +491,9 @@
     window.logout = () => { sessionStorage.removeItem("role"); location.reload(); };
 
     window.onload = () => {
-        checkAuth(); // First check
+        checkAuth(); 
         generateAllCards(); syncConfig(); loadLastCacheFromFirebase(); fetchHistoryForChart();
         setInterval(checkAutoSchedule, 10000); setInterval(updateUI, 1000);
-        
         window.onclick = function(event) { if (event.target == document.getElementById("settingsModal")) closeSettings(); }
     };
 
@@ -647,7 +601,10 @@
     function updateUI() {
         if(!globalStartTime) return;
         const now = new Date();
+        
+        // 1. Time Elapsed Since Last RESET (For Theoretical Card Display)
         const globalMins = Math.max(0, now.getTime() - globalStartTime) / 60000;
+        
         let gTot=0, cAct=0, cTeo=0, pAct=0, rTeo=0;
         let totalAvail=0, totalPerf=0, totalQual=0, countLines=0;
 
@@ -658,7 +615,7 @@
             const speed = parseInt(conf.cpm) || defaultCPM;
             const rejects = parseInt(conf.rejects) || 0;
 
-            // 1. Time Calculation
+            // 2. Determine Availability Basis (Shift Time)
             let plannedMinutes = globalMins; 
             if(conf.startTime) {
                 const [h, m] = conf.startTime.split(':');
@@ -672,7 +629,7 @@
                 plannedMinutes = Math.max(0, limitDt - startDt) / 60000;
             }
 
-            // 2. Downtime
+            // 3. Downtime
             let totalDowntime = 0;
             downtimeTypes.forEach(type => {
                 const val = conf[type.id];
@@ -682,33 +639,32 @@
                 }
             });
 
-            // 3. Operating Time
+            // 4. Operating Time
             let operatingTime = plannedMinutes - totalDowntime;
             if(operatingTime < 0) operatingTime = 0;
 
-            // 4. Counts
+            // 5. Counts
             const act = latestCounter[`L${i}`] || 0;
             const goodCount = Math.max(0, act - rejects);
 
-            // 5. OEE Metrics
+            // 6. OEE Metrics
             let availPct = (plannedMinutes > 0) ? (operatingTime / plannedMinutes) : 0;
             const targetOutput = operatingTime * speed;
             let perfPct = (targetOutput > 0) ? (act / targetOutput) : (act > 0 ? 1 : 0);
             let qualPct = (act > 0) ? (goodCount / act) : 1;
             const oeePct = availPct * perfPct * qualPct;
 
-            // Accumulate Global
             totalAvail += availPct; totalPerf += perfPct; totalQual += qualPct;
 
-            // Display Values
-            const teorythicalDisplay = Math.floor(speed * plannedMinutes); // Gross Target
-            const cardEffStr = (perfPct * 100).toFixed(1) + '%'; // Showing Perf as Efficiency
+            // --- REVERTED LOGIC: Theoretical Display = Simple Elapsed Time * Speed
+            // This ensures it resets to 0 when globalStartTime is reset
+            const teorythicalDisplay = Math.floor(speed * globalMins); 
+            const cardEffStr = (perfPct * 100).toFixed(1) + '%'; 
 
             const isP = (i===5||i===6);
             if(isP) { pAct+=act; rTeo+=teorythicalDisplay; } else { cAct+=act; cTeo+=teorythicalDisplay; }
             gTot+=act;
 
-            // DOM Update
             const el = document.getElementById(`L${i}`);
             if(el) {
                 const curr = parseInt(el.innerText.replace(/[^0-9]/g, '')) || 0;
@@ -718,7 +674,7 @@
                 eEl.innerText = cardEffStr;
                 eEl.style.color = (perfPct*100)>=90 ? getVar('--success') : (perfPct*100)>=70 ? getVar('--warning') : getVar('--danger');
 
-                // Update Mini OEE Stats per Card
+                // Mini Stats
                 document.getElementById(`L${i}_avail`).innerText = (availPct*100).toFixed(0) + '%';
                 document.getElementById(`L${i}_perf`).innerText = (perfPct*100).toFixed(0) + '%';
                 document.getElementById(`L${i}_qual`).innerText = (qualPct*100).toFixed(0) + '%';
