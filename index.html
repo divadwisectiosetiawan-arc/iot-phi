@@ -880,16 +880,31 @@
             const act = latestCounter[`L${i}`] || 0;
             const goodCount = Math.max(0, act - rejects);
 
-            // 5. OEE
+            // 5. OEE (PERFORMANCE % based on NEW LOGIC)
+            // Availability % = (Operating / Planned) * 100
             let availPct = (plannedMinutes > 0) ? (operatingTime / plannedMinutes) : 0;
-            const targetOutput = operatingTime * speed;
-            let perfPct = (targetOutput > 0) ? (act / targetOutput) : (act > 0 ? 1 : 0);
+            
+            // Performance % (NEW LOGIC) = Actual / (Planned Time * Speed)
+            // Note: Your request says predict = 660 * 70. This is Gross Target.
+            // And Performance = Actual / Gross Target.
+            const grossTarget = Math.floor(plannedMinutes * speed);
+            let perfPct = 0;
+            if(grossTarget > 0) {
+                perfPct = (act / grossTarget);
+            } else if(act > 0) {
+                perfPct = 1;
+            }
+
+            // Quality % = Good / Actual
             let qualPct = (act > 0) ? (goodCount / act) : 1;
+            
+            // OEE Score
             const oeePct = availPct * perfPct * qualPct;
 
             totalAvail += availPct; totalPerf += perfPct; totalQual += qualPct;
 
-            const teorythicalDisplay = Math.floor(speed * globalMins); 
+            // Display on Card
+            const teorythicalDisplay = grossTarget; 
             const cardEffStr = (perfPct * 100).toFixed(1) + '%'; 
 
             const isP = (i===5||i===6);
@@ -905,6 +920,7 @@
                 eEl.innerText = cardEffStr;
                 eEl.style.color = (perfPct*100)>=90 ? getVar('--success') : (perfPct*100)>=70 ? getVar('--warning') : getVar('--danger');
 
+                // Mini Stats
                 document.getElementById(`L${i}_avail`).innerText = (availPct*100).toFixed(0) + '%';
                 document.getElementById(`L${i}_perf`).innerText = (perfPct*100).toFixed(0) + '%';
                 document.getElementById(`L${i}_qual`).innerText = (qualPct*100).toFixed(0) + '%';
@@ -912,11 +928,12 @@
             }
         }
 
+        // Global Stats
         if(countLines > 0) {
             const avgAvail = (totalAvail / countLines);
             const avgPerf = (totalPerf / countLines);
             const avgQual = (totalQual / countLines);
-            const avgOee = avgAvail * avgPerf * avgQual;
+            const avgOee = avgAvail * avgPerf * avgQual; // Note: Global OEE usually product of avg factors
 
             document.getElementById("oeeAvail").innerText = (avgAvail*100).toFixed(1) + "%";
             document.getElementById("oeePerf").innerText = (avgPerf*100).toFixed(1) + "%";
