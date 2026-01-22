@@ -10,106 +10,185 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
 
     <style>
-        /* --- CSS UTAMA (SAMA SEPERTI SEBELUMNYA) --- */
+        /* --- CSS UTAMA (TIDAK DIUBAH SAMA SEKALI DARI KODE ASLI ANDA) --- */
         :root {
-            --bg-body: #0f172a; --bg-card: #1e293b; --bg-header: rgba(15, 23, 42, 0.95);
-            --border-color: #334155; --text-main: #f8fafc; --text-muted: #94a3b8;
-            --primary: #38bdf8; --primary-bg: rgba(56, 189, 248, 0.1);
-            --success: #22c55e; --warning: #f59e0b; --danger: #ef4444;
-            --purple: #a855f7; --info: #0ea5e9;
-            --chart-blue: #4472C4; --chart-orange: #ED7D31;
-            --whatsapp-header: #1f2c34; --whatsapp-bg: #111b21;
+            --bg-body: #0f172a;
+            --bg-card: #1e293b;
+            --bg-header: rgba(15, 23, 42, 0.95);
+            --border-color: #334155;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --primary: #38bdf8;
+            --primary-bg: rgba(56, 189, 248, 0.1);
+            --success: #22c55e;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --purple: #a855f7;
+            --info: #0ea5e9;
+            --chart-blue: #4472C4;
+            --chart-orange: #ED7D31;
+            
+            /* Mobile Variables */
+            --whatsapp-header: #1f2c34;
+            --whatsapp-bg: #111b21;
         }
+
         [data-theme="light"] {
-            --bg-body: #f8fafc; --bg-card: #ffffff; --bg-header: rgba(255, 255, 255, 0.95);
-            --border-color: #e2e8f0; --text-main: #0f172a; --text-muted: #64748b;
-            --primary: #0284c7; --primary-bg: rgba(2, 132, 199, 0.1);
-            --success: #16a34a; --warning: #d97706; --danger: #dc2626;
-            --purple: #7c3aed; --info: #0284c7;
+            --bg-body: #f8fafc;
+            --bg-card: #ffffff;
+            --bg-header: rgba(255, 255, 255, 0.95);
+            --border-color: #e2e8f0;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --primary: #0284c7;
+            --primary-bg: rgba(2, 132, 199, 0.1);
+            --success: #16a34a;
+            --warning: #d97706;
+            --danger: #dc2626;
+            --purple: #7c3aed;
+            --info: #0284c7;
         }
+
         * { box-sizing: border-box; }
-        body { margin: 0; font-family: 'Inter', sans-serif; background-color: var(--bg-body); color: var(--text-main); transition: 0.3s; }
+        body { margin: 0; font-family: 'Inter', sans-serif; background-color: var(--bg-body); color: var(--text-main); transition: background-color 0.3s, color 0.3s; }
         button { cursor: pointer; font-family: inherit; transition: all 0.2s ease; }
         button:active { transform: scale(0.98); }
 
-        /* AUTH & LAYOUT */
-        .auth-overlay { display: flex; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(8px); z-index: 9999; align-items: center; justify-content: center; }
-        .auth-box { background: var(--bg-card); padding: 40px; width: 100%; max-width: 380px; border-radius: 20px; border: 1px solid var(--border-color); text-align: center; }
-        .auth-input { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid var(--border-color); background: var(--bg-body); color: var(--text-main); margin-bottom: 15px; }
-        .btn-auth { width: 100%; padding: 12px; background: var(--primary); color: white; border: none; border-radius: 10px; font-weight: 600; }
+        /* AUTH UI */
+        .auth-overlay { display: flex; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(8px); z-index: 9999; align-items: center; justify-content: center; animation: fadeIn 0.3s; }
+        .auth-box { background: var(--bg-card); padding: 40px; width: 100%; max-width: 380px; border-radius: 20px; border: 1px solid var(--border-color); text-align: center; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); position: relative; }
+        .auth-logo { height: 60px; width: auto; margin-bottom: 20px; filter: drop-shadow(0 0 15px var(--primary-bg)); }
+        .auth-title { font-size: 20px; font-weight: 700; color: var(--text-main); margin-bottom: 5px; }
+        .auth-subtitle { font-size: 13px; color: var(--text-muted); margin-bottom: 30px; }
+        .input-group { margin-bottom: 15px; text-align: left; }
+        .input-label { display: block; font-size: 12px; color: var(--text-muted); margin-bottom: 5px; font-weight: 600; }
+        .auth-input { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid var(--border-color); background: var(--bg-body); color: var(--text-main); outline: none; transition: border-color 0.2s; }
+        .auth-input:focus { border-color: var(--primary); }
+        .btn-auth { width: 100%; padding: 12px; background: var(--primary); color: white; border: none; border-radius: 10px; font-weight: 600; font-size: 14px; margin-top: 10px; }
+        .close-modal { position: absolute; top: 15px; right: 20px; background: none; border: none; font-size: 24px; color: var(--text-muted); }
 
+        /* LAYOUT */
         #dashboardPage { display: none; animation: fadeIn 0.5s ease; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        header.desktop-header { background: var(--bg-header); padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; border-bottom: 1px solid var(--border-color); }
+        header.desktop-header { background: var(--bg-header); backdrop-filter: blur(10px); padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; border-bottom: 1px solid var(--border-color); box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
+        .header-left { display: flex; align-items: center; gap: 15px; }
+        .header-logo { height: 40px; width: auto; }
         .header-title { font-size: 20px; font-weight: 700; color: var(--primary); }
-        nav { display: flex; gap: 12px; }
-        nav button { padding: 8px 16px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-main); }
+        nav { display: flex; align-items: center; gap: 12px; }
+        nav select, nav button { padding: 8px 16px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-main); font-size: 13px; font-weight: 500; }
+        .btn-theme { padding: 8px !important; display: flex; align-items: center; justify-content: center; }
 
         .container { padding: 30px; max-width: 1400px; margin: auto; }
-        .section-header { display: flex; align-items: center; gap: 12px; margin: 40px 0 20px; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; }
+        .section-header { display: flex; align-items: center; gap: 12px; margin: 40px 0 20px; padding-bottom: 10px; border-bottom: 1px solid var(--border-color); }
+        .section-title { font-size: 18px; font-weight: 700; color: var(--text-main); }
         .badge { font-size: 11px; padding: 4px 10px; border-radius: 20px; color: white; font-weight: 600; }
         .bg-primary { background: var(--primary); } .bg-warning { background: var(--warning); } .bg-purple { background: var(--purple); }
+        .layout-row { display: flex; gap: 25px; align-items: flex-start; }
 
-        /* OEE CARDS */
+        /* OEE & CARDS */
         .oee-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-bottom: 30px; }
         .oee-card { background: var(--bg-card); padding: 20px; border-radius: 16px; border: 1px solid var(--border-color); text-align: center; }
+        .oee-title { font-size: 12px; color: var(--text-muted); font-weight: 700; letter-spacing: 1px; margin-bottom: 10px; }
         .oee-value { font-size: 28px; font-weight: 800; }
-        .oee-desc { font-size: 11px; color: var(--text-muted); }
+        .oee-desc { font-size: 11px; color: var(--text-muted); margin-top: 5px; }
 
-        .layout-row { display: flex; gap: 25px; align-items: flex-start; }
-        .summary-card { background: var(--bg-card); border: 1px solid var(--border-color); padding: 25px; border-radius: 16px; width: 280px; flex-shrink: 0; }
+        .summary-card { background: var(--bg-card); border: 1px solid var(--border-color); padding: 25px; border-radius: 16px; min-width: 280px; width: 280px; flex-shrink: 0; }
+        .summary-header { font-size: 16px; font-weight: 700; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid var(--border-color); }
         .summary-row { margin-bottom: 15px; }
+        .summary-label { font-size: 12px; color: var(--text-muted); margin-bottom: 4px; }
         .summary-value { font-size: 24px; font-weight: 700; }
 
         .grid { flex-grow: 1; display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; }
-        .card { background: var(--bg-card); padding: 20px; border-radius: 16px; border: 1px solid var(--border-color); position: relative; cursor: pointer; transition: transform 0.2s; }
+        
+        .card { background: var(--bg-card); padding: 20px; border-radius: 16px; border: 1px solid var(--border-color); transition: transform 0.2s; position: relative; overflow: hidden; cursor: pointer;}
         .card:hover { transform: translateY(-4px); border-color: var(--primary); }
-        .card-header { display: flex; justify-content: space-between; margin-bottom: 15px; }
+        .card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px; }
         .card-title { margin: 0; font-size: 15px; font-weight: 700; color: var(--text-muted); }
-        
-        /* TABEL DATA PER LINE */
-        .card table { width: 100%; margin-bottom: 15px; }
-        .card th { font-size: 10px; color: var(--text-muted); padding-bottom: 5px; }
+        .rate-badge { font-size: 10px; background: var(--bg-body); padding: 3px 8px; border-radius: 6px; color: var(--text-muted); border: 1px solid var(--border-color); }
+        .card table { width: 100%; border-collapse: collapse; margin-bottom: 15px; }
+        .card th { font-size: 10px; text-align: center; color: var(--text-muted); font-weight: 600; padding-bottom: 5px; }
         .card td { font-size: 18px; font-weight: 700; text-align: center; color: var(--text-main); }
-        
-        /* MINI OEE ROW */
+        .val-actual { color: var(--success); }
+
         .card-oee-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; border-top: 1px dashed var(--border-color); padding-top: 10px; }
         .mini-stat { text-align: center; }
-        .mini-label { font-size: 9px; color: var(--text-muted); font-weight: 700; }
+        .mini-label { font-size: 9px; color: var(--text-muted); font-weight: 700; margin-bottom: 2px; }
         .mini-val { font-size: 12px; font-weight: 700; }
 
-        /* CHART */
         .chart-container { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 16px; padding: 25px; flex-grow: 1; min-height: 420px; }
-        .chart-header { display: flex; justify-content: space-between; margin-bottom: 20px; }
+        .chart-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .chart-controls button { background: var(--bg-body); border: 1px solid var(--border-color); color: var(--text-muted); padding: 6px 16px; border-radius: 20px; font-size: 12px; margin-left: 5px; }
+        .chart-controls button.active { background: var(--purple); color: white; border-color: var(--purple); }
 
-        /* MODAL */
-        .modal { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.8); backdrop-filter: blur(5px); }
-        .modal-content { background-color: var(--bg-card); margin: 5% auto; border: 1px solid var(--border-color); width: 90%; max-width: 600px; border-radius: 16px; padding: 0; }
-        .modal-header, .modal-footer { padding: 20px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; }
-        .modal-footer { border-top: 1px solid var(--border-color); border-bottom: none; justify-content: flex-end; }
+        .table-responsive { overflow-x: auto; border-radius: 12px; border: 1px solid var(--border-color); }
+        table.full-table { width: 100%; border-collapse: collapse; background: var(--bg-card); min-width: 900px; }
+        .full-table th { background: var(--bg-body); color: var(--primary); position: sticky; top: 0; z-index: 10; padding: 12px; font-size: 13px; text-align: center; border-bottom: 1px solid var(--border-color); }
+        .full-table td { padding: 10px; border-bottom: 1px solid var(--border-color); border-right: 1px solid var(--border-color); font-size: 13px; text-align: center; color: var(--text-main); }
+        .val-zero { color: var(--text-muted); opacity: 0.5; }
+
+        footer { text-align: center; padding: 30px; color: var(--text-muted); font-size: 12px; }
+
+        /* MODALS (Settings & Detail) */
+        .modal { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.8); backdrop-filter: blur(5px); animation: fadeIn 0.3s; }
+        .modal-content { background-color: var(--bg-card); margin: 5% auto; padding: 0; border: 1px solid var(--border-color); width: 90%; max-width: 600px; border-radius: 16px; color: var(--text-main); }
+        .modal-header { padding: 20px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; }
+        .modal-close { font-size: 28px; font-weight: bold; color: var(--text-muted); cursor: pointer; background: none; border: none; }
         .modal-body { padding: 20px; max-height: 70vh; overflow-y: auto; }
         .form-group { margin-bottom: 15px; }
-        .modal-input { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-body); color: var(--text-main); }
+        .form-label { display: block; margin-bottom: 5px; font-size: 12px; color: var(--text-muted); font-weight: 600; }
+        .form-row { display: flex; gap: 15px; }
+        .form-col { flex: 1; }
+        .modal-input { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-body); color: var(--text-main); font-family: inherit; }
+        .modal-input:focus { outline: none; border-color: var(--primary); }
+        .downtime-section { background: rgba(239, 68, 68, 0.05); padding: 15px; border-radius: 8px; border: 1px solid rgba(239, 68, 68, 0.2); margin-top: 10px; }
+        .downtime-title { color: var(--danger); font-size: 13px; font-weight: 700; margin-bottom: 10px; display: block; border-bottom: 1px solid rgba(239, 68, 68, 0.2); padding-bottom: 5px; }
+        .modal-footer { padding: 20px; border-top: 1px solid var(--border-color); text-align: right; }
+        
+        /* DETAIL LIST STYLES */
+        .detail-item { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid var(--border-color); }
+        .detail-label { font-weight: 600; font-size: 14px; }
+        .detail-val { font-weight: 700; font-size: 14px; }
+        .val-red { color: var(--danger); }
 
-        /* MOBILE RESPONSIVE */
-        .mobile-header, .bottom-nav { display: none; }
+        /* ADMIN CONTROLS */
+        .btn-settings, .admin-only { display: none; }
+        body.is-admin .btn-settings { display: block; background: transparent; border: none; color: var(--text-muted); cursor: pointer; padding: 5px; }
+        body.is-admin .btn-settings:hover { color: var(--primary); }
+        body.is-admin .admin-only { display: inline-block; }
+        body.is-admin .guest-only { display: none; }
+
+        /* MOBILE */
+        .mobile-header, .bottom-nav, .mobile-kebab-menu, .mobile-overlay { display: none; }
         @media (max-width: 900px) {
+            body { background-color: var(--whatsapp-bg); padding-bottom: 70px; } 
+            .container { padding: 10px; margin-top: 55px; }
             .desktop-header { display: none !important; }
-            .mobile-header { display: flex; position: fixed; top: 0; width: 100%; height: 56px; background: var(--whatsapp-header); z-index: 1000; align-items: center; padding: 0 16px; color: white; font-weight: 600; justify-content: space-between; }
-            .container { padding: 10px; margin-top: 60px; margin-bottom: 70px; }
-            .layout-row { flex-direction: column; }
-            .summary-card { width: 100%; }
-            .grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
-            .oee-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
-            .bottom-nav { display: flex; position: fixed; bottom: 0; width: 100%; height: 65px; background: var(--bg-card); border-top: 1px solid var(--border-color); justify-content: space-around; align-items: center; z-index: 1000; }
-            .nav-item { flex: 1; text-align: center; color: var(--text-muted); font-size: 12px; background: none; border: none; }
+            .mobile-header { display: flex; position: fixed; top: 0; left: 0; right: 0; height: 56px; background: var(--whatsapp-header); color: white; align-items: center; justify-content: space-between; padding: 0 16px; z-index: 1000; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+            .mobile-title { font-weight: 600; font-size: 20px; }
+            .mobile-actions button { background: none; border: none; color: white; font-size: 20px; padding: 8px; }
+            .mobile-kebab-menu { display: none; flex-direction: column; position: fixed; top: 5px; right: 5px; background: var(--bg-card); width: 200px; border-radius: 4px; box-shadow: 0 5px 15px rgba(0,0,0,0.5); z-index: 2000; }
+            .mobile-kebab-menu.show { display: flex; }
+            .kebab-item { padding: 14px 16px; color: var(--text-main); font-size: 14px; text-align: left; background: none; border: none; }
+            .mobile-overlay { display: none; position: fixed; inset: 0; z-index: 1500; }
+            .mobile-overlay.show { display: block; }
+            .bottom-nav { display: flex; position: fixed; bottom: 0; left: 0; right: 0; height: 65px; background: var(--bg-card); border-top: 1px solid var(--border-color); z-index: 1000; justify-content: space-around; align-items: center; }
+            .nav-item { flex: 1; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; background: none; border: none; color: var(--text-muted); gap: 4px; }
             .nav-item.active { color: var(--success); }
-            
-            /* Mobile Tabs Logic */
+            .nav-item.active .nav-indicator { width: 100%; height: 3px; background: var(--success); position: absolute; top: 0; }
+            .nav-label { font-size: 12px; font-weight: 500; }
             [data-mobile-tab="dashboard"] .m-hide-dashboard { display: none !important; }
             [data-mobile-tab="total"] .m-hide-total { display: none !important; }
             [data-mobile-tab="grafik"] .m-hide-grafik { display: none !important; }
+            .layout-row { flex-direction: column; gap: 15px; }
+            .summary-card { width: 100%; min-width: 0; margin-bottom: 10px; }
+            .grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+            .card { padding: 12px; }
+            .card td { font-size: 16px; }
+            .oee-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+            .oee-value { font-size: 20px; }
+            .chart-container { min-height: 300px; padding: 10px; }
+            .chart-legend-custom { display: none; }
         }
     </style>
 </head>
@@ -118,80 +197,158 @@
 
 <div id="generalLoginOverlay" class="auth-overlay">
     <div class="auth-box">
-        <h2 style="color:var(--primary)">PRODUCTION DASHBOARD</h2>
-        <input id="genUser" type="text" class="auth-input" placeholder="User">
-        <input id="genPass" type="password" class="auth-input" placeholder="Password">
+        <img src="phi.png" alt="Logo" class="auth-logo">
+        <h2 class="auth-title">PRODUCTION DASHBOARD</h2>
+        <p class="auth-subtitle">Silakan login untuk mengakses data</p>
+        <div class="input-group"><label class="input-label">USERNAME</label><input id="genUser" type="text" class="auth-input" placeholder="User"></div>
+        <div class="input-group"><label class="input-label">PASSWORD</label><input id="genPass" type="password" class="auth-input" placeholder="Password"></div>
         <button onclick="doGeneralLogin()" class="btn-auth">MASUK</button>
-        <p id="genError" style="color:var(--danger); font-size:12px; margin-top:10px;"></p>
+        <p id="genError" style="margin-top:15px; font-size:12px; color:var(--danger)"></p>
+    </div>
+</div>
+
+<div id="adminLoginOverlay" class="auth-overlay" style="display:none">
+    <div class="auth-box" style="border-color: var(--primary);">
+        <button class="close-modal" onclick="toggleAdminModal()">&times;</button>
+        <h2 class="auth-title" style="color:var(--primary)">ADMINISTRATOR</h2>
+        <p class="auth-subtitle">Verifikasi untuk mengubah pengaturan</p>
+        <div class="input-group"><label class="input-label">USERNAME</label><input id="admUser" type="text" class="auth-input" placeholder="Admin"></div>
+        <div class="input-group"><label class="input-label">PASSWORD</label><input id="admPass" type="password" class="auth-input" placeholder="Password"></div>
+        <button onclick="doAdminLogin()" class="btn-auth" style="background:var(--primary)">VERIFIKASI</button>
+        <p id="admError" style="margin-top:15px; font-size:12px; color:var(--danger)"></p>
     </div>
 </div>
 
 <div id="dashboardPage">
     <header class="desktop-header">
-        <div class="header-title">COUNTER PRODUCTION PHI</div>
+        <div class="header-left">
+            <img src="phi.png" alt="Logo" class="header-logo">
+            <span class="header-title">COUNTER PRODUCTION PHI</span>
+        </div>
         <nav>
-            <span id="clock" style="color:var(--text-main); font-weight:600; margin-right:20px;"></span>
-            <button onclick="manualSave()" style="border-color:var(--success); color:var(--success)">Save & Reset Shift</button>
-            <button onclick="showHistory()">History</button>
-            <button onclick="logout()">Logout</button>
+            <span id="clock" style="font-family: monospace; font-weight:600; color:var(--text-main)"></span>
+            <button onclick="toggleAdminModal()" class="guest-only">Administrator</button>
+            <div class="admin-only" style="display:none; gap:10px; align-items:center;">
+                <select id="machineSelect">
+                    <option value="machine01|L1">Machine 01</option>
+                    <option value="machine02|L2">Machine 02</option>
+                    <option value="machine03|L3">Machine 03</option>
+                    <option value="machine04|L4">Machine 04</option>
+                    <option value="machine05|L5">Machine 05</option>
+                    <option value="machine06|L6">Machine 06</option>
+                </select>
+                <button onclick="manualSave()" style="color:var(--success); border-color:var(--success)">Save & Reset</button>
+                <button onclick="resetCounter()" style="color:var(--danger); border-color:var(--danger)">Reset Count</button>
+                <button onclick="logout()">Logout</button>
+            </div>
+            <button onclick="showDashboard()" title="Dashboard">Dashboard</button>
+            <button onclick="showHistory()" title="History">History</button>
+            <button onclick="toggleTheme()" class="btn-theme" title="Switch Theme">◑</button>
         </nav>
     </header>
 
     <div class="mobile-header">
-        <span>SARDINES PRODUCTION</span>
-        <button onclick="manualSave()" style="background:none; border:none; color:white;">💾</button>
+        <span class="mobile-title">SARDINES PRODUCTION PHI</span>
+        <div class="mobile-actions"><button onclick="toggleKebabMenu()">&#8942;</button></div>
+    </div>
+
+    <div class="mobile-overlay" id="mobileOverlay" onclick="toggleKebabMenu()"></div>
+    <div class="mobile-kebab-menu" id="kebabMenu">
+        <button class="kebab-item guest-only" onclick="toggleAdminModal()">Login Admin</button>
+        <button class="kebab-item admin-only" onclick="manualSave(); toggleKebabMenu()">Simpan & Reset</button>
+        <button class="kebab-item admin-only" onclick="resetCounter(); toggleKebabMenu()">Reset Counter</button>
+        <button class="kebab-item" onclick="showHistory(); toggleKebabMenu()">Riwayat Data</button>
+        <button class="kebab-item" onclick="toggleTheme(); toggleKebabMenu()">Ganti Tema</button>
+        <button class="kebab-item admin-only" onclick="logout()">Logout</button>
     </div>
 
     <div class="container" id="dashboardView" data-mobile-tab="dashboard">
         
-        <div class="section-header m-hide-total m-hide-grafik">
-            <span class="badge bg-purple">PLANT ANALYTICS</span>
-            <span class="section-title">GLOBAL OEE</span>
+        <div class="total-box m-hide-dashboard m-hide-grafik">
+            <div class="label">Total Production Today</div>
+            <h1 id="total">0</h1>
         </div>
+
+        <div class="section-header m-hide-total m-hide-grafik">
+            <span class="badge bg-purple">OEE ANALYTICS</span>
+            <span class="section-title">GLOBAL PLANT OEE</span>
+        </div>
+
         <div class="oee-grid m-hide-dashboard m-hide-grafik">
             <div class="oee-card" style="border-top:4px solid var(--success)">
-                <div class="oee-desc">AVAILABILITY</div>
+                <div class="oee-title">AVAILABILITY</div>
                 <div class="oee-value" style="color:var(--success)" id="oeeAvail">0%</div>
+                <div class="oee-desc">Operating vs Planned Time</div>
             </div>
             <div class="oee-card" style="border-top:4px solid var(--info)">
-                <div class="oee-desc">PERFORMANCE</div>
+                <div class="oee-title">PERFORMANCE</div>
                 <div class="oee-value" style="color:var(--info)" id="oeePerf">0%</div>
+                <div class="oee-desc">Actual vs Target Output</div>
             </div>
             <div class="oee-card" style="border-top:4px solid var(--warning)">
-                <div class="oee-desc">QUALITY</div>
+                <div class="oee-title">QUALITY</div>
                 <div class="oee-value" style="color:var(--warning)" id="oeeQual">0%</div>
+                <div class="oee-desc">Good Count vs Total</div>
             </div>
             <div class="oee-card" style="border-top:4px solid var(--purple)">
-                <div class="oee-desc">OEE SCORE</div>
+                <div class="oee-title">OEE SCORE</div>
                 <div class="oee-value" style="color:var(--purple)" id="oeeScore">0%</div>
+                <div class="oee-desc">Global Efficiency</div>
             </div>
         </div>
 
         <div class="section-header m-hide-total m-hide-grafik">
-            <span class="badge bg-primary">PRODUCTION LINES</span>
-            <span class="section-title">REALTIME MONITORING</span>
+            <span class="badge bg-primary">CLUB CAN</span>
+            <span class="section-title">LINE 1-4 & 7-15</span>
+        </div>
+        
+        <div class="layout-row">
+            <div class="summary-card m-hide-dashboard m-hide-grafik" style="border-left: 4px solid var(--primary);">
+                <div class="summary-header" style="color: var(--primary)">OVERALL CLUB CAN</div>
+                <div class="summary-row"><div class="summary-label">Total Actual</div><div class="summary-value" id="totalClubActual" style="color: var(--text-main)">0</div></div>
+                <div class="summary-row"><div class="summary-label">Total Teorythical</div><div class="summary-value" id="totalClubTeorythical" style="color: var(--primary)">0</div></div>
+                <div class="summary-row"><div class="summary-label">Avg Efficiency</div><div class="summary-value" id="totalClubEff">0%</div></div>
+            </div>
+            <div class="grid m-hide-total m-hide-grafik" id="clubCanContainer"></div>
+        </div>
+
+        <div class="section-header m-hide-total m-hide-grafik">
+            <span class="badge bg-warning">ROUND CAN</span>
+            <span class="section-title">LINE 5-6</span>
         </div>
 
         <div class="layout-row">
-            <div class="summary-card m-hide-dashboard m-hide-grafik" style="border-left: 4px solid var(--primary);">
-                <div class="summary-row"><div style="font-size:12px; color:var(--text-muted)">Total Actual</div><div class="summary-value" id="grandTotalActual">0</div></div>
-                <div class="summary-row"><div style="font-size:12px; color:var(--text-muted)">Total Predict</div><div class="summary-value" id="grandTotalTeorythical" style="color:var(--primary)">0</div></div>
-                <div class="summary-row"><div style="font-size:12px; color:var(--text-muted)">Total Loss (Time)</div><div class="summary-value" id="grandTotalLostTime" style="color:var(--danger)">0 Min</div></div>
+            <div class="summary-card m-hide-dashboard m-hide-grafik" style="border-left: 4px solid var(--warning);">
+                <div class="summary-header" style="color: var(--warning)">OVERALL ROUND CAN</div>
+                <div class="summary-row"><div class="summary-label">Total Actual</div><div class="summary-value" id="totalRoundActual" style="color: var(--text-main)">0</div></div>
+                <div class="summary-row"><div class="summary-label">Total Teorythical</div><div class="summary-value" id="totalRoundTeorythical" style="color: var(--warning)">0</div></div>
+                <div class="summary-row"><div class="summary-label">Avg Efficiency</div><div class="summary-value" id="totalRoundEff">0%</div></div>
             </div>
-
-            <div class="grid m-hide-total m-hide-grafik" id="linesContainer"></div>
+            <div class="grid m-hide-total m-hide-grafik" id="roundCanContainer"></div>
         </div>
 
-        <div class="section-header m-hide-dashboard m-hide-total" style="margin-top:40px;">
-            <span class="badge bg-purple">GRAFIK</span>
-            <span class="section-title">LOSS ANALYSIS (MINUTES)</span>
+        <div class="section-header m-hide-dashboard m-hide-total" style="margin-top: 50px;">
+            <span class="badge bg-purple">ANALYTICS</span>
+            <span class="section-title">OVERALL PERFORMANCE & LOSS</span>
         </div>
-        <div class="layout-row m-hide-dashboard m-hide-total">
-            <div class="chart-container">
+        
+        <div class="layout-row">
+            <div class="summary-card m-hide-dashboard m-hide-grafik" style="border-left: 4px solid var(--purple);">
+                <div class="summary-header" style="color: var(--purple)">OVERALL PERFORMANCE</div>
+                <div class="summary-row"><div class="summary-label">Overall Actual</div><div class="summary-value" id="grandTotalActual" style="color: var(--purple)">0</div></div>
+                <div class="summary-row"><div class="summary-label">Overall Teorythical</div><div class="summary-value" id="grandTotalTeorythical" style="color: var(--text-main)">0</div></div>
+                <div class="summary-row"><div class="summary-label">Overall Efficiency</div><div class="summary-value" id="grandTotalEff">0%</div></div>
+            </div>
+            <div class="chart-container m-hide-dashboard m-hide-total">
                 <div class="chart-header">
-                    <div>
-                        <span style="display:inline-block; width:10px; height:10px; background:var(--chart-blue); border-radius:50%"></span> Effective
-                        <span style="display:inline-block; width:10px; height:10px; background:var(--chart-orange); border-radius:50%; margin-left:10px;"></span> Lost
+                    <div class="chart-legend-custom">
+                        <div class="legend-item"><span class="dot" style="background:var(--chart-blue)"></span> PRESENT PERFORM & AVAILAB</div>
+                        <div class="legend-item"><span class="dot" style="background:var(--chart-orange)"></span> LOSS (Minutes)</div>
+                    </div>
+                    <div class="chart-controls">
+                        <button class="btn-chart active" onclick="updateChartPeriod('daily', this)">Hari</button>
+                        <button class="btn-chart" onclick="updateChartPeriod('weekly', this)">Minggu</button>
+                        <button class="btn-chart" onclick="updateChartPeriod('monthly', this)">Bulan</button>
                     </div>
                 </div>
                 <div style="height: 320px; width: 100%;">
@@ -199,407 +356,624 @@
                 </div>
             </div>
         </div>
-
     </div>
 
     <div id="settingsModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h3>Input Kendala & Target - Line <span id="modalLineId"></span></h3>
-                <button onclick="closeSettings()" style="background:none; border:none; font-size:20px;">&times;</button>
+                <h2 id="modalTitle">Settings Line 01</h2>
+                <button class="modal-close" onclick="closeSettings()">&times;</button>
             </div>
             <div class="modal-body">
-                <input type="hidden" id="setLineIdVal">
-                
-                <div class="form-group">
-                    <label style="color:var(--primary); font-weight:bold;">Target Speed (CPM)</label>
-                    <input type="number" id="setSpeed" class="modal-input" placeholder="70">
+                <input type="hidden" id="setLineId">
+                <div style="background:var(--primary-bg); padding:15px; border-radius:8px; margin-bottom:15px; border:1px solid var(--primary)">
+                    <span style="font-weight:700; color:var(--primary); font-size:13px; display:block; margin-bottom:10px;">JAM KERJA (SHIFT)</span>
+                    <div class="form-row">
+                        <div class="form-col"><div class="form-group"><label class="form-label">MULAI SHIFT</label><input type="time" id="setStart" class="modal-input"></div></div>
+                        <div class="form-col"><div class="form-group"><label class="form-label">SELESAI SHIFT</label><input type="time" id="setStop" class="modal-input"></div></div>
+                    </div>
+                    <div class="form-group"><label class="form-label">TARGET SPEED (CPM)</label><input type="number" id="setSpeed" class="modal-input" placeholder="70"></div>
                 </div>
-
-                <div style="background:rgba(239, 68, 68, 0.1); padding:15px; border-radius:8px; border:1px solid var(--danger); margin-top:20px;">
-                    <label style="color:var(--danger); font-weight:bold; display:block; margin-bottom:10px;">Input Kendala (Downtime)</label>
+                <div class="downtime-section">
+                    <span class="downtime-title">INPUT KENDALA (MENIT) & QUALITY</span>
+                    <small style="color:var(--text-muted); font-size:10px; margin-bottom:15px; display:block;">Isi total menit kendala dan jumlah reject.</small>
                     
                     <div class="form-group">
-                        <small>Total Menit Downtime (Mesin Stop/Rusak/Trial)</small>
-                        <input type="number" id="setDowntime" class="modal-input" placeholder="Menit" value="0">
+                        <label class="form-label">Total Downtime (Menit)</label>
+                        <input type="number" id="totalDowntimeInput" class="modal-input" placeholder="0">
                     </div>
-                    
-                    <label style="color:var(--warning); font-weight:bold; display:block; margin-bottom:10px; margin-top:15px;">Quality Control</label>
                     <div class="form-group">
-                        <small>Jumlah Produk Cacat (Reject)</small>
-                        <input type="number" id="setRejects" class="modal-input" placeholder="Pcs" value="0">
+                        <label class="form-label">Jumlah Produk Cacat (Reject)</label>
+                        <input type="number" id="setRejects" class="modal-input" placeholder="0">
                     </div>
                 </div>
-                <small style="display:block; margin-top:10px; color:var(--text-muted)">*Data kendala akan di-reset otomatis saat Save & Reset Shift.</small>
             </div>
             <div class="modal-footer">
-                <button onclick="saveSettings()" style="background:var(--primary); color:white; padding:10px 20px; border:none; border-radius:8px;">Simpan</button>
+                <button onclick="closeSettings()" style="background:transparent; border:1px solid var(--border-color); color:var(--text-muted); padding:10px 20px; border-radius:8px; margin-right:10px;">Batal</button>
+                <button onclick="saveSettings()" style="background:var(--primary); border:none; color:white; padding:10px 20px; border-radius:8px;">Simpan Perubahan</button>
             </div>
         </div>
     </div>
 
-    <div class="container" id="historyView" style="display:none">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-            <h2>Data Logger OEE</h2>
-            <button onclick="showDashboard()" style="padding:10px;">Back</button>
-        </div>
-        <div style="overflow-x:auto">
-            <table style="width:100%; border-collapse:collapse; background:var(--bg-card); color:var(--text-main);" border="1">
-                <thead>
-                    <tr style="background:var(--bg-header)">
-                        <th style="padding:10px">Waktu</th>
-                        <th>Total Prod</th>
-                        <th>Avg OEE</th>
-                        <th>Line 01 OEE</th>
-                        <th>Line 02 OEE</th>
-                        <th>Line 03 OEE</th>
-                        </tr>
-                </thead>
-                <tbody id="historyBody"></tbody>
-            </table>
+    <div id="detailModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="detailTitle">Lost Analysis - Line 01</h2>
+                <button class="modal-close" onclick="closeDetail()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div style="background:var(--bg-body); padding:15px; border-radius:8px; margin-bottom:15px; display:flex; justify-content:space-between; align-items:center;">
+                    <div><div class="input-label">SHIFT TIME</div><div id="detailShiftTime" style="font-weight:700">08:00 - 16:00</div></div>
+                    <div style="text-align:right"><div class="input-label">CALCULATED LOSS</div><div id="detailTotalLost" style="font-weight:700; color:var(--danger)">0 Min</div></div>
+                </div>
+                <div id="detailListContainer"></div>
+            </div>
         </div>
     </div>
 
     <div class="bottom-nav">
-        <button class="nav-item active" onclick="switchMobileTab('dashboard', this)">🖥️ Dashboard</button>
-        <button class="nav-item" onclick="switchMobileTab('total', this)">∑ Total</button>
-        <button class="nav-item" onclick="switchMobileTab('grafik', this)">📈 Grafik</button>
+        <button class="nav-item active" onclick="switchMobileTab('dashboard', this)"><span class="nav-indicator"></span><span class="nav-icon">🗒</span><span class="nav-label">Dashboard</span></button>
+        <button class="nav-item" onclick="switchMobileTab('total', this)"><span class="nav-indicator"></span><span class="nav-icon">∑</span><span class="nav-label">Total</span></button>
+        <button class="nav-item" onclick="switchMobileTab('grafik', this)"><span class="nav-indicator"></span><span class="nav-icon">📈</span><span class="nav-label">Grafik</span></button>
     </div>
 
+    <div class="container" id="historyView" style="display:none">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+            <div><h2 style="margin:0; color:var(--text-main)">Data Logger </h2><span style="font-size:13px; color:var(--text-muted)">Riwayat data penyimpanan akhir shift</span></div>
+            <div style="display:flex; gap:10px"><button onclick="exportToExcel()" style="background:#10b981; border:none; color:white; padding:10px 20px; border-radius:8px;">Download Excel</button><button onclick="showDashboard()">Back</button></div>
+        </div>
+        <div class="table-responsive"><table class="full-table" id="historyTable"><thead><tr><th style="min-width: 160px; text-align:left;">Waktu</th><th style="min-width: 100px;">Total Actual</th><th style="min-width: 100px;">Plant OEE</th><th>L1</th><th>L2</th><th>L3</th><th>L4</th><th style="background:var(--bg-card); border-bottom:2px solid var(--warning)">L5</th><th style="background:var(--bg-card); border-bottom:2px solid var(--warning)">L6</th><th>L7</th><th>L8</th><th>L9</th><th>L10</th><th>L11</th><th>L12</th><th>L14</th><th>L15</th></tr></thead><tbody id="historyBody"></tbody></table></div>
+    </div>
+
+    <div class="container" id="sensorHistoryView" style="display:none">
+        <div style="margin-bottom:20px; display:flex; justify-content:space-between; align-items:center;"><h2 id="sensorTitle" style="color:var(--text-main); margin:0;">Line Detail</h2><button onclick="showDashboard()">Back</button></div>
+        <div class="table-responsive"><table class="full-table"><thead><tr><th style="text-align:left">Waktu</th><th style="text-align:left">Nilai</th></tr></thead><tbody id="sensorHistoryTable"></tbody></table></div>
+    </div>
+
+    <footer>System: <span id="status" style="color:var(--success)">Connecting...</span> | Cloud: <span id="firebaseStatus" style="color:var(--primary)">Syncing...</span> | PASIFIK HARVEST INDONESIA &copy; 2026</footer>
 </div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-app.js";
     import { getDatabase, ref, set, onValue, push, get, update } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-database.js";
 
-    // --- FIREBASE CONFIG (SAMA) ---
     const firebaseConfig = { apiKey: "AIzaSyAC8Il1tbSGONHO6mLdEoe698XVnYmoJTY", authDomain: "iot-cntr.firebaseapp.com", databaseURL: "https://iot-cntr-default-rtdb.asia-southeast1.firebasedatabase.app", projectId: "iot-cntr", storageBucket: "iot-phi.firebasestorage.app", messagingSenderId: "634140620662", appId: "1:634140620662:web:12912eb4d52002f1966c57" };
     const app = initializeApp(firebaseConfig);
     const database = getDatabase(app);
 
-    // VARIABLES
     let latestCounter = {};
-    let lineConfigs = {};
-    let globalStartTime = null;
+    let globalStartTime = null; 
+    let manualOffset = 0; 
+    let hasAutoSaved = false; 
     let myChart = null;
+    let historyDataCache = [];
+    let lineConfigs = {}; 
+    const defaultCPM = 70;
+    
+    // Arrays for Chart
+    let chartLabels = [];
+    let chartEffective = [];
+    let chartLost = [];
 
-    // --- AUTH ---
+    const getVar = (name) => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+
+    const animateValue = (obj, start, end, duration) => {
+        if (start === end) return;
+        if (end > start) { obj.classList.remove('updated'); void obj.offsetWidth; obj.classList.add('updated'); }
+        let startTimestamp = null;
+        const step = (timestamp) => {
+            if (!startTimestamp) startTimestamp = timestamp;
+            const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+            obj.innerHTML = Math.floor(progress * (end - start) + start).toLocaleString();
+            if (progress < 1) window.requestAnimationFrame(step);
+        };
+        window.requestAnimationFrame(step);
+    }
+
+    /* --- AUTH & UI HELPERS --- */
+    window.toggleKebabMenu = () => { document.getElementById("kebabMenu").classList.toggle("show"); document.getElementById("mobileOverlay").classList.toggle("show"); };
+    window.toggleAdminModal = () => { const m = document.getElementById("adminLoginOverlay"); m.style.display = m.style.display === "flex" ? "none" : "flex"; };
+    
     window.doGeneralLogin = () => {
-        if(document.getElementById("genUser").value === "user" && document.getElementById("genPass").value === "user123") {
+        const u = document.getElementById("genUser").value;
+        const p = document.getElementById("genPass").value;
+        if(u === "user" && p === "user123") {
+            sessionStorage.setItem("generalAuth", "true");
+            document.getElementById("generalLoginOverlay").style.display = "none";
+            document.getElementById("dashboardPage").style.display = "block";
+        } else { document.getElementById("genError").innerText = "Username/Password salah!"; }
+    };
+
+    window.doAdminLogin = () => {
+        const u = document.getElementById("admUser").value;
+        const p = document.getElementById("admPass").value;
+        if(u === "admin" && p === "admin123") {
+            sessionStorage.setItem("role", "admin");
+            window.toggleAdminModal();
+            checkAuth();
+            alert("Mode Admin Aktif");
+        } else { document.getElementById("admError").innerText = "Username/Password salah!"; }
+    };
+
+    function checkAuth() {
+        if(!sessionStorage.getItem("generalAuth")) {
+            document.getElementById("generalLoginOverlay").style.display = "flex";
+            document.getElementById("dashboardPage").style.display = "none";
+        } else {
             document.getElementById("generalLoginOverlay").style.display = "none";
             document.getElementById("dashboardPage").style.display = "block";
         }
+        const role = sessionStorage.getItem("role");
+        if(role === 'admin') {
+            document.body.classList.add("is-admin");
+            document.querySelectorAll('.admin-only').forEach(e => e.style.display = 'flex'); 
+        } else {
+            document.body.classList.remove("is-admin");
+            document.querySelectorAll('.admin-only').forEach(e => e.style.display = 'none');
+        }
     }
 
-    // --- INITIALIZATION ---
+    window.logout = () => { sessionStorage.removeItem("role"); location.reload(); };
+
     window.onload = () => {
-        generateLineCards();
-        syncData();
-        setInterval(updateOEE, 1000); // Hitung OEE setiap detik
+        checkAuth(); 
+        generateAllCards(); syncConfig(); loadLastCacheFromFirebase(); fetchHistoryForChart();
+        setInterval(checkAutoSchedule, 10000); setInterval(updateUI, 1000);
+        window.onclick = function(event) { if (event.target == document.getElementById("settingsModal")) closeSettings(); }
     };
 
-    function generateLineCards() {
-        const c = document.getElementById("linesContainer");
-        c.innerHTML = "";
-        for(let i=1; i<=15; i++) {
-            if(i===13) continue;
-            const html = `
-            <div class="card" onclick="openSettings(${i})">
-                <div class="card-header">
-                    <h3 class="card-title">LINE ${i.toString().padStart(2,'0')}</h3>
-                    <span class="rate-badge" id="cpm${i}">70 cpm</span>
-                </div>
-                <table>
-                    <tr><th>ACTUAL</th><th>PREDICT</th><th>PERF</th></tr>
-                    <tr>
-                        <td class="val-actual" id="act${i}">0</td>
-                        <td id="pred${i}">0</td>
-                        <td id="perf${i}">0%</td>
-                    </tr>
-                </table>
-                <div class="card-oee-row">
-                    <div class="mini-stat"><div class="mini-label">AVAIL</div><div class="mini-val" id="avail${i}" style="color:var(--success)">0%</div></div>
-                    <div class="mini-stat"><div class="mini-label">QUAL</div><div class="mini-val" id="qual${i}" style="color:var(--warning)">0%</div></div>
-                    <div class="mini-stat"><div class="mini-label">LOSS</div><div class="mini-val" id="loss${i}" style="color:var(--danger)">0m</div></div>
-                    <div class="mini-stat"><div class="mini-label">OEE</div><div class="mini-val" id="oee${i}" style="color:var(--purple)">0%</div></div>
-                </div>
-            </div>`;
-            c.innerHTML += html;
-        }
-    }
-
-    function syncData() {
-        // Sync Waktu Mulai Produksi
+    function syncConfig() {
         onValue(ref(database, 'config/productionStartTime'), (snap) => {
-            if(!snap.exists()) set(ref(database, 'config/productionStartTime'), Date.now());
-            else globalStartTime = snap.val();
+            const val = snap.val();
+            if (val) { globalStartTime = val; updateUI(); } 
+            else { set(ref(database, 'config/productionStartTime'), Date.now()); }
         });
-
-        // Sync Pengaturan Line (CPM, Downtime, Rejects)
+        onValue(ref(database, 'config/manualOffset'), (snap) => { manualOffset = snap.val() || 0; updateUI(); });
         onValue(ref(database, 'lineSettings'), (snap) => {
             lineConfigs = snap.val() || {};
-        });
-
-        // Sync Counter ESP32 (Simulation)
-        // Di real world ini connect ke MQTT atau path firebase yang diupdate ESP32
-        // Disini kita simulasi manual offset untuk demo jika tidak ada ESP32
-        onValue(ref(database, 'simulation/counters'), (snap) => {
-            latestCounter = snap.val() || {};
+            updateUI();
+            for(let i=1; i<=15; i++) {
+                if(i===13) continue;
+                const conf = lineConfigs[`L${i}`] || { cpm: defaultCPM };
+                const badge = document.getElementById(`cpmBadge${i}`);
+                if(badge) badge.innerText = `${conf.cpm} cpm`;
+            }
         });
     }
 
-    // --- CORE LOGIC: OEE CALCULATION ---
-    function updateOEE() {
+    // --- LOGIKA SETTINGS (INPUT KENDALA) ---
+    window.openSettings = (lineId) => {
+        const conf = lineConfigs[`L${lineId}`] || {};
+        document.getElementById("setLineId").value = lineId;
+        document.getElementById("modalTitle").innerText = `Settings Line ${lineId.toString().padStart(2,'0')}`;
+        document.getElementById("setSpeed").value = conf.cpm || defaultCPM;
+        document.getElementById("setStart").value = conf.startTime || "";
+        document.getElementById("setStop").value = conf.stopTime || "";
+        document.getElementById("setRejects").value = conf.rejects || 0;
+        document.getElementById("totalDowntimeInput").value = conf.downtime || 0;
+        
+        document.getElementById("settingsModal").style.display = "block";
+    };
+
+    window.closeSettings = () => { document.getElementById("settingsModal").style.display = "none"; };
+
+    window.saveSettings = async () => {
+        const lineId = document.getElementById("setLineId").value;
+        const newConfig = {
+            cpm: parseInt(document.getElementById("setSpeed").value) || defaultCPM,
+            startTime: document.getElementById("setStart").value,
+            stopTime: document.getElementById("setStop").value,
+            rejects: parseInt(document.getElementById("setRejects").value) || 0,
+            downtime: parseInt(document.getElementById("totalDowntimeInput").value) || 0
+        };
+        await set(ref(database, `lineSettings/L${lineId}`), newConfig);
+        closeSettings();
+        lineConfigs[`L${lineId}`] = newConfig;
+        updateUI();
+    };
+
+    function generateAllCards() {
+        const c1 = document.getElementById("clubCanContainer"); const c2 = document.getElementById("roundCanContainer");
+        c1.innerHTML = ""; c2.innerHTML = "";
+        for(let i=1; i<=15; i++) {
+            if(i === 13) continue;
+            const conf = lineConfigs[`L${i}`] || { cpm: defaultCPM };
+            const isP = (i===5||i===6);
+            const style = isP ? "color:var(--warning)" : "color:var(--primary)";
+            const borderStyle = isP ? 'border-left:4px solid var(--warning)' : 'border-left:4px solid var(--primary)';
+            const html = `
+            <div class="card" style="${borderStyle}">
+                <div class="card-header">
+                    <div style="display:flex; flex-direction:column;"><h3 class="card-title">LINE ${i.toString().padStart(2,'0')}</h3><span id="cpmBadge${i}" class="rate-badge" style="width:fit-content">${conf.cpm || defaultCPM} cpm</span></div>
+                    <div><button class="btn-settings" onclick="openSettings(${i})" title="Settings">⚙️</button></div>
+                </div>
+                <div onclick="showDowntimeDetails(${i})">
+                    <table><tr><th>ACTUAL</th><th>PREDICT</th><th>PERF</th></tr><tr><td class="val-actual" id="L${i}">0</td><td id="P${i}" style="${style}">0</td><td id="E${i}">0%</td></tr></table>
+                    <div class="card-oee-row">
+                        <div class="mini-stat"><div class="mini-label">AVAIL</div><div class="mini-val" id="L${i}_avail" style="color:var(--success)">0%</div></div>
+                        <div class="mini-stat"><div class="mini-label">PERF</div><div class="mini-val" id="L${i}_perf" style="color:var(--info)">0%</div></div>
+                        <div class="mini-stat"><div class="mini-label">QUAL</div><div class="mini-val" id="L${i}_qual" style="color:var(--warning)">0%</div></div>
+                        <div class="mini-stat"><div class="mini-label">OEE</div><div class="mini-val" id="L${i}_oee" style="color:var(--purple)">0%</div></div>
+                    </div>
+                </div>
+            </div>`;
+            if(isP) c2.innerHTML+=html; else c1.innerHTML+=html;
+        }
+    }
+
+    // --- CORE LOGIC: UPDATE OEE & UI ---
+    function updateUI() {
         if(!globalStartTime) return;
-        
         const now = new Date();
-        const totalMinutes = Math.max(1, (now.getTime() - globalStartTime) / 60000); // Jam Kerja Total (Menit)
-        document.getElementById("clock").innerText = now.toLocaleTimeString('id-ID');
-
-        let grandTotalAct = 0;
-        let grandTotalPred = 0;
-        let totalLostMinutes = 0;
+        const globalMins = Math.max(0, now.getTime() - globalStartTime) / 60000;
         
-        let sumAvail=0, sumPerf=0, sumQual=0, count=0;
-
-        // Arrays for Chart
-        let chartLabels = [];
-        let chartEffectiveData = [];
-        let chartLostData = [];
+        let gTot=0, cAct=0, cTeo=0, pAct=0, rTeo=0;
+        let totalAvail=0, totalPerf=0, totalQual=0, countLines=0;
+        
+        // Reset Chart Data Arrays
+        chartLabels = []; chartEffective = []; chartLost = [];
 
         for(let i=1; i<=15; i++) {
-            if(i===13) continue;
-            count++;
-
-            // 1. Ambil Data
+            if(i === 13) continue;
+            countLines++;
             const conf = lineConfigs[`L${i}`] || {};
-            const speed = parseInt(conf.cpm) || 70;
-            const downtime = parseFloat(conf.downtime) || 0; // Menit
-            const rejects = parseFloat(conf.rejects) || 0; // Pcs
-            const actual = latestCounter[`L${i}`] || 0;
+            const speed = parseInt(conf.cpm) || defaultCPM;
+            const rejects = parseInt(conf.rejects) || 0;
+            const downtime = parseInt(conf.downtime) || 0; // Input manual kendala
 
-            // 2. Rumus 1: AVAILABILITY
-            // = (Jam kerja - kendala) / jam kerja
-            const workingTime = Math.max(0, totalMinutes - downtime);
-            const availPct = (workingTime / totalMinutes);
+            // 1. Hitung Akumulasi Jam Kerja (Accumulated Minutes)
+            // Logika: 06:00 sampai sekarang = akumulasi menit.
+            let accumulatedMinutes = globalMins; 
+            if(conf.startTime) {
+                const [h, m] = conf.startTime.split(':');
+                const startDt = new Date(); startDt.setHours(h, m, 0, 0);
+                let limitDt = now;
+                if(conf.stopTime) {
+                    const [sh, sm] = conf.stopTime.split(':');
+                    const stopDt = new Date(); stopDt.setHours(sh, sm, 0, 0);
+                    if(now > stopDt) limitDt = stopDt;
+                }
+                accumulatedMinutes = Math.max(0, limitDt - startDt) / 60000;
+            }
 
-            // 3. Rumus 2: PERFORMANCE
-            // = nilai actual / nilai predict
-            // Predict = Jam kerja TOTAL * speed (Sesuai contoh user: 660 * 70)
-            const predict = Math.floor(totalMinutes * speed);
-            const perfPct = predict > 0 ? (actual / predict) : 0;
+            // 2. AVAILABILITY
+            // Rumus: (Jam kerja - kendala) / jam kerja * 100%
+            let operatingTime = accumulatedMinutes - downtime;
+            if(operatingTime < 0) operatingTime = 0;
+            let availPct = (accumulatedMinutes > 0) ? (operatingTime / accumulatedMinutes) : 0;
 
-            // 4. Rumus 3: QUALITY
-            // = (Produk Baik / Total Hasil)
-            const goodProduct = Math.max(0, actual - rejects);
-            const qualPct = actual > 0 ? (goodProduct / actual) : 1;
+            // 3. PERFORMANCE
+            // Rumus: Actual / Predict
+            // Predict = Akumulasi Jam Kerja * Speed
+            const act = latestCounter[`L${i}`] || 0;
+            const targetOutput = accumulatedMinutes * speed; // Predict
+            let perfPct = (targetOutput > 0) ? (act / targetOutput) : (act > 0 ? 1 : 0);
 
-            // 5. Rumus 4: OEE
+            // 4. QUALITY
+            // Rumus: (Produk baik / Total hasil)
+            const goodCount = Math.max(0, act - rejects);
+            let qualPct = (act > 0) ? (goodCount / act) : 1;
+
+            // 5. OEE
             const oeePct = availPct * perfPct * qualPct;
 
-            // 6. LOSS ANALYSIS (Logika User)
-            // (Nilai Predict - Nilai Actual) / Speed = Menit yang hilang
-            const lossCount = Math.max(0, predict - actual);
-            const lossMinutes = speed > 0 ? (lossCount / speed) : 0;
+            // 6. LOSS ANALYSIS (Logika Chart)
+            // Logika: (Nilai Predict - Nilai Actual) / Speed
+            let lossCount = Math.max(0, targetOutput - act);
+            let lossMinutes = (speed > 0) ? (lossCount / speed) : 0;
+            let effectiveMinutes = accumulatedMinutes - lossMinutes;
 
-            // --- Update UI DOM ---
-            const animate = (id, val) => { document.getElementById(id).innerText = val; };
-            
-            document.getElementById(`cpm${i}`).innerText = speed + " cpm";
-            animate(`act${i}`, actual.toLocaleString());
-            animate(`pred${i}`, predict.toLocaleString());
-            
-            // Format Percentages
-            document.getElementById(`perf${i}`).innerText = (perfPct*100).toFixed(1) + "%";
-            document.getElementById(`avail${i}`).innerText = (availPct*100).toFixed(0) + "%";
-            document.getElementById(`qual${i}`).innerText = (qualPct*100).toFixed(0) + "%";
-            document.getElementById(`oee${i}`).innerText = (oeePct*100).toFixed(1) + "%";
-            document.getElementById(`loss${i}`).innerText = lossMinutes.toFixed(1) + "m";
+            // Aggregates for Global OEE
+            totalAvail += availPct; totalPerf += perfPct; totalQual += qualPct;
 
-            // --- Aggregates ---
-            grandTotalAct += actual;
-            grandTotalPred += predict;
-            totalLostMinutes += lossMinutes;
+            // Push Data for Chart
+            chartLabels.push(`Line ${i}`);
+            chartEffective.push(effectiveMinutes.toFixed(1)); // Present Perform & Availab (Min)
+            chartLost.push(lossMinutes.toFixed(1)); // Lost (Min)
 
-            sumAvail += availPct;
-            sumPerf += perfPct;
-            sumQual += qualPct;
+            // Display Logic
+            const isP = (i===5||i===6);
+            const teorythicalDisplay = Math.floor(targetOutput); 
+            if(isP) { pAct+=act; rTeo+=teorythicalDisplay; } else { cAct+=act; cTeo+=teorythicalDisplay; }
+            gTot+=act;
 
-            // Data for Chart
-            chartLabels.push(`L${i}`);
-            // Chart Logic: Bar Total Height represents Total Time? 
-            // Better: Stacked Bar. 
-            // Bottom (Blue) = Effective Time (Minutes actually produced)
-            // Top (Orange) = Lost Time (Minutes lost due to all factors)
-            const effectiveMinutes = totalMinutes - lossMinutes;
-            chartEffectiveData.push(effectiveMinutes.toFixed(1));
-            chartLostData.push(lossMinutes.toFixed(1));
+            const el = document.getElementById(`L${i}`);
+            if(el) {
+                const curr = parseInt(el.innerText.replace(/[^0-9]/g, '')) || 0;
+                if(curr !== act) animateValue(el, curr, act, 500);
+                document.getElementById(`P${i}`).innerText = teorythicalDisplay.toLocaleString();
+                const eEl = document.getElementById(`E${i}`);
+                const perfDisplay = (perfPct * 100).toFixed(1) + '%';
+                eEl.innerText = perfDisplay;
+                eEl.style.color = (perfPct*100)>=90 ? getVar('--success') : (perfPct*100)>=70 ? getVar('--warning') : getVar('--danger');
+
+                document.getElementById(`L${i}_avail`).innerText = (availPct*100).toFixed(0) + '%';
+                document.getElementById(`L${i}_perf`).innerText = (perfPct*100).toFixed(0) + '%';
+                document.getElementById(`L${i}_qual`).innerText = (qualPct*100).toFixed(0) + '%';
+                document.getElementById(`L${i}_oee`).innerText = (oeePct*100).toFixed(0) + '%';
+            }
         }
 
-        // Update Global Stats
-        document.getElementById("grandTotalActual").innerText = grandTotalAct.toLocaleString();
-        document.getElementById("grandTotalTeorythical").innerText = grandTotalPred.toLocaleString();
-        document.getElementById("grandTotalLostTime").innerText = totalLostMinutes.toFixed(0) + " Min";
-
-        if(count > 0) {
-            document.getElementById("oeeAvail").innerText = ((sumAvail/count)*100).toFixed(1) + "%";
-            document.getElementById("oeePerf").innerText = ((sumPerf/count)*100).toFixed(1) + "%";
-            document.getElementById("oeeQual").innerText = ((sumQual/count)*100).toFixed(1) + "%";
-            const avgOee = (sumAvail/count) * (sumPerf/count) * (sumQual/count);
+        if(countLines > 0) {
+            const avgAvail = (totalAvail / countLines);
+            const avgPerf = (totalPerf / countLines);
+            const avgQual = (totalQual / countLines);
+            const avgOee = avgAvail * avgPerf * avgQual;
+            document.getElementById("oeeAvail").innerText = (avgAvail*100).toFixed(1) + "%";
+            document.getElementById("oeePerf").innerText = (avgPerf*100).toFixed(1) + "%";
+            document.getElementById("oeeQual").innerText = (avgQual*100).toFixed(1) + "%";
             document.getElementById("oeeScore").innerText = (avgOee*100).toFixed(1) + "%";
         }
 
-        renderChart(chartLabels, chartEffectiveData, chartLostData);
+        const final = gTot + manualOffset;
+        const elTotal = document.getElementById("total");
+        const currTotal = parseInt(elTotal.innerText.replace(/[^0-9]/g, '')) || 0;
+        if(currTotal !== final) animateValue(elTotal, currTotal, final, 1000);
+
+        document.getElementById("clock").innerText = new Date().toLocaleString('id-ID');
+        updSum("totalClub", cAct, cTeo); updSum("totalRound", pAct, rTeo); updSum("grandTotal", final, cTeo+rTeo);
+        
+        // Refresh Chart with new Data
+        renderChart(chartLabels, chartEffective, chartLost);
+    }
+
+    function updSum(id, act, teorythical) {
+        document.getElementById(`${id}Actual`).innerText = act.toLocaleString();
+        document.getElementById(`${id}Teorythical`).innerText = teorythical.toLocaleString();
+        const eff = teorythical>0 ? ((act/teorythical)*100).toFixed(1)+'%' : '0%';
+        const el = document.getElementById(`${id}Eff`);
+        if(el) { el.innerText = eff; el.style.color = parseFloat(eff)>=90 ? getVar('--success') : parseFloat(eff)>=70 ? getVar('--warning') : getVar('--danger'); }
     }
 
     // --- CHART LOGIC ---
     function renderChart(labels, effective, lost) {
         const ctx = document.getElementById('productionChart').getContext('2d');
-        if(myChart) {
-            myChart.data.labels = labels;
-            myChart.data.datasets[0].data = effective;
-            myChart.data.datasets[1].data = lost;
-            myChart.update('none'); // Update without full re-render for animation
-            return;
-        }
-
+        if (myChart) myChart.destroy();
         myChart = new Chart(ctx, {
             type: 'bar',
             data: {
                 labels: labels,
                 datasets: [
-                    { label: 'Effective Time (Min)', data: effective, backgroundColor: '#4472C4', stack: 'Stack 0' },
-                    { label: 'Lost Time (Min)', data: lost, backgroundColor: '#ED7D31', stack: 'Stack 0' }
+                    { label: 'Present Perform & Availab (Min)', data: effective, backgroundColor: getVar('--chart-blue'), stack: 'Stack 0' },
+                    { label: 'Calculated Loss (Min)', data: lost, backgroundColor: getVar('--chart-orange'), stack: 'Stack 0' }
                 ]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                animation: { duration: 500 },
+                animation: false, // Matikan animasi chart agar mulus saat update angka real-time
                 scales: {
-                    x: { stacked: true, grid: { display: false }, ticks: { color: '#94a3b8' } },
-                    y: { stacked: true, ticks: { color: '#94a3b8' }, grid: { color: '#334155' } }
+                    x: { stacked: true, ticks: { color: getVar('--text-muted') }, grid: { display: false } },
+                    y: { stacked: true, ticks: { color: getVar('--text-muted') }, grid: { color: getVar('--border-color') } }
                 },
-                plugins: { legend: { display: false } }
+                plugins: { legend: { display: false }, tooltip: { mode: 'index', intersect: false } },
+                onClick: (e, elements) => {
+                    if(elements.length > 0) {
+                        const index = elements[0].index;
+                        let lineNum = index + 1;
+                        if(lineNum >= 13) lineNum++; 
+                        showDowntimeDetails(lineNum);
+                    }
+                }
             }
         });
     }
 
-    // --- SETTINGS (INPUT KENDALA) ---
-    window.openSettings = (lineId) => {
-        document.getElementById("settingsModal").style.display = "block";
-        document.getElementById("modalLineId").innerText = lineId.toString().padStart(2,'0');
-        document.getElementById("setLineIdVal").value = lineId;
-        
+    // --- DETAIL MODAL LOGIC (LOSS ANALYSIS) ---
+    window.showDowntimeDetails = (lineId) => {
         const conf = lineConfigs[`L${lineId}`] || {};
-        document.getElementById("setSpeed").value = conf.cpm || 70;
-        document.getElementById("setDowntime").value = conf.downtime || 0;
-        document.getElementById("setRejects").value = conf.rejects || 0;
-    }
-
-    window.closeSettings = () => { document.getElementById("settingsModal").style.display = "none"; }
-
-    window.saveSettings = async () => {
-        const id = document.getElementById("setLineIdVal").value;
-        const updates = {};
-        updates[`lineSettings/L${id}/cpm`] = parseInt(document.getElementById("setSpeed").value) || 70;
-        updates[`lineSettings/L${id}/downtime`] = parseFloat(document.getElementById("setDowntime").value) || 0;
-        updates[`lineSettings/L${id}/rejects`] = parseFloat(document.getElementById("setRejects").value) || 0;
+        document.getElementById("detailTitle").innerText = `Lost Analysis - Line ${lineId.toString().padStart(2,'0')}`;
         
-        await update(ref(database), updates);
-        closeSettings();
+        let startT = conf.startTime || "-";
+        let stopT = conf.stopTime || "-";
+        document.getElementById("detailShiftTime").innerText = `${startT} - ${stopT}`;
+        
+        const speed = parseInt(conf.cpm) || defaultCPM;
+        const act = latestCounter[`L${lineId}`] || 0;
+        
+        // Hitung ulang Predict untuk modal
+        const now = new Date();
+        const globalMins = globalStartTime ? Math.max(0, now.getTime() - globalStartTime) / 60000 : 0;
+        let accumulatedMinutes = globalMins;
+        if(conf.startTime) {
+             const [h, m] = conf.startTime.split(':');
+             const startDt = new Date(); startDt.setHours(h, m, 0, 0);
+             accumulatedMinutes = Math.max(0, now - startDt) / 60000;
+        }
+        
+        const predict = accumulatedMinutes * speed;
+        const lossCount = Math.max(0, predict - act);
+        const lossMinutes = (speed > 0) ? (lossCount / speed) : 0;
+
+        document.getElementById("detailTotalLost").innerText = `${lossMinutes.toFixed(1)} Min`;
+        
+        const list = document.getElementById("detailListContainer");
+        list.innerHTML = `
+        <div class="detail-item">
+            <div class="detail-label">Total Loss (Calculated)</div>
+            <div class="detail-val val-red">${lossMinutes.toFixed(1)} Min</div>
+        </div>
+        <div class="detail-item">
+            <div class="detail-label">Availability Loss (Downtime Input)</div>
+            <div class="detail-val">${conf.downtime || 0} Min</div>
+        </div>
+        <div class="detail-item">
+            <div class="detail-label">Performance Loss (Speed/Minor Stop)</div>
+            <div class="detail-val">${(lossMinutes - (conf.downtime || 0)).toFixed(1)} Min</div>
+        </div>`;
+        
+        document.getElementById("detailModal").style.display = "block";
+    };
+    
+    window.closeDetail = () => { document.getElementById("detailModal").style.display = "none"; };
+
+    window.resetCounter = async () => {
+        const val = document.getElementById("machineSelect").value;
+        const [mach, line] = val.split("|"); 
+        // Konsep Reset Per Machine, tapi di internal logic kita reset per line juga
+        if(confirm(`Reset Counter ${mach}?`)) {
+             client.publish(`iot/esp32/${mach}/cmd`, JSON.stringify({cmd:"RESET", reset_source:"web"}));
+             // Reset variable lokal sementara (nanti akan tersinkron ulang oleh firebase)
+        }
+    };
+
+    function checkAutoSchedule() {
+        const d = new Date();
+        if(d.getHours()===17 && d.getMinutes()===5) { if(!hasAutoSaved){ executeSaveAndReset(); hasAutoSaved=true; } }
+        else if(d.getMinutes()!==5) hasAutoSaved=false;
     }
 
-    // --- SAVE & RESET LOGIC ---
-    window.manualSave = async () => {
-        if(!confirm("Simpan Data Akhir Shift & Reset?")) return;
-
-        // 1. Snapshot Data for History
-        const historyEntry = {
-            timestamp: Date.now(),
-            time: new Date().toLocaleString('id-ID'),
-            totalActual: document.getElementById("grandTotalActual").innerText,
-            avgOee: document.getElementById("oeeScore").innerText,
-            lineDetails: {}
+    async function executeSaveAndReset() {
+        let act = manualOffset, teorythical = 0;
+        const now = new Date();
+        const globalMins = globalStartTime ? Math.max(0, now.getTime() - globalStartTime) / 60000 : 0;
+        
+        // Data Logger Object
+        let historyEntry = { 
+            time: new Date().toLocaleString('id-ID'), 
+            timestamp: Date.now(), 
+            total: 0, 
+            totalTeorythical: 0, 
+            counter: {...latestCounter},
+            lineStats: {} // Menyimpan OEE per Line
         };
 
-        // Capture OEE per line
-        for(let i=1; i<=15; i++) {
+        const updates = {}; // Untuk batch update firebase
+
+        for(let i=1; i<=15; i++) { 
             if(i===13) continue;
-            historyEntry.lineDetails[`L${i}`] = {
-                actual: latestCounter[`L${i}`] || 0,
-                oee: document.getElementById(`oee${i}`).innerText
+            const currentAct = (latestCounter[`L${i}`]||0);
+            act += currentAct; 
+            
+            const conf = lineConfigs[`L${i}`] || {};
+            const speed = parseInt(conf.cpm) || defaultCPM;
+            // Hitung ulang OEE saat save untuk disimpan di history
+            let accMin = globalMins; // Simplifikasi untuk history total
+            if(conf.startTime) {
+                 const [h, m] = conf.startTime.split(':');
+                 const startDt = new Date(); startDt.setHours(h, m, 0, 0);
+                 accMin = Math.max(0, now - startDt) / 60000;
+            }
+            const predict = Math.floor(speed * accMin);
+            teorythical += predict;
+
+            // Simpan OEE per line
+            historyEntry.lineStats[`L${i}`] = {
+                avail: document.getElementById(`L${i}_avail`).innerText,
+                perf: document.getElementById(`L${i}_perf`).innerText,
+                qual: document.getElementById(`L${i}_qual`).innerText,
+                oee: document.getElementById(`L${i}_oee`).innerText
             };
+
+            // LOGIKA RESET INPUT KENDALA (PER LINE)
+            // Kita reset downtime & rejects jadi 0, tapi KEEP startTime/stopTime/cpm
+            updates[`lineSettings/L${i}/downtime`] = 0;
+            updates[`lineSettings/L${i}/rejects`] = 0;
         }
 
-        // 2. Push to History
-        await push(ref(database, 'history'), historyEntry);
+        historyEntry.total = act;
+        historyEntry.totalTeorythical = teorythical;
 
-        // 3. RESET LOGIC (PER LINE)
-        const updates = {};
-        // Reset Global Timer
-        updates['config/productionStartTime'] = Date.now();
-        // Reset Counter (Simulation) - In real ESP32, send MQTT command here
-        updates['simulation/counters'] = null; 
+        try {
+            // 1. Simpan History
+            await push(ref(database, 'history'), historyEntry);
+            
+            // 2. Reset Counter Hardware via MQTT
+            for(let i=1; i<=6; i++) client.publish(`iot/esp32/machine0${i}/cmd`, JSON.stringify({cmd:"RESET", reset_source:"web"}));
+            
+            // 3. Reset Global Timer & Manual Offset
+            updates['config/productionStartTime'] = Date.now();
+            updates['config/manualOffset'] = 0;
 
-        // CRITICAL: Reset Input Kendala (Downtime/Reject) but KEEP CPM
-        for(let i=1; i<=15; i++) {
-            if(i===13) continue;
-            const currentSpeed = (lineConfigs[`L${i}`] && lineConfigs[`L${i}`].cpm) ? lineConfigs[`L${i}`].cpm : 70;
-            updates[`lineSettings/L${i}`] = {
-                cpm: currentSpeed, // Keep Speed
-                downtime: 0,       // Reset Downtime
-                rejects: 0         // Reset Rejects
-            };
-        }
+            // 4. Eksekusi semua update (Reset Kendala & Timer)
+            await update(ref(database), updates);
 
-        await update(ref(database), updates);
-        alert("Data Shift Disimpan. Counter & Kendala Direset.");
-        location.reload();
-    }
-
-    // --- HISTORY VIEWER ---
-    window.showHistory = async () => {
-        document.getElementById("dashboardView").style.display = "none";
-        document.getElementById("historyView").style.display = "block";
-        
-        const snap = await get(ref(database, 'history'));
-        const tbody = document.getElementById("historyBody");
-        tbody.innerHTML = "";
-        
-        if(snap.exists()) {
-            const data = Object.values(snap.val()).reverse(); // Newest first
-            data.forEach(h => {
-                let row = `<tr>
-                    <td style="padding:10px">${h.time}</td>
-                    <td>${h.totalActual}</td>
-                    <td style="color:var(--purple); font-weight:bold;">${h.avgOee}</td>`;
-                
-                // Add specific line columns (Example L1-L3)
-                if(h.lineDetails) {
-                    row += `<td>${h.lineDetails.L1?.oee || '-'}</td>`;
-                    row += `<td>${h.lineDetails.L2?.oee || '-'}</td>`;
-                    row += `<td>${h.lineDetails.L3?.oee || '-'}</td>`;
-                }
-                row += `</tr>`;
-                tbody.innerHTML += row;
-            });
-        }
-    }
-
-    window.showDashboard = () => {
-        document.getElementById("historyView").style.display = "none";
-        document.getElementById("dashboardView").style.display = "block";
+            latestCounter={}; fetchHistoryForChart(); updateUI();
+            alert("Shift Saved & Lines Reset Automatically.");
+        } catch(e) { console.error(e); }
     }
     
-    // --- MOBILE TABS ---
-    window.switchMobileTab = (tabName, btn) => {
-        document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        const view = document.getElementById("dashboardView");
-        view.setAttribute('data-mobile-tab', tabName);
-    }
+    window.manualSave = () => { if(confirm("Simpan & Reset Total (Akhir Shift)? Ini akan mereset semua kendala input.")) executeSaveAndReset(); };
+    window.showDashboard = () => { document.getElementById("dashboardView").style.display="block"; document.getElementById("historyView").style.display="none"; document.getElementById("sensorHistoryView").style.display="none"; };
+    
+    window.showHistory = async () => {
+        document.getElementById("dashboardView").style.display="none"; document.getElementById("historyView").style.display="block";
+        const snap = await get(ref(database, 'history'));
+        const tbody = document.getElementById("historyBody"); tbody.innerHTML="";
+        if(snap.exists()) {
+            historyDataCache = Object.values(snap.val());
+            [...historyDataCache].reverse().forEach(h => {
+                let row = `<tr><td style="text-align:left; font-weight:600">${h.time}</td><td style="font-weight:700; color:var(--text-main)">${h.total?.toLocaleString()||0}</td><td style="color:var(--text-muted)">Plant OEE</td>`;
+                for(let i=1; i<=15; i++) { 
+                    if(i===13) continue; 
+                    // Tampilkan OEE jika ada di history, kalau tidak tampilkan counter
+                    let val = h.lineStats && h.lineStats[`L${i}`] ? h.lineStats[`L${i}`].oee : (h.counter?h.counter[`L${i}`]||0:0);
+                    row+=`<td class="val-active" style="${(i===5||i===6)?'background:rgba(245, 158, 11, 0.1)':''}">${val}</td>`; 
+                }
+                tbody.innerHTML += row + "</tr>";
+            });
+        }
+    };
 
+    window.showSensorHistory = async (id) => {
+        document.getElementById("dashboardView").style.display="none"; document.getElementById("sensorHistoryView").style.display="block";
+        document.getElementById("sensorTitle").innerText = `LINE ${id} DETAIL`;
+        const snap = await get(ref(database, 'history'));
+        const t = document.getElementById("sensorHistoryTable"); t.innerHTML="";
+        if(snap.exists()) Object.values(snap.val()).reverse().forEach(h => {
+            const v = h.counter ? h.counter[`L${id}`]||0 : 0;
+            t.innerHTML+=`<tr><td style="text-align:left">${h.time}</td><td style="text-align:left; color:${v>0?getVar('--success'):getVar('--text-muted')}">${v}</td></tr>`;
+        });
+    };
+
+    window.updateChartPeriod = (period, btn) => { document.querySelectorAll('.btn-chart').forEach(b => b.classList.remove('active')); btn.classList.add('active'); processAndRenderChart(period); };
+    async function fetchHistoryForChart() { const snap = await get(ref(database, 'history')); if(snap.exists()) { historyDataCache = Object.values(snap.val()); processAndRenderChart('daily'); } }
+    function processAndRenderChart(period) { 
+        if(historyDataCache.length === 0) return; 
+        const grouped = {}; 
+        const months = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"]; 
+        historyDataCache.forEach(entry => { 
+            let d = entry.timestamp ? new Date(entry.timestamp) : new Date(); 
+            let key; 
+            if (period === 'daily') key = d.toLocaleDateString('id-ID', {day:'numeric', month:'short'}); 
+            else if (period === 'weekly') { const start = new Date(d.getFullYear(), d.getMonth(), 1); const week = Math.ceil((d.getDate() + start.getDay()) / 7); key = `W${week} (${months[d.getMonth()]})`; } 
+            else key = `${months[d.getMonth()]} ${d.getFullYear()}`; 
+            
+            if(!grouped[key]) grouped[key] = { act: 0, teorythical: 0 }; 
+            grouped[key].act += (entry.total || 0); 
+            grouped[key].teorythical += (entry.totalTeorythical || 0); 
+        }); 
+        const lbls = Object.keys(grouped); 
+        // Untuk history chart, kita tetap pakai Total Actual vs Total Theory dulu (karena history loss belum tentu ada di data lama)
+        const acts = lbls.map(k => grouped[k].act); 
+        const losts = lbls.map(k => Math.max(0, grouped[k].teorythical - grouped[k].act)); // Estimasi lost di history
+        renderChart(lbls, acts, losts); 
+    }
+    
+    window.exportToExcel = () => { 
+        if (historyDataCache.length === 0) return alert("No data."); 
+        let csv = "\uFEFFWaktu;Total Actual;Total Predict"; 
+        for (let i = 1; i <= 15; i++) { if(i!==13) csv += `;Line ${i} OEE`; } 
+        csv += "\n"; 
+        [...historyDataCache].reverse().forEach(item => { 
+            let row = `"${item.time.replace(/,/g, '')}";${item.total||0};${item.totalTeorythical||0}`; 
+            for (let i = 1; i <= 15; i++) { 
+                if(i!==13) {
+                    let val = item.lineStats && item.lineStats[`L${i}`] ? item.lineStats[`L${i}`].oee : (item.counter ? item.counter[`L${i}`] : 0);
+                    row += `;${val}`; 
+                }
+            } 
+            csv += row + "\n"; 
+        }); 
+        const link = document.createElement("a"); 
+        link.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' })); 
+        link.download = `SardinesPHI_History.csv`; 
+        link.click(); 
+    };
+
+    function loadLastCacheFromFirebase() {
+        // Optional: Load cached data if needed instantly
+    }
 </script>
 </body>
 </html>
