@@ -233,17 +233,21 @@
         </div>
         <div class="modal-body">
             <div style="background:var(--primary-bg); padding:15px; border-radius:10px; text-align:center; margin-bottom:20px;">
-                <span style="font-size:12px; color:var(--text-muted); display:block;">JAM KERJA (SHIFT)</span>
-                <span id="shiftTimeDisplay" style="font-size:18px; font-weight:700; color:var(--primary)">-</span>
+                <span style="font-size:12px; color:var(--text-muted); display:block;">PERHITUNGAN (PREDICT - ACTUAL) / SPEED</span>
+                <span id="formulaDisplay" style="font-size:14px; font-weight:700; color:var(--primary)">-</span>
             </div>
             
-            <h4 style="font-size:14px; margin-bottom:10px; color:var(--danger)">DOWNTIME / LOSS BREAKDOWN</h4>
+            <h4 style="font-size:14px; margin-bottom:10px; color:var(--danger)">DOWNTIME BREAKDOWN</h4>
+            <div class="detail-item">
+                <span class="detail-label" style="font-weight:700">TOTAL LOSS CALCULATED</span>
+                <span class="detail-value" id="calcLossTime" style="font-weight:800; color:var(--danger)">0 Mins</span>
+            </div>
+            
+            <div style="margin: 15px 0; border-bottom:1px solid var(--border-color);"></div>
+            <span style="font-size:11px; color:var(--text-muted); font-weight:700; display:block; margin-bottom:5px;">PENYEBAB (INPUT USER):</span>
+            
             <ul class="detail-list" id="lostDetailList">
                 </ul>
-            <div class="detail-item" style="border-top:1px solid var(--border-color); margin-top:10px; padding-top:15px;">
-                <span class="detail-label" style="font-weight:700">TOTAL LOST TIME</span>
-                <span class="detail-value" id="totalLostTime" style="font-weight:800; color:var(--danger)">0 Mins</span>
-            </div>
         </div>
     </div>
 </div>
@@ -332,7 +336,7 @@
         </div>
         <div class="chart-container m-hide-dashboard m-hide-grafik" style="margin-bottom: 40px; min-height: 350px;">
             <div class="chart-header">
-                <span style="font-size:13px; color:var(--text-muted)">Click on bars to view details</span>
+                <span style="font-size:13px; color:var(--text-muted)">Click on bars to view details. Logic: (Predict - Actual) / Speed</span>
             </div>
             <div style="height: 300px; width: 100%;">
                 <canvas id="lostChart"></canvas>
@@ -409,6 +413,7 @@
             </div>
             <div class="modal-body">
                 <input type="hidden" id="setLineId">
+                
                 <div style="background:var(--primary-bg); padding:15px; border-radius:8px; margin-bottom:15px; border:1px solid var(--primary)">
                     <span style="font-weight:700; color:var(--primary); font-size:13px; display:block; margin-bottom:10px;">JAM KERJA (SHIFT)</span>
                     <div class="form-row">
@@ -418,6 +423,7 @@
                     <div class="form-group"><label class="form-label">TARGET SPEED (CPM)</label><input type="number" id="setSpeed" class="modal-input" placeholder="70"></div>
                     <div class="form-group"><label class="form-label">JUMLAH REJECT (Pcs)</label><input type="number" id="setRejects" class="modal-input" placeholder="0"></div>
                 </div>
+
                 <div class="downtime-section">
                     <span class="downtime-title">CATATAN DOWNTIME (JAM KEJADIAN)</span>
                     <small style="color:var(--text-muted); font-size:10px; margin-bottom:15px; display:block;">Isi jam mulai dan selesai kejadian. Kosongkan jika tidak ada kejadian.</small>
@@ -466,7 +472,7 @@
     let manualOffset = 0; 
     let hasAutoSaved = false; 
     let myChart = null;
-    let lostChart = null; // New Chart Variable
+    let lostChart = null; 
     let historyDataCache = [];
     let lineConfigs = {}; 
     const defaultCPM = 70;
@@ -563,30 +569,53 @@
     window.closeLostModal = () => { document.getElementById("lostTimeModal").style.display = "none"; };
 
     window.showLostDetail = (index) => {
-        const lineNum = (index < 4) ? index + 1 : (index < 6) ? index + 3 : index + 1; // Map Chart Index to Line ID (Skip 5,6 pos logic if needed)
-        // Correct Mapping logic based on loop (1..4, 5..6, 7..15)
-        // Since we skipped 13, array indices are:
-        // 0->L1, 1->L2, 2->L3, 3->L4, 4->L5, 5->L6, 6->L7 ...
-        // Better re-map:
+        // Map Chart Index to Line ID (1-15 skipping 13)
         const lines = [1,2,3,4,5,6,7,8,9,10,11,12,14,15];
         const lineId = lines[index];
         const conf = lineConfigs[`L${lineId}`] || {};
+        const speed = parseInt(conf.cpm) || defaultCPM;
+        const act = latestCounter[`L${lineId}`] || 0;
 
-        document.getElementById("lostModalTitle").innerText = `Line ${lineId} Breakdown`;
-        document.getElementById("shiftTimeDisplay").innerText = (conf.startTime && conf.stopTime) 
-            ? `${conf.startTime} - ${conf.stopTime}` 
-            : "Running (No Stop)";
+        document.getElementById("lostModalTitle").innerText = `Line ${lineId} Loss Analysis`;
 
+        // 1. Calculate Planned Time (Duration in minutes)
+        let plannedMinutes = 0;
+        if(conf.startTime) {
+            const [h, m] = conf.startTime.split(':');
+            const startDt = new Date(); startDt.setHours(h, m, 0, 0);
+            
+            let limitDt = new Date();
+            if(conf.stopTime) {
+                const [sh, sm] = conf.stopTime.split(':');
+                const stopDt = new Date(); stopDt.setHours(sh, sm, 0, 0);
+                if(new Date() > stopDt) limitDt = stopDt;
+            }
+            plannedMinutes = Math.max(0, limitDt - startDt) / 60000;
+        } else {
+            plannedMinutes = Math.max(0, new Date().getTime() - (globalStartTime || Date.now())) / 60000;
+        }
+
+        // 2. Logic: (Predict - Actual) / Speed
+        const predict = Math.floor(plannedMinutes * speed);
+        let lossMinutes = 0;
+        if (predict > act) {
+            lossMinutes = (predict - act) / speed;
+        }
+
+        document.getElementById("formulaDisplay").innerText = `(${predict} - ${act}) / ${speed} = ${lossMinutes.toFixed(1)} mins`;
+        document.getElementById("calcLossTime").innerText = lossMinutes.toFixed(1) + " Mins";
+
+        // 3. Breakdown User Inputs
         const list = document.getElementById("lostDetailList");
         list.innerHTML = "";
-        let total = 0;
+        let inputTotal = 0;
 
         downtimeTypes.forEach(t => {
             const val = conf[t.id];
             if(val && val.includes('|')) {
                 const [s, e] = val.split('|');
                 const diff = calcTimeDiff(s, e);
-                total += diff;
+                inputTotal += diff;
                 list.innerHTML += `
                 <li class="detail-item">
                     <span class="detail-label">${t.label}</span>
@@ -595,9 +624,18 @@
             }
         });
 
-        if(total === 0) list.innerHTML = `<li style="text-align:center; padding:15px; color:var(--text-muted)">No recorded downtime</li>`;
+        // Add Unexplained Loss (Speed Loss)
+        const unexplained = Math.max(0, lossMinutes - inputTotal);
+        if (unexplained > 0) {
+             list.innerHTML += `
+                <li class="detail-item" style="border-top:1px dashed var(--warning)">
+                    <span class="detail-label" style="color:var(--warning)">Unexplained / Speed Loss</span>
+                    <span class="detail-value" style="color:var(--warning)">${unexplained.toFixed(1)}m</span>
+                </li>`;
+        }
+
+        if(inputTotal === 0 && unexplained === 0) list.innerHTML = `<li style="text-align:center; padding:15px; color:var(--text-muted)">No loss detected</li>`;
         
-        document.getElementById("totalLostTime").innerText = total + " Mins";
         document.getElementById("lostTimeModal").style.display = "block";
     };
 
@@ -717,7 +755,6 @@
         const ctx = document.getElementById('lostChart').getContext('2d');
         if(lostChart) lostChart.destroy();
 
-        // Calculate Data for All Lines
         const labels = [];
         const performData = [];
         const lostData = [];
@@ -726,41 +763,41 @@
             if(i===13) continue;
             labels.push(`L${i}`);
             
-            // Logic to calculate percentages based on current updateUI logic
             const conf = lineConfigs[`L${i}`] || {};
-            // Simplified logic for chart rendering: Availability %
-            // NOTE: In real-world, Lost = (100% - OEE) or (100% - Availability). 
-            // Based on image provided, it looks like Availability/Performance split.
-            // Here I will use Availability as the metric.
-            
-            // Calculate total downtime
-            let totalDowntime = 0;
-            downtimeTypes.forEach(type => {
-                const val = conf[type.id];
-                if(val && val.includes('|')) {
-                    const [s, e] = val.split('|');
-                    totalDowntime += calcTimeDiff(s, e);
-                }
-            });
+            const speed = parseInt(conf.cpm) || defaultCPM;
+            const act = latestCounter[`L${i}`] || 0;
 
-            // Calculate Planned Time (Approx from global if not set)
-            let planned = 0;
+            // 1. Calculate Planned Time (Duration in minutes)
+            let plannedMinutes = 0;
             if(conf.startTime) {
                const [h, m] = conf.startTime.split(':');
                const startDt = new Date(); startDt.setHours(h, m, 0, 0);
                const now = new Date();
-               planned = Math.max(0, now - startDt) / 60000; 
+               
+               let limitDt = now;
+               if(conf.stopTime) {
+                   const [sh, sm] = conf.stopTime.split(':');
+                   const stopDt = new Date(); stopDt.setHours(sh, sm, 0, 0);
+                   if(now > stopDt) limitDt = stopDt;
+               }
+               plannedMinutes = Math.max(0, limitDt - startDt) / 60000; 
             } else {
-               planned = Math.max(0, new Date().getTime() - (globalStartTime || Date.now())) / 60000;
+               plannedMinutes = Math.max(0, new Date().getTime() - (globalStartTime || Date.now())) / 60000;
             }
-            if(planned === 0) planned = 1; // Avoid div by zero
+            
+            // 2. Logic: Predict vs Actual
+            const predict = Math.floor(plannedMinutes * speed);
+            let performancePct = 0;
+            if(predict > 0) {
+                performancePct = (act / predict) * 100;
+            } else if(act > 0) {
+                performancePct = 100;
+            }
+            
+            if(performancePct > 100) performancePct = 100; // Cap at 100 for chart
 
-            let availPct = ((planned - totalDowntime) / planned) * 100;
-            if(availPct < 0) availPct = 0;
-            if(availPct > 100) availPct = 100;
-
-            performData.push(availPct);
-            lostData.push(100 - availPct);
+            performData.push(performancePct);
+            lostData.push(100 - performancePct);
         }
 
         lostChart = new Chart(ctx, {
@@ -768,8 +805,8 @@
             data: {
                 labels: labels,
                 datasets: [
-                    { label: 'Perform & Avail', data: performData, backgroundColor: getVar('--primary'), stack: 'Stack 0' },
-                    { label: 'Lost Time', data: lostData, backgroundColor: getVar('--warning'), stack: 'Stack 0' }
+                    { label: 'Present Perform & Avail', data: performData, backgroundColor: getVar('--primary'), stack: 'Stack 0' },
+                    { label: 'Lost', data: lostData, backgroundColor: getVar('--warning'), stack: 'Stack 0' }
                 ]
             },
             options: {
