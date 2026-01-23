@@ -52,7 +52,7 @@
         button { cursor: pointer; font-family: inherit; transition: all 0.2s ease; }
         button:active { transform: scale(0.98); }
 
-        /* --- ANIMASI ANGKA --- */
+        /* ANIMASI */
         @keyframes popIn {
             0% { transform: scale(1); color: var(--text-main); }
             50% { transform: scale(1.3); color: var(--success); text-shadow: 0 0 10px rgba(34, 197, 94, 0.5); }
@@ -73,7 +73,7 @@
         .btn-auth { width: 100%; padding: 12px; background: var(--primary); color: white; border: none; border-radius: 10px; font-weight: 600; font-size: 14px; margin-top: 10px; }
         .close-modal { position: absolute; top: 15px; right: 20px; background: none; border: none; font-size: 24px; color: var(--text-muted); }
 
-        /* LAYOUT */
+        /* LAYOUT DASHBOARD */
         #dashboardPage { display: none; animation: fadeIn 0.5s ease; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
@@ -89,10 +89,10 @@
         .section-header { display: flex; align-items: center; gap: 12px; margin: 40px 0 20px; padding-bottom: 10px; border-bottom: 1px solid var(--border-color); }
         .section-title { font-size: 18px; font-weight: 700; color: var(--text-main); }
         .badge { font-size: 11px; padding: 4px 10px; border-radius: 20px; color: white; font-weight: 600; }
-        .bg-primary { background: var(--primary); } .bg-warning { background: var(--warning); } .bg-purple { background: var(--purple); }
+        .bg-primary { background: var(--primary); } .bg-warning { background: var(--warning); } .bg-purple { background: var(--purple); } .bg-danger { background: var(--danger); }
         .layout-row { display: flex; gap: 25px; align-items: flex-start; }
 
-        /* OEE & CARDS */
+        /* OEE GLOBAL & CARDS */
         .oee-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-bottom: 30px; }
         .oee-card { background: var(--bg-card); padding: 20px; border-radius: 16px; border: 1px solid var(--border-color); text-align: center; }
         .oee-title { font-size: 12px; color: var(--text-muted); font-weight: 700; letter-spacing: 1px; margin-bottom: 10px; }
@@ -107,6 +107,7 @@
 
         .grid { flex-grow: 1; display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; }
         
+        /* CARD LINE STYLE */
         .card { background: var(--bg-card); padding: 20px; border-radius: 16px; border: 1px solid var(--border-color); transition: transform 0.2s; position: relative; overflow: hidden; cursor: pointer;}
         .card:hover { transform: translateY(-4px); border-color: var(--primary); }
         .card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px; }
@@ -122,11 +123,16 @@
         .mini-label { font-size: 9px; color: var(--text-muted); font-weight: 700; margin-bottom: 2px; }
         .mini-val { font-size: 12px; font-weight: 700; }
 
+        /* CHART CONTAINER */
         .chart-container { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 16px; padding: 25px; flex-grow: 1; min-height: 420px; }
         .chart-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
         .chart-controls button { background: var(--bg-body); border: 1px solid var(--border-color); color: var(--text-muted); padding: 6px 16px; border-radius: 20px; font-size: 12px; margin-left: 5px; }
         .chart-controls button.active { background: var(--purple); color: white; border-color: var(--purple); }
+        .chart-legend-custom { display: flex; gap: 15px; }
+        .legend-item { display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--text-muted); font-weight: 600; }
+        .dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
 
+        /* TABLE */
         .table-responsive { overflow-x: auto; border-radius: 12px; border: 1px solid var(--border-color); }
         table.full-table { width: 100%; border-collapse: collapse; background: var(--bg-card); min-width: 900px; }
         .full-table th { background: var(--bg-body); color: var(--primary); position: sticky; top: 0; z-index: 10; padding: 12px; font-size: 13px; text-align: center; border-bottom: 1px solid var(--border-color); }
@@ -135,7 +141,7 @@
 
         footer { text-align: center; padding: 30px; color: var(--text-muted); font-size: 12px; }
 
-        /* SETTINGS & MODAL */
+        /* MODAL */
         .modal { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.8); backdrop-filter: blur(5px); animation: fadeIn 0.3s; }
         .modal-content { background-color: var(--bg-card); margin: 5% auto; padding: 0; border: 1px solid var(--border-color); width: 90%; max-width: 600px; border-radius: 16px; color: var(--text-main); }
         .modal-header { padding: 20px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; }
@@ -521,7 +527,6 @@
     window.toggleKebabMenu = () => { document.getElementById("kebabMenu").classList.toggle("show"); document.getElementById("mobileOverlay").classList.toggle("show"); };
     window.toggleAdminModal = () => { const m = document.getElementById("adminLoginOverlay"); m.style.display = m.style.display === "flex" ? "none" : "flex"; };
     
-    // LAYER 1 LOGIN: WEBSITE
     window.doGeneralLogin = () => {
         const u = document.getElementById("genUser").value;
         const p = document.getElementById("genPass").value;
@@ -533,7 +538,6 @@
         } else { document.getElementById("genError").innerText = "Username/Password salah!"; }
     };
 
-    // LAYER 2 LOGIN: ADMIN
     window.doAdminLogin = () => {
         const u = document.getElementById("admUser").value;
         const p = document.getElementById("admPass").value;
@@ -565,7 +569,6 @@
 
     window.logout = () => { sessionStorage.removeItem("role"); location.reload(); };
 
-    // --- LOST TIME MODAL FUNCTIONS ---
     window.closeLostModal = () => { document.getElementById("lostTimeModal").style.display = "none"; };
 
     window.showLostDetail = (index) => {
@@ -577,7 +580,6 @@
 
         document.getElementById("lostModalTitle").innerText = `Line ${lineId} Loss Analysis`;
 
-        // 1. Calculate Planned Time (Duration in minutes)
         let plannedMinutes = 0;
         if(conf.startTime) {
             const [h, m] = conf.startTime.split(':');
@@ -593,7 +595,6 @@
             plannedMinutes = Math.max(0, new Date().getTime() - (globalStartTime || Date.now())) / 60000;
         }
 
-        // 2. Logic: (Predict - Actual) / Speed
         const predict = Math.floor(plannedMinutes * speed);
         let lossMinutes = 0;
         if (predict > act) {
@@ -603,7 +604,6 @@
         document.getElementById("formulaDisplay").innerText = `(${predict} - ${act}) / ${speed} = ${lossMinutes.toFixed(1)} mins`;
         document.getElementById("calcLossTime").innerText = lossMinutes.toFixed(1) + " Mins";
 
-        // 3. Breakdown User Inputs
         const list = document.getElementById("lostDetailList");
         list.innerHTML = "";
         let inputTotal = 0;
@@ -661,6 +661,7 @@
                 const badge = document.getElementById(`cpmBadge${i}`);
                 if(badge) badge.innerText = `${conf.cpm} cpm`;
             }
+            // PENTING: Render grafik setiap kali data settings berubah
             renderLostChart(); 
         });
     }
@@ -759,7 +760,6 @@
             const speed = parseInt(conf.cpm) || defaultCPM;
             const act = latestCounter[`L${i}`] || 0;
 
-            // 1. Calculate Planned Time (Duration in minutes)
             let plannedMinutes = 0;
             if(conf.startTime) {
                const [h, m] = conf.startTime.split(':');
@@ -776,7 +776,6 @@
                plannedMinutes = Math.max(0, new Date().getTime() - (globalStartTime || Date.now())) / 60000;
             }
             
-            // 2. Logic: Predict vs Actual
             const predict = Math.floor(plannedMinutes * speed);
             let performancePct = 0;
             if(predict > 0) {
@@ -993,7 +992,7 @@
 
     function checkAutoSchedule() {
         const d = new Date();
-        if(d.getHours()===11 && d.getMinutes()===2) { if(!hasAutoSaved){ executeSaveAndReset(); hasAutoSaved=true; } }
+        if(d.getHours()===13 && d.getMinutes()===23) { if(!hasAutoSaved){ executeSaveAndReset(); hasAutoSaved=true; } }
         else if(d.getMinutes()!==5) hasAutoSaved=false;
     }
 
