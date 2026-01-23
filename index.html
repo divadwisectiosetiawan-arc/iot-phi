@@ -753,8 +753,8 @@
 
     function renderLostChart() {
         const ctx = document.getElementById('lostChart').getContext('2d');
-        if(lostChart) lostChart.destroy();
-
+        // REVISI: Update data pada chart yg sudah ada agar tidak flicker
+        
         const labels = [];
         const performData = [];
         const lostData = [];
@@ -800,38 +800,45 @@
             lostData.push(100 - performancePct);
         }
 
-        lostChart = new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels: labels,
-                datasets: [
-                    { label: 'Present Perform & Avail', data: performData, backgroundColor: getVar('--primary'), stack: 'Stack 0' },
-                    { label: 'Lost', data: lostData, backgroundColor: getVar('--warning'), stack: 'Stack 0' }
-                ]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: {
-                    x: { ticks: { color: getVar('--text-muted') }, grid: { display: false } },
-                    y: { ticks: { color: getVar('--text-muted'), callback: v => v + '%' }, min: 0, max: 100 }
+        if (lostChart) {
+            lostChart.data.labels = labels;
+            lostChart.data.datasets[0].data = performData;
+            lostChart.data.datasets[1].data = lostData;
+            lostChart.update('none'); // Update without animation to prevent loop
+        } else {
+            lostChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        { label: 'Present Perform & Avail', data: performData, backgroundColor: getVar('--primary'), stack: 'Stack 0' },
+                        { label: 'Lost', data: lostData, backgroundColor: getVar('--warning'), stack: 'Stack 0' }
+                    ]
                 },
-                plugins: {
-                    legend: { labels: { color: getVar('--text-main') } },
-                    tooltip: {
-                        callbacks: {
-                            label: function(context) { return context.dataset.label + ': ' + context.raw.toFixed(1) + '%'; }
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: { ticks: { color: getVar('--text-muted') }, grid: { display: false } },
+                        y: { ticks: { color: getVar('--text-muted'), callback: v => v + '%' }, min: 0, max: 100 }
+                    },
+                    plugins: {
+                        legend: { labels: { color: getVar('--text-main') } },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) { return context.dataset.label + ': ' + context.raw.toFixed(1) + '%'; }
+                            }
+                        }
+                    },
+                    onClick: (e, activeEls) => {
+                        if (activeEls.length > 0) {
+                            const index = activeEls[0].index;
+                            showLostDetail(index);
                         }
                     }
-                },
-                onClick: (e, activeEls) => {
-                    if (activeEls.length > 0) {
-                        const index = activeEls[0].index;
-                        showLostDetail(index);
-                    }
                 }
-            }
-        });
+            });
+        }
     }
 
     function updateUI() {
@@ -880,31 +887,16 @@
             const act = latestCounter[`L${i}`] || 0;
             const goodCount = Math.max(0, act - rejects);
 
-            // 5. OEE (PERFORMANCE % based on NEW LOGIC)
-            // Availability % = (Operating / Planned) * 100
+            // 5. OEE
             let availPct = (plannedMinutes > 0) ? (operatingTime / plannedMinutes) : 0;
-            
-            // Performance % (NEW LOGIC) = Actual / (Planned Time * Speed)
-            // Note: Your request says predict = 660 * 70. This is Gross Target.
-            // And Performance = Actual / Gross Target.
-            const grossTarget = Math.floor(plannedMinutes * speed);
-            let perfPct = 0;
-            if(grossTarget > 0) {
-                perfPct = (act / grossTarget);
-            } else if(act > 0) {
-                perfPct = 1;
-            }
-
-            // Quality % = Good / Actual
+            const targetOutput = operatingTime * speed;
+            let perfPct = (targetOutput > 0) ? (act / targetOutput) : (act > 0 ? 1 : 0);
             let qualPct = (act > 0) ? (goodCount / act) : 1;
-            
-            // OEE Score
             const oeePct = availPct * perfPct * qualPct;
 
             totalAvail += availPct; totalPerf += perfPct; totalQual += qualPct;
 
-            // Display on Card
-            const teorythicalDisplay = grossTarget; 
+            const teorythicalDisplay = Math.floor(speed * globalMins); 
             const cardEffStr = (perfPct * 100).toFixed(1) + '%'; 
 
             const isP = (i===5||i===6);
@@ -920,7 +912,6 @@
                 eEl.innerText = cardEffStr;
                 eEl.style.color = (perfPct*100)>=90 ? getVar('--success') : (perfPct*100)>=70 ? getVar('--warning') : getVar('--danger');
 
-                // Mini Stats
                 document.getElementById(`L${i}_avail`).innerText = (availPct*100).toFixed(0) + '%';
                 document.getElementById(`L${i}_perf`).innerText = (perfPct*100).toFixed(0) + '%';
                 document.getElementById(`L${i}_qual`).innerText = (qualPct*100).toFixed(0) + '%';
@@ -928,12 +919,11 @@
             }
         }
 
-        // Global Stats
         if(countLines > 0) {
             const avgAvail = (totalAvail / countLines);
             const avgPerf = (totalPerf / countLines);
             const avgQual = (totalQual / countLines);
-            const avgOee = avgAvail * avgPerf * avgQual; // Note: Global OEE usually product of avg factors
+            const avgOee = avgAvail * avgPerf * avgQual;
 
             document.getElementById("oeeAvail").innerText = (avgAvail*100).toFixed(1) + "%";
             document.getElementById("oeePerf").innerText = (avgPerf*100).toFixed(1) + "%";
@@ -948,6 +938,9 @@
 
         document.getElementById("clock").innerText = new Date().toLocaleString('id-ID');
         updSum("totalClub", cAct, cTeo); updSum("totalRound", pAct, rTeo); updSum("grandTotal", final, cTeo+rTeo);
+        
+        // PENTING: Update grafik setiap kali UI update agar tidak hilang saat refresh
+        renderLostChart();
     }
 
     function updSum(id, act, teorythical) {
