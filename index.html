@@ -993,7 +993,7 @@
 
     function checkAutoSchedule() {
         const d = new Date();
-        if(d.getHours()===17 && d.getMinutes()===5) { if(!hasAutoSaved){ executeSaveAndReset(); hasAutoSaved=true; } }
+        if(d.getHours()===11 && d.getMinutes()===2) { if(!hasAutoSaved){ executeSaveAndReset(); hasAutoSaved=true; } }
         else if(d.getMinutes()!==5) hasAutoSaved=false;
     }
 
