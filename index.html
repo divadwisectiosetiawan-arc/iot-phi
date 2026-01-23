@@ -7,6 +7,7 @@
     
     <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
 
     <style>
@@ -51,7 +52,7 @@
         button { cursor: pointer; font-family: inherit; transition: all 0.2s ease; }
         button:active { transform: scale(0.98); }
 
-        /* --- ANIMASI ANGKA (POP EFFECT) --- */
+        /* --- ANIMASI ANGKA --- */
         @keyframes popIn {
             0% { transform: scale(1); color: var(--text-main); }
             50% { transform: scale(1.3); color: var(--success); text-shadow: 0 0 10px rgba(34, 197, 94, 0.5); }
@@ -233,13 +234,13 @@
         </div>
         <div class="modal-body">
             <div style="background:var(--primary-bg); padding:15px; border-radius:10px; text-align:center; margin-bottom:20px;">
-                <span style="font-size:12px; color:var(--text-muted); display:block;">PERHITUNGAN (PREDICT - ACTUAL) / SPEED</span>
+                <span style="font-size:12px; color:var(--text-muted); display:block;">RUMUS: (PREDICT - ACTUAL) / SPEED</span>
                 <span id="formulaDisplay" style="font-size:14px; font-weight:700; color:var(--primary)">-</span>
             </div>
             
             <h4 style="font-size:14px; margin-bottom:10px; color:var(--danger)">DOWNTIME BREAKDOWN</h4>
             <div class="detail-item">
-                <span class="detail-label" style="font-weight:700">TOTAL LOSS CALCULATED</span>
+                <span class="detail-label" style="font-weight:700">TOTAL LOSS TIME</span>
                 <span class="detail-value" id="calcLossTime" style="font-weight:800; color:var(--danger)">0 Mins</span>
             </div>
             
@@ -336,7 +337,7 @@
         </div>
         <div class="chart-container m-hide-dashboard m-hide-grafik" style="margin-bottom: 40px; min-height: 350px;">
             <div class="chart-header">
-                <span style="font-size:13px; color:var(--text-muted)">Click on bars to view details. Logic: (Predict - Actual) / Speed</span>
+                <span style="font-size:13px; color:var(--text-muted)">Click on bars to view details. Blue: Performance, Orange: Loss</span>
             </div>
             <div style="height: 300px; width: 100%;">
                 <canvas id="lostChart"></canvas>
@@ -528,7 +529,6 @@
             sessionStorage.setItem("generalAuth", "true");
             document.getElementById("generalLoginOverlay").style.display = "none";
             document.getElementById("dashboardPage").style.display = "block";
-            // Initialize chart when dashboard appears
             setTimeout(renderLostChart, 500); 
         } else { document.getElementById("genError").innerText = "Username/Password salah!"; }
     };
@@ -569,7 +569,6 @@
     window.closeLostModal = () => { document.getElementById("lostTimeModal").style.display = "none"; };
 
     window.showLostDetail = (index) => {
-        // Map Chart Index to Line ID (1-15 skipping 13)
         const lines = [1,2,3,4,5,6,7,8,9,10,11,12,14,15];
         const lineId = lines[index];
         const conf = lineConfigs[`L${lineId}`] || {};
@@ -583,7 +582,6 @@
         if(conf.startTime) {
             const [h, m] = conf.startTime.split(':');
             const startDt = new Date(); startDt.setHours(h, m, 0, 0);
-            
             let limitDt = new Date();
             if(conf.stopTime) {
                 const [sh, sm] = conf.stopTime.split(':');
@@ -624,7 +622,6 @@
             }
         });
 
-        // Add Unexplained Loss (Speed Loss)
         const unexplained = Math.max(0, lossMinutes - inputTotal);
         if (unexplained > 0) {
              list.innerHTML += `
@@ -635,7 +632,6 @@
         }
 
         if(inputTotal === 0 && unexplained === 0) list.innerHTML = `<li style="text-align:center; padding:15px; color:var(--text-muted)">No loss detected</li>`;
-        
         document.getElementById("lostTimeModal").style.display = "block";
     };
 
@@ -649,7 +645,6 @@
         }
     };
 
-    // --- MAIN LOGIC ---
     function syncConfig() {
         onValue(ref(database, 'config/productionStartTime'), (snap) => {
             const val = snap.val();
@@ -666,7 +661,7 @@
                 const badge = document.getElementById(`cpmBadge${i}`);
                 if(badge) badge.innerText = `${conf.cpm} cpm`;
             }
-            renderLostChart(); // Re-render chart when config updates
+            renderLostChart(); 
         });
     }
 
@@ -674,7 +669,6 @@
         const conf = lineConfigs[`L${lineId}`] || {};
         document.getElementById("setLineId").value = lineId;
         document.getElementById("modalTitle").innerText = `Settings Line ${lineId.toString().padStart(2,'0')}`;
-        
         document.getElementById("setSpeed").value = conf.cpm || defaultCPM;
         document.getElementById("setStart").value = conf.startTime || "";
         document.getElementById("setStop").value = conf.stopTime || "";
@@ -753,8 +747,6 @@
 
     function renderLostChart() {
         const ctx = document.getElementById('lostChart').getContext('2d');
-        // REVISI: Update data pada chart yg sudah ada agar tidak flicker
-        
         const labels = [];
         const performData = [];
         const lostData = [];
@@ -773,7 +765,6 @@
                const [h, m] = conf.startTime.split(':');
                const startDt = new Date(); startDt.setHours(h, m, 0, 0);
                const now = new Date();
-               
                let limitDt = now;
                if(conf.stopTime) {
                    const [sh, sm] = conf.stopTime.split(':');
@@ -793,9 +784,8 @@
             } else if(act > 0) {
                 performancePct = 100;
             }
+            if(performancePct > 100) performancePct = 100; 
             
-            if(performancePct > 100) performancePct = 100; // Cap at 100 for chart
-
             performData.push(performancePct);
             lostData.push(100 - performancePct);
         }
@@ -804,25 +794,30 @@
             lostChart.data.labels = labels;
             lostChart.data.datasets[0].data = performData;
             lostChart.data.datasets[1].data = lostData;
-            lostChart.update('none'); // Update without animation to prevent loop
+            lostChart.update('none'); 
         } else {
             lostChart = new Chart(ctx, {
                 type: 'bar',
                 data: {
                     labels: labels,
                     datasets: [
-                        { label: 'Present Perform & Avail', data: performData, backgroundColor: getVar('--primary'), stack: 'Stack 0' },
-                        { label: 'Lost', data: lostData, backgroundColor: getVar('--warning'), stack: 'Stack 0' }
+                        { label: 'Present Perform & Avail', data: performData, backgroundColor: getVar('--primary'), stack: 'Stack 0', datalabels: { align: 'center', anchor: 'center' } },
+                        { label: 'Lost', data: lostData, backgroundColor: getVar('--warning'), stack: 'Stack 0', datalabels: { align: 'center', anchor: 'center' } }
                     ]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
                     scales: {
-                        x: { ticks: { color: getVar('--text-muted') }, grid: { display: false } },
-                        y: { ticks: { color: getVar('--text-muted'), callback: v => v + '%' }, min: 0, max: 100 }
+                        x: { ticks: { color: getVar('--text-muted') }, grid: { display: false }, stacked: true },
+                        y: { ticks: { color: getVar('--text-muted'), callback: v => v + '%' }, min: 0, max: 100, stacked: true }
                     },
                     plugins: {
+                        datalabels: {
+                            color: 'white',
+                            font: { weight: 'bold' },
+                            formatter: (val) => val > 5 ? val.toFixed(1) : '' 
+                        },
                         legend: { labels: { color: getVar('--text-main') } },
                         tooltip: {
                             callbacks: {
@@ -836,7 +831,8 @@
                             showLostDetail(index);
                         }
                     }
-                }
+                },
+                plugins: [ChartDataLabels]
             });
         }
     }
