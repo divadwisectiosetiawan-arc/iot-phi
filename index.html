@@ -8,7 +8,8 @@
     <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script> <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script> 
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
     <style>
         /* --- CSS VARIABLES & RESET --- */
@@ -62,7 +63,6 @@
             padding: 1rem 1.5rem;
         }
         .brand { gap: 12px; font-weight: 800; font-size: 1.25rem; color: var(--primary); letter-spacing: -0.5px; }
-        .brand img { height: 32px; width: auto; }
         
         .nav-controls button, .nav-controls select {
             background: var(--bg-card); border: 1px solid var(--border);
@@ -102,13 +102,13 @@
         .loader { width: 48px; height: 48px; border: 5px solid var(--border); border-bottom-color: var(--primary); border-radius: 50%; animation: rotation 1s linear infinite; }
         @keyframes rotation { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        /* Login Modal (Simplified) */
+        /* Login Modal */
         .modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(4px); z-index: 1000; display: none; align-items: center; justify-content: center; }
         .modal-content { background: var(--bg-card); padding: 30px; border-radius: 16px; width: 100%; max-width: 400px; border: 1px solid var(--border); box-shadow: 0 20px 25px -5px rgba(0,0,0,0.3); }
 
         /* Responsive */
         @media (max-width: 768px) {
-            header { display: none; } /* Use mobile header logic */
+            header { display: none; }
             .mobile-header { display: flex; padding: 15px; background: var(--bg-header); position: sticky; top: 0; z-index: 50; border-bottom: 1px solid var(--border); }
             .container { padding: 15px; }
             .grid-dashboard { grid-template-columns: 1fr; }
@@ -205,8 +205,9 @@
     </div>
 
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-app.js";
-        import { getDatabase, ref, set, onValue, push } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-database.js";
+        // --- 1. FIXED IMPORTS (Using Stable 10.12.0) ---
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+        import { getDatabase, ref, set, onValue, push } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
         // --- CONFIGURATION ---
         const Config = {
@@ -228,7 +229,7 @@
                 { id: 'L2', name: 'Line 02', cpm: 70, machineId: 'machine01' },
                 { id: 'L3', name: 'Line 03', cpm: 70, machineId: 'machine02' },
                 { id: 'L4', name: 'Line 04', cpm: 70, machineId: 'machine02' },
-                { id: 'L5', name: 'Line 05', cpm: 80, machineId: 'machine03' }, // Round Can
+                { id: 'L5', name: 'Line 05', cpm: 80, machineId: 'machine03' },
                 { id: 'L6', name: 'Line 06', cpm: 80, machineId: 'machine03' },
                 { id: 'L7', name: 'Line 07', cpm: 70, machineId: 'machine04' },
                 { id: 'L8', name: 'Line 08', cpm: 70, machineId: 'machine04' },
@@ -236,7 +237,6 @@
                 { id: 'L10', name: 'Line 10', cpm: 70, machineId: 'machine05' },
                 { id: 'L11', name: 'Line 11', cpm: 70, machineId: 'machine06' },
                 { id: 'L12', name: 'Line 12', cpm: 70, machineId: 'machine06' }
-                // Add more lines as needed
             ]
         };
 
@@ -249,17 +249,15 @@
             chartInstance: null
         };
 
-        // --- SERVICES (NETWORK & LOGIC) ---
+        // --- SERVICES ---
         const Services = {
             db: null,
             mqttClient: null,
 
             init() {
-                // Init Firebase
                 const app = initializeApp(Config.firebase);
                 this.db = getDatabase(app);
                 
-                // Load Config from Firebase
                 onValue(ref(this.db, 'config'), (snap) => {
                     const val = snap.val();
                     if(val) {
@@ -271,7 +269,6 @@
                     UI.updateStatus();
                 });
 
-                // Init MQTT
                 this.connectMQTT();
             },
 
@@ -282,7 +279,6 @@
                     State.isConnected.mqtt = true;
                     UI.updateStatus();
                     console.log("MQTT Connected");
-                    // Subscribe to all unique machine topics
                     const uniqueMachines = [...new Set(Config.machines.map(m => m.machineId))];
                     uniqueMachines.forEach(mId => {
                         this.mqttClient.subscribe(`iot/esp32/${mId}/counter`);
@@ -292,10 +288,9 @@
                 this.mqttClient.on('message', (topic, message) => {
                     try {
                         const data = JSON.parse(message.toString());
-                        // Merge counter data
                         if(data.counter) {
                             Object.assign(State.counters, data.counter);
-                            UI.updateDashboard(); // Trigger UI update on new data
+                            UI.updateDashboard();
                         }
                     } catch (e) { console.error("MQTT Parse Error", e); }
                 });
@@ -310,12 +305,10 @@
                 const lineConf = Config.machines.find(m => m.id === lineId) || { cpm: 70 };
                 const elapsedMins = (Date.now() - State.startTime) / 60000;
                 
-                // Simple OEE Logic (Can be expanded with downtime data)
                 const target = Math.floor(elapsedMins * lineConf.cpm);
                 const performance = target > 0 ? (actual / target) : 0;
-                const availability = 1.0; // Assuming 100% for now (needs downtime logic)
-                const quality = 1.0; // Assuming 0 rejects for now
-                
+                const availability = 1.0; 
+                const quality = 1.0; 
                 const oee = performance * availability * quality;
 
                 return {
@@ -330,7 +323,6 @@
             async resetSystem() {
                 if(!confirm("Are you sure you want to RESET all counters?")) return;
                 
-                // 1. Save History
                 const historyEntry = {
                     timestamp: Date.now(),
                     date: new Date().toLocaleString(),
@@ -341,19 +333,16 @@
                 try {
                     await push(ref(this.db, 'history'), historyEntry);
                     
-                    // 2. Reset MQTT Devices
                     const uniqueMachines = [...new Set(Config.machines.map(m => m.machineId))];
                     uniqueMachines.forEach(mId => {
                         this.mqttClient.publish(`iot/esp32/${mId}/cmd`, JSON.stringify({cmd: "RESET", source: "web"}));
                     });
 
-                    // 3. Reset Config
                     await set(ref(this.db, 'config'), {
                         productionStartTime: Date.now(),
                         manualOffset: 0
                     });
 
-                    // 4. Reset Local State
                     State.counters = {};
                     Swal.fire("Success", "System has been reset & saved.", "success");
                 } catch (error) {
@@ -368,10 +357,12 @@
                 this.renderLineCards();
                 this.initChart();
                 setInterval(() => this.updateClock(), 1000);
-                setInterval(() => this.updateDashboard(), 5000); // Regular refresh for time-based calc
+                setInterval(() => this.updateDashboard(), 5000);
                 
-                // Remove loader
-                setTimeout(() => document.getElementById('loadingOverlay').classList.add('hidden'), 1000);
+                // Hide Loader
+                setTimeout(() => {
+                    document.getElementById('loadingOverlay').classList.add('hidden');
+                }, 1000);
             },
 
             renderLineCards() {
@@ -414,7 +405,6 @@
                     const actual = State.counters[m.id] || 0;
                     const calculations = Services.calculateOEE(m.id, actual);
 
-                    // Update DOM Elements efficiently
                     this.setValidText(`val-${m.id}`, actual);
                     this.setValidText(`target-${m.id}`, calculations.target);
                     this.setValidText(`avail-${m.id}`, calculations.availability + '%');
@@ -426,12 +416,10 @@
                     count++;
                 });
 
-                // Update Global KPIs
                 const avgOee = count > 0 ? (sumOee / count).toFixed(1) : 0;
                 this.setValidText('totalProd', (globalTotal + State.manualOffset).toLocaleString());
                 this.setValidText('avgOee', avgOee + '%');
                 
-                // Update specific card border based on OEE
                 Config.machines.forEach(m => {
                     const oee = parseFloat(document.getElementById(`oee-${m.id}`).innerText);
                     const card = document.getElementById(`card-${m.id}`);
@@ -476,7 +464,7 @@
                         labels: ['08:00', '09:00', '10:00', '11:00', '12:00', '13:00', '14:00'],
                         datasets: [{
                             label: 'Hourly Output',
-                            data: [1200, 1900, 300, 500, 200, 300, 100], // Dummy data for init
+                            data: [1200, 1900, 300, 500, 200, 300, 100],
                             backgroundColor: '#38bdf8',
                             borderRadius: 4
                         }]
@@ -494,57 +482,65 @@
             }
         };
 
-        // --- AUTH & BOOTSTRAP ---
-        // --- AUTH & BOOTSTRAP (PERBAIKAN) ---
-const Auth = {
-    login() {
-        const u = document.getElementById('username').value;
-        const p = document.getElementById('password').value;
-        if(u === "admin" && p === "admin123") {
-            document.getElementById('authModal').style.display = 'none';
-            document.getElementById('appContent').classList.remove('hidden');
-            
-            // Tampilkan loading sebentar saat init data
-            document.getElementById('loadingOverlay').classList.remove('hidden');
-            
-            localStorage.setItem('isAuth', 'true');
-            Services.init();
-            UI.init();
-        } else {
-            Swal.fire("Error", "Invalid Credentials", "error");
-        }
-    },
-    logout() {
-        localStorage.removeItem('isAuth');
-        location.reload();
-    },
-    check() {
-        const loading = document.getElementById('loadingOverlay');
-        
-        if(localStorage.getItem('isAuth')) {
-            // Jika sudah login: Sembunyikan modal, jalankan aplikasi
-            document.getElementById('authModal').style.display = 'none';
-            document.getElementById('appContent').classList.remove('hidden');
-            Services.init();
-            UI.init(); // UI.init akan menghilangkan loadingOverlay setelah selesai
-        } else {
-            // Jika BELUM login: Matikan loading overlay, tampilkan form login
-            if(loading) loading.style.display = 'none'; // ATAU tambahkan class hidden
-            document.getElementById('authModal').style.display = 'flex';
-        }
-    }
-};
+        // --- AUTH SYSTEM ---
+        const Auth = {
+            login() {
+                const u = document.getElementById('username').value;
+                const p = document.getElementById('password').value;
+                if(u === "admin" && p === "admin123") {
+                    document.getElementById('authModal').style.display = 'none';
+                    document.getElementById('appContent').classList.remove('hidden');
+                    
+                    // Show loader momentarily for transition
+                    document.getElementById('loadingOverlay').classList.remove('hidden');
+                    
+                    localStorage.setItem('isAuth', 'true');
+                    Services.init();
+                    UI.init();
+                } else {
+                    Swal.fire("Error", "Invalid Credentials", "error");
+                }
+            },
+            logout() {
+                localStorage.removeItem('isAuth');
+                location.reload();
+            },
+            check() {
+                const loading = document.getElementById('loadingOverlay');
+                
+                if(localStorage.getItem('isAuth')) {
+                    // Logged in: Hide modal, show app
+                    document.getElementById('authModal').style.display = 'none';
+                    document.getElementById('appContent').classList.remove('hidden');
+                    Services.init();
+                    UI.init(); 
+                } else {
+                    // Not Logged in: Hide loader, show login modal
+                    if(loading) loading.classList.add('hidden');
+                    document.getElementById('authModal').style.display = 'flex';
+                }
+            }
+        };
 
-// Start App
-window.onload = () => {
-    const savedTheme = localStorage.getItem('theme') || 'dark';
-    document.documentElement.setAttribute('data-theme', savedTheme);
-    
-    // Beri sedikit delay agar transisi halus, lalu cek status auth
-    setTimeout(() => {
-        Auth.check();
-    }, 500); 
-};
+        // --- CRITICAL FIX: EXPOSE TO WINDOW ---
+        // Ini agar tombol di HTML (onclick="App...") bisa mengenali script ini
+        window.App = { 
+            Auth, 
+            UI, 
+            Data: { manualReset: () => Services.resetSystem() }, 
+            Charts: { setPeriod: (p) => alert("Feature: " + p) } 
+        };
+
+        // --- BOOTSTRAP ---
+        window.onload = () => {
+            const savedTheme = localStorage.getItem('theme') || 'dark';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+            
+            // Delay sedikit untuk efek smooth, lalu cek login
+            setTimeout(() => {
+                Auth.check();
+            }, 500); 
+        };
     </script>
 </body>
 </html>
