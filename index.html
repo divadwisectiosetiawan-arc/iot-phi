@@ -495,43 +495,56 @@
         };
 
         // --- AUTH & BOOTSTRAP ---
-        const Auth = {
-            login() {
-                const u = document.getElementById('username').value;
-                const p = document.getElementById('password').value;
-                if(u === "admin" && p === "admin123") {
-                    document.getElementById('authModal').style.display = 'none';
-                    document.getElementById('appContent').classList.remove('hidden');
-                    localStorage.setItem('isAuth', 'true');
-                    Services.init();
-                    UI.init();
-                } else {
-                    Swal.fire("Error", "Invalid Credentials", "error");
-                }
-            },
-            logout() {
-                localStorage.removeItem('isAuth');
-                location.reload();
-            },
-            check() {
-                if(localStorage.getItem('isAuth')) {
-                    document.getElementById('authModal').style.display = 'none';
-                    document.getElementById('appContent').classList.remove('hidden');
-                    Services.init();
-                    UI.init();
-                }
-            }
-        };
+        // --- AUTH & BOOTSTRAP (PERBAIKAN) ---
+const Auth = {
+    login() {
+        const u = document.getElementById('username').value;
+        const p = document.getElementById('password').value;
+        if(u === "admin" && p === "admin123") {
+            document.getElementById('authModal').style.display = 'none';
+            document.getElementById('appContent').classList.remove('hidden');
+            
+            // Tampilkan loading sebentar saat init data
+            document.getElementById('loadingOverlay').classList.remove('hidden');
+            
+            localStorage.setItem('isAuth', 'true');
+            Services.init();
+            UI.init();
+        } else {
+            Swal.fire("Error", "Invalid Credentials", "error");
+        }
+    },
+    logout() {
+        localStorage.removeItem('isAuth');
+        location.reload();
+    },
+    check() {
+        const loading = document.getElementById('loadingOverlay');
+        
+        if(localStorage.getItem('isAuth')) {
+            // Jika sudah login: Sembunyikan modal, jalankan aplikasi
+            document.getElementById('authModal').style.display = 'none';
+            document.getElementById('appContent').classList.remove('hidden');
+            Services.init();
+            UI.init(); // UI.init akan menghilangkan loadingOverlay setelah selesai
+        } else {
+            // Jika BELUM login: Matikan loading overlay, tampilkan form login
+            if(loading) loading.style.display = 'none'; // ATAU tambahkan class hidden
+            document.getElementById('authModal').style.display = 'flex';
+        }
+    }
+};
 
-        // Expose to window for HTML events
-        window.App = { Auth, UI, Data: { manualReset: () => Services.resetSystem() }, Charts: { setPeriod: (p) => alert("Feature: " + p) } };
-
-        // Start App
-        window.onload = () => {
-            const savedTheme = localStorage.getItem('theme') || 'dark';
-            document.documentElement.setAttribute('data-theme', savedTheme);
-            Auth.check();
-        };
+// Start App
+window.onload = () => {
+    const savedTheme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+    
+    // Beri sedikit delay agar transisi halus, lalu cek status auth
+    setTimeout(() => {
+        Auth.check();
+    }, 500); 
+};
     </script>
 </body>
 </html>
