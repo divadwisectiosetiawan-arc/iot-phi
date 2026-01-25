@@ -9,104 +9,63 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script> 
+    
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
     <style>
-        /* --- CSS VARIABLES & RESET --- */
+        /* --- CSS SAMA SEPERTI SEBELUMNYA --- */
         :root {
-            --bg-body: #0f172a;
-            --bg-card: #1e293b;
-            --bg-header: rgba(15, 23, 42, 0.95);
-            --border: #334155;
-            --text-main: #f8fafc;
-            --text-muted: #94a3b8;
-            --primary: #38bdf8;
-            --primary-dim: rgba(56, 189, 248, 0.1);
-            --success: #22c55e;
-            --warning: #f59e0b;
-            --danger: #ef4444;
-            --purple: #a855f7;
-            --radius: 12px;
-            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
-            --transition: all 0.3s ease;
+            --bg-body: #0f172a; --bg-card: #1e293b; --bg-header: rgba(15, 23, 42, 0.95);
+            --border: #334155; --text-main: #f8fafc; --text-muted: #94a3b8;
+            --primary: #38bdf8; --primary-dim: rgba(56, 189, 248, 0.1);
+            --success: #22c55e; --warning: #f59e0b; --danger: #ef4444; --purple: #a855f7;
+            --radius: 12px; --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3); --transition: all 0.3s ease;
         }
-
         [data-theme="light"] {
-            --bg-body: #f1f5f9;
-            --bg-card: #ffffff;
-            --bg-header: rgba(255, 255, 255, 0.95);
-            --border: #e2e8f0;
-            --text-main: #0f172a;
-            --text-muted: #64748b;
-            --primary: #0284c7;
-            --primary-dim: rgba(2, 132, 199, 0.1);
-            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            --bg-body: #f1f5f9; --bg-card: #ffffff; --bg-header: rgba(255, 255, 255, 0.95);
+            --border: #e2e8f0; --text-main: #0f172a; --text-muted: #64748b;
+            --primary: #0284c7; --primary-dim: rgba(2, 132, 199, 0.1); --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
         }
-
         * { box-sizing: border-box; outline: none; -webkit-tap-highlight-color: transparent; }
         body { margin: 0; font-family: 'Inter', sans-serif; background: var(--bg-body); color: var(--text-main); transition: var(--transition); padding-bottom: 80px; }
         
-        /* --- UTILITIES --- */
         .flex-center { display: flex; align-items: center; justify-content: center; }
         .flex-between { display: flex; align-items: center; justify-content: space-between; }
         .hidden { display: none !important; }
-        .text-success { color: var(--success); }
-        .text-warning { color: var(--warning); }
-        .text-danger { color: var(--danger); }
+        .text-success { color: var(--success); } .text-warning { color: var(--warning); } .text-danger { color: var(--danger); }
         
-        /* --- COMPONENTS --- */
-        /* Header */
-        header { 
-            position: sticky; top: 0; z-index: 50; 
-            background: var(--bg-header); backdrop-filter: blur(12px);
-            border-bottom: 1px solid var(--border);
-            padding: 1rem 1.5rem;
-        }
+        header { position: sticky; top: 0; z-index: 50; background: var(--bg-header); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); padding: 1rem 1.5rem; }
         .brand { gap: 12px; font-weight: 800; font-size: 1.25rem; color: var(--primary); letter-spacing: -0.5px; }
         
-        .nav-controls button, .nav-controls select {
-            background: var(--bg-card); border: 1px solid var(--border);
-            color: var(--text-main); padding: 8px 16px; border-radius: 8px;
-            font-size: 0.875rem; font-weight: 500; cursor: pointer;
-            transition: var(--transition);
-        }
+        .nav-controls button, .nav-controls select { background: var(--bg-card); border: 1px solid var(--border); color: var(--text-main); padding: 8px 16px; border-radius: 8px; font-size: 0.875rem; font-weight: 500; cursor: pointer; transition: var(--transition); }
         .nav-controls button:hover { border-color: var(--primary); color: var(--primary); }
 
-        /* Container & Grid */
         .container { max-width: 1440px; margin: 0 auto; padding: 24px; }
         .grid-dashboard { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; }
         
-        /* Cards */
-        .card {
-            background: var(--bg-card); border: 1px solid var(--border);
-            border-radius: var(--radius); padding: 20px;
-            box-shadow: var(--shadow); position: relative; overflow: hidden;
-            transition: transform 0.2s;
-        }
+        .card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; box-shadow: var(--shadow); position: relative; overflow: hidden; transition: transform 0.2s; }
         .card:hover { transform: translateY(-4px); border-color: var(--primary); }
         .card-header { margin-bottom: 15px; }
         .card-title { font-size: 0.85rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
         .card-value { font-size: 1.75rem; font-weight: 800; color: var(--text-main); margin: 5px 0; }
         
-        /* OEE Grid inside Card */
         .oee-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 15px; padding-top: 15px; border-top: 1px dashed var(--border); }
         .oee-item { text-align: center; }
         .oee-label { font-size: 0.65rem; font-weight: 700; color: var(--text-muted); margin-bottom: 2px; }
         .oee-val { font-size: 0.85rem; font-weight: 700; }
 
-        /* Status Indicator */
         .status-pill { padding: 4px 8px; border-radius: 20px; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; background: var(--bg-body); border: 1px solid var(--border); }
         
-        /* Loading Overlay */
         #loadingOverlay { position: fixed; inset: 0; background: var(--bg-body); z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: opacity 0.5s; }
         .loader { width: 48px; height: 48px; border: 5px solid var(--border); border-bottom-color: var(--primary); border-radius: 50%; animation: rotation 1s linear infinite; }
         @keyframes rotation { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        /* Login Modal */
         .modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(4px); z-index: 1000; display: none; align-items: center; justify-content: center; }
         .modal-content { background: var(--bg-card); padding: 30px; border-radius: 16px; width: 100%; max-width: 400px; border: 1px solid var(--border); box-shadow: 0 20px 25px -5px rgba(0,0,0,0.3); }
 
-        /* Responsive */
         @media (max-width: 768px) {
             header { display: none; }
             .mobile-header { display: flex; padding: 15px; background: var(--bg-header); position: sticky; top: 0; z-index: 50; border-bottom: 1px solid var(--border); }
@@ -129,11 +88,11 @@
             </div>
             <div style="margin-bottom: 15px;">
                 <label style="font-size: 12px; font-weight: 600; color: var(--text-muted);">USERNAME</label>
-                <input type="text" id="username" class="card" style="width: 100%; padding: 10px; margin-top: 5px;" placeholder="Enter username">
+                <input type="text" id="username" class="card" style="width: 100%; padding: 10px; margin-top: 5px;" placeholder="Enter: admin">
             </div>
             <div style="margin-bottom: 20px;">
                 <label style="font-size: 12px; font-weight: 600; color: var(--text-muted);">PASSWORD</label>
-                <input type="password" id="password" class="card" style="width: 100%; padding: 10px; margin-top: 5px;" placeholder="Enter password">
+                <input type="password" id="password" class="card" style="width: 100%; padding: 10px; margin-top: 5px;" placeholder="Enter: admin123">
             </div>
             <button onclick="App.Auth.login()" style="width: 100%; padding: 12px; background: var(--primary); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">ACCESS SYSTEM</button>
         </div>
@@ -199,16 +158,11 @@
                 <button class="nav-controls" onclick="App.Data.manualReset()" style="background: var(--bg-card); color: var(--danger); border: 1px solid var(--danger); padding: 5px 10px; border-radius: 6px; cursor: pointer;">Reset All</button>
             </div>
             
-            <div class="grid-dashboard" id="linesContainer">
-                </div>
+            <div class="grid-dashboard" id="linesContainer"></div>
         </div>
     </div>
 
-    <script type="module">
-        // --- 1. FIXED IMPORTS (Using Stable 10.12.0) ---
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-        import { getDatabase, ref, set, onValue, push } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
-
+    <script>
         // --- CONFIGURATION ---
         const Config = {
             firebase: {
@@ -255,10 +209,14 @@
             mqttClient: null,
 
             init() {
-                const app = initializeApp(Config.firebase);
-                this.db = getDatabase(app);
+                // Init Firebase (Compat Mode)
+                if (!firebase.apps.length) {
+                    firebase.initializeApp(Config.firebase);
+                }
+                this.db = firebase.database();
                 
-                onValue(ref(this.db, 'config'), (snap) => {
+                // Read Config
+                this.db.ref('config').on('value', (snap) => {
                     const val = snap.val();
                     if(val) {
                         State.startTime = val.productionStartTime || Date.now();
@@ -331,14 +289,14 @@
                 };
                 
                 try {
-                    await push(ref(this.db, 'history'), historyEntry);
+                    await this.db.ref('history').push(historyEntry);
                     
                     const uniqueMachines = [...new Set(Config.machines.map(m => m.machineId))];
                     uniqueMachines.forEach(mId => {
                         this.mqttClient.publish(`iot/esp32/${mId}/cmd`, JSON.stringify({cmd: "RESET", source: "web"}));
                     });
 
-                    await set(ref(this.db, 'config'), {
+                    await this.db.ref('config').set({
                         productionStartTime: Date.now(),
                         manualOffset: 0
                     });
@@ -421,9 +379,12 @@
                 this.setValidText('avgOee', avgOee + '%');
                 
                 Config.machines.forEach(m => {
-                    const oee = parseFloat(document.getElementById(`oee-${m.id}`).innerText);
-                    const card = document.getElementById(`card-${m.id}`);
-                    card.style.borderLeft = `4px solid ${oee >= 85 ? 'var(--success)' : oee >= 60 ? 'var(--warning)' : 'var(--danger)'}`;
+                    const el = document.getElementById(`oee-${m.id}`);
+                    if(el) {
+                        const oee = parseFloat(el.innerText);
+                        const card = document.getElementById(`card-${m.id}`);
+                        card.style.borderLeft = `4px solid ${oee >= 85 ? 'var(--success)' : oee >= 60 ? 'var(--warning)' : 'var(--danger)'}`;
+                    }
                 });
             },
 
@@ -491,7 +452,6 @@
                     document.getElementById('authModal').style.display = 'none';
                     document.getElementById('appContent').classList.remove('hidden');
                     
-                    // Show loader momentarily for transition
                     document.getElementById('loadingOverlay').classList.remove('hidden');
                     
                     localStorage.setItem('isAuth', 'true');
@@ -509,24 +469,24 @@
                 const loading = document.getElementById('loadingOverlay');
                 
                 if(localStorage.getItem('isAuth')) {
-                    // Logged in: Hide modal, show app
                     document.getElementById('authModal').style.display = 'none';
                     document.getElementById('appContent').classList.remove('hidden');
                     Services.init();
                     UI.init(); 
                 } else {
-                    // Not Logged in: Hide loader, show login modal
+                    // Jika belum login, pastikan modal muncul
                     if(loading) loading.classList.add('hidden');
                     document.getElementById('authModal').style.display = 'flex';
                 }
             }
         };
 
-        // --- CRITICAL FIX: EXPOSE TO WINDOW ---
-        // Ini agar tombol di HTML (onclick="App...") bisa mengenali script ini
+        // --- EXPOSE TO GLOBAL WINDOW ---
+        // Dengan script biasa, ini sebenarnya otomatis global,
+        // tapi kita definisikan eksplisit agar aman.
         window.App = { 
-            Auth, 
-            UI, 
+            Auth: Auth, 
+            UI: UI, 
             Data: { manualReset: () => Services.resetSystem() }, 
             Charts: { setPeriod: (p) => alert("Feature: " + p) } 
         };
@@ -536,7 +496,6 @@
             const savedTheme = localStorage.getItem('theme') || 'dark';
             document.documentElement.setAttribute('data-theme', savedTheme);
             
-            // Delay sedikit untuk efek smooth, lalu cek login
             setTimeout(() => {
                 Auth.check();
             }, 500); 
