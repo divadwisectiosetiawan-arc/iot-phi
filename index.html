@@ -2,601 +2,370 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SARDINES PRODUCTION - Pasifik Harvest Indonesia</title>
+    <meta name="viewport" content="width=1440"> <title>SARDINES PRODUCTION PROTO - PHI</title>
     
-    <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script> 
-    
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
-
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&display=swap" rel="stylesheet">
-    
+
     <style>
-        /* --- DESIGN SYSTEM SESUAI GAMBAR --- */
+        /* --- CSS VARIABLES (Warna diambil dari Gambar) --- */
         :root {
-            --bg-color: #f3f4f6;
+            --bg-gray: #f0f2f5;
+            --text-dark: #1a1a1a;
+            --text-blue-header: #1e3a8a; /* Biru gelap judul */
+            --text-red-sub: #dc2626;    /* Merah sub-judul */
             
-            /* Warna Ungu (Club Can & Header) */
-            --purple-primary: #4c1d95; 
-            --purple-light: #6200ea;
+            /* Warna Ungu (Club Can & Nav) */
+            --purple-nav: #4a148c;      /* Ungu tua untuk navbar */
+            --purple-hero-start: #5e35b1; /* Gradient hero start */
+            --purple-hero-end: #4527a0;   /* Gradient hero end */
+            --purple-header: #6a1b9a;   /* Header kartu ungu */
             
             /* Warna Hijau (Round Can) */
-            --green-primary: #65a30d;
-            --green-light: #84cc16;
-            
-            /* Warna Aksen */
-            --red-accent: #dc2626;
-            --blue-title: #1e3a8a;
-            
-            --text-dark: #1f2937;
+            --green-header: #558b2f;    /* Header kartu hijau */
+            --green-accent: #7cb342;    /* Aksen persen hijau */
+
+            /* Warna Merah Aksen (Ribbon) */
+            --red-ribbon: #c62828;
+
             --white: #ffffff;
+            --border-light: #e0e0e0;
         }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Roboto', sans-serif; }
-        body { background-color: var(--bg-color); padding-bottom: 50px; }
+        /* --- RESET & BASE --- */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            background-color: var(--bg-gray); 
+            font-family: 'Roboto', sans-serif; 
+            min-width: 1280px; /* Memastikan tampilan desktop tidak rusak */
+            overflow-x: auto;
+        }
 
-        /* HEADER ATAS (PUTIH) */
-        .main-header {
+        /* --- HEADER ATAS (PUTIH) --- */
+        .top-header {
             background: var(--white);
             padding: 15px 30px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border-bottom: 2px solid #e5e7eb;
+            border-bottom: 1px solid var(--border-light);
         }
-        .title-group h1 { color: #3b5998; font-weight: 900; font-size: 28px; letter-spacing: 0.5px; text-transform: uppercase; margin: 0; }
-        .title-group h2 { color: var(--red-accent); font-weight: 700; font-size: 18px; margin-top: 2px; text-transform: uppercase; margin: 0; }
-        .logo-placeholder { 
-            display: flex; align-items: center; gap: 10px; text-align: right;
+        .header-titles h1 {
+            color: var(--text-blue-header);
+            font-weight: 900;
+            font-size: 28px;
+            margin-bottom: 2px;
         }
-        
-        /* NAV BAR (UNGU) */
-        .nav-bar {
-            background: #4b0082; /* Deep Purple */
+        .header-titles h2 {
+            color: var(--text-red-sub);
+            font-weight: 700;
+            font-size: 20px;
+        }
+        .header-logo-area {
+            /* Area untuk logo kiri atas */
+            height: 60px;
+            display: flex;
+            align-items: center;
+        }
+        .placeholder-logo {
+            height: 100%;
+            width: auto;
+            /* Hapus background ini jika sudah ada gambar asli */
+            background: #ddd; 
+            padding: 5px;
+            border: 2px dashed #999;
+            font-size: 12px; color: #666; text-align: center; display: flex; align-items: center;
+        }
+
+        /* --- NAVIGATION BAR (UNGU) --- */
+        .purple-nav {
+            background: var(--purple-nav);
             color: var(--white);
             padding: 12px 30px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            font-weight: 600;
-            font-family: monospace;
+            font-weight: 700;
             font-size: 16px;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4px 5px rgba(0,0,0,0.1);
+            position: relative; z-index: 10;
         }
-        .nav-right span { margin: 0 10px; cursor: pointer; opacity: 0.8; }
-        .nav-right span:hover { opacity: 1; color: #fbbf24; }
-        .nav-right .active { opacity: 1; font-weight: 700; color: #fbbf24; }
+        .nav-left { letter-spacing: 0.5px; }
+        .nav-right { display: flex; align-items: center; gap: 5px; }
+        .nav-btn {
+            cursor: pointer;
+            padding: 5px 10px;
+            transition: color 0.2s;
+            text-decoration: none; color: white; /* Agar terlihat seperti link */
+        }
+        .nav-btn:hover { color: #ffd54f; }
+        .nav-btn.active { color: #ffd54f; } /* Warna kuning untuk yang aktif */
+        .nav-separator { opacity: 0.7; }
+        
+        .admin-icon-area {
+            margin-left: 20px;
+            width: 32px; height: 32px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer;
+        }
 
-        .container { max-width: 1400px; margin: 25px auto; padding: 0 20px; }
+        /* --- MAIN DASHBOARD CONTAINER --- */
+        .dashboard-container {
+            max-width: 1400px;
+            margin: 25px auto;
+            padding: 0 20px 50px 20px;
+        }
 
-        /* KOTAK STATISTIK UTAMA (GRADIENT UNGU) */
-        .hero-stats {
-            background: linear-gradient(135deg, #4b0082, #7c3aed);
-            border-radius: 4px;
-            color: var(--white);
+        /* --- HERO STATS BOX (KOTAK BESAR ATAS) --- */
+        .hero-box {
+            background: linear-gradient(135deg, var(--purple-hero-start), var(--purple-hero-end));
+            border-radius: 8px;
             display: flex;
-            overflow: hidden;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
-            margin-bottom: 30px;
-            min-height: 180px;
+            color: var(--white);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+            margin-bottom: 35px;
+            min-height: 220px; /* Tinggi fix agar mirip gambar */
         }
-        /* Bagian Kiri (Total Production) */
+        /* Bagian Kiri Hero */
         .hero-left {
             flex: 1;
-            padding: 30px;
-            text-align: center;
-            border-right: 2px solid rgba(255,255,255,0.3);
+            padding: 40px;
             display: flex;
             flex-direction: column;
             justify-content: center;
+            border-right: 3px solid rgba(255,255,255,0.2);
         }
-        .hero-title { font-size: 18px; font-weight: 600; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 1px; }
-        .hero-value { font-size: 72px; font-weight: 900; line-height: 1; text-shadow: 2px 2px 4px rgba(0,0,0,0.3); }
-
-        /* Bagian Kanan (Overall Performance) */
-        .hero-right { flex: 1.3; padding: 20px; display: flex; flex-direction: column; }
-        .hero-sub-header {
-            background: var(--red-accent);
-            padding: 8px;
-            text-align: center;
-            font-weight: 700;
-            text-transform: uppercase;
-            border-radius: 4px;
-            margin-bottom: 20px;
-            font-size: 16px;
-            letter-spacing: 0.5px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-        }
-        .perf-grid { display: grid; grid-template-columns: 1.2fr 1fr; gap: 20px; align-items: center; flex-grow: 1; }
-        .perf-row { display: flex; justify-content: space-between; margin-bottom: 15px; font-size: 18px; font-weight: 500; }
-        .perf-val { font-weight: 700; font-family: monospace; font-size: 24px; }
-        .eff-box { text-align: center; border-left: 3px solid rgba(255,255,255,0.3); padding-left: 20px; height: 100%; display: flex; flex-direction: column; justify-content: center; }
-        .eff-val { font-size: 48px; font-weight: 800; line-height: 1.1; }
-        .eff-label { font-size: 16px; opacity: 0.9; margin-bottom: 5px; }
-
-        /* SECTION HEADERS (CLUB & ROUND) */
-        .section-wrapper { margin-top: 30px; margin-bottom: 15px; display: flex; align-items: flex-end; gap: 20px;}
-        .section-header {
-            padding: 8px 25px;
-            border-radius: 6px 6px 0 0;
-            color: white;
-            font-weight: 700;
-            text-transform: uppercase;
-            font-size: 16px;
-            min-width: 250px;
-            text-align: center;
-        }
-        .bg-purple { background: #6200ea; }
-        .bg-green { background: #84cc16; }
-
-        .summary-mini {
-            background: white;
-            padding: 8px 20px;
-            border-radius: 0 6px 6px 6px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            min-width: 250px;
-            font-size: 13px;
-            font-weight: 700;
-            color: #333;
-            border: 1px solid #e5e7eb;
-        }
-        .mini-row { display: flex; justify-content: space-between; margin-bottom: 4px; }
-        .mini-val { color: #555; }
-
-        /* GRID KARTU LINE */
-        .cards-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 15px;
-        }
-
-        /* CARD STYLE */
-        .card {
-            background: white;
-            border-radius: 6px;
-            overflow: hidden;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        .hero-label { font-size: 20px; font-weight: 700; margin-bottom: 10px; }
+        .hero-value-big { font-size: 80px; font-weight: 900; line-height: 1; }
+        
+        /* Bagian Kanan Hero */
+        .hero-right {
+            flex: 1.3;
+            padding: 25px 40px;
             display: flex;
             flex-direction: column;
-            border: 1px solid #e5e7eb;
+        }
+        .hero-ribbon {
+            background: var(--red-ribbon);
+            text-align: center;
+            padding: 10px;
+            font-weight: 900;
+            font-size: 18px;
+            border-radius: 4px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        .hero-details-grid {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-grow: 1;
+        }
+        .hero-details-col-left { flex: 1.2; }
+        .hero-details-row {
+            display: flex; justify-content: space-between;
+            font-size: 20px; font-weight: 700;
+            margin-bottom: 15px;
+        }
+        .hero-details-val { font-weight: 900; font-size: 24px; }
+        
+        .hero-details-col-right {
+            flex: 1;
+            border-left: 3px solid rgba(255,255,255,0.2);
+            padding-left: 40px;
+            text-align: center;
+            display: flex; flex-direction: column; justify-content: center;
+            height: 100%;
+        }
+        .eff-label-hero { font-size: 18px; font-weight: 700; margin-bottom: 5px; opacity: 0.9; }
+        .eff-val-hero { font-size: 64px; font-weight: 900; }
+
+        /* --- SECTION HEADERS & SUMMARY --- */
+        .section-container { margin-bottom: 40px; }
+        .section-title-group { display: flex; align-items: flex-end; margin-bottom: 15px; }
+        .section-header-label {
+            padding: 10px 30px;
+            border-radius: 8px 8px 0 0;
+            color: white;
+            font-weight: 700; font-size: 18px;
+            display: inline-block;
+        }
+        .summary-box {
+            background: var(--white);
+            padding: 12px 25px;
+            border-radius: 0 8px 8px 8px;
+            box-shadow: 0 2px 3px rgba(0,0,0,0.08);
+            font-weight: 700; font-size: 14px; color: #444;
+            display: flex; gap: 20px; align-items: center;
+        }
+        .summary-item { display: flex; align-items: center; gap: 5px; }
+        .summary-val { font-weight: 900; color: var(--text-dark); font-size: 15px;}
+        .summary-separator { color: #ccc; margin: 0 10px; font-weight: 300;}
+        .summary-eff-val { font-weight: 900; font-size: 16px; }
+
+        /* Warna Tema Section */
+        .theme-purple .section-header-label { background: var(--purple-header); }
+        .theme-purple .summary-eff-val { color: var(--purple-header); }
+        .theme-green .section-header-label { background: var(--green-header); }
+        .theme-green .summary-eff-val { color: var(--green-header); }
+
+        /* --- CARDS GRID --- */
+        .cards-grid {
+            display: grid;
+            /* Grid 4 kolom fix untuk desktop lebar */
+            grid-template-columns: repeat(4, 1fr); 
+            gap: 20px;
+        }
+
+        /* --- INDIVIDUAL CARD --- */
+        .card {
+            background: var(--white);
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.08);
+            border: 1px solid #e0e0e0;
         }
         .card-header {
-            padding: 10px 15px;
+            padding: 12px 15px;
             color: white;
-            font-weight: 700;
-            text-transform: uppercase;
-            font-size: 18px;
-            letter-spacing: 0.5px;
+            font-weight: 900; font-size: 18px;
         }
-        .card-purple .card-header { background: #6200ea; }
-        .card-green .card-header { background: #84cc16; }
+        .theme-purple .card-header { background: var(--purple-header); }
+        .theme-green .card-header { background: var(--green-header); }
 
         .card-body {
             padding: 15px;
             display: flex;
-            justify-content: space-between;
             align-items: center;
+            justify-content: space-between;
         }
-        .card-stats { flex: 2; padding-right: 15px; }
-        .stat-row { 
-            display: flex; 
-            justify-content: space-between; 
-            margin-bottom: 10px; 
-            font-size: 12px; 
-            color: #6b7280; 
-            font-weight: 700; 
-            text-transform: uppercase;
+        .card-left-stats { flex: 1.5; }
+        .card-stat-row {
+            display: flex; justify-content: space-between;
+            font-size: 13px; font-weight: 700; color: #777;
+            margin-bottom: 8px;
         }
-        .stat-val { color: var(--text-dark); font-weight: 900; font-size: 18px; font-family: monospace; }
+        .card-stat-row:last-child { margin-bottom: 0; }
+        .card-stat-val { font-weight: 900; color: var(--text-dark); font-size: 16px; }
         
-        /* Kolom Kanan Kartu (Effisiensi) */
-        .card-eff {
+        .card-right-eff {
             flex: 1;
+            border-left: 2px solid #eee;
+            padding-left: 15px;
             text-align: center;
-            border-left: 2px solid #f3f4f6;
-            padding-left: 10px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
+            display: flex; flex-direction: column; justify-content: center;
         }
-        .eff-circle { font-size: 26px; font-weight: 900; color: #374151; }
-        .eff-text { font-size: 10px; color: #6b7280; font-weight: 700; text-transform: uppercase; margin-bottom: 2px;}
+        .card-eff-label { font-size: 12px; font-weight: 700; color: #777; margin-bottom: 4px; }
+        .card-eff-val { font-size: 28px; font-weight: 900; color: var(--text-dark); }
 
-        /* MODAL LOGIN (Overlay) */
-        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 1000; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
-        .login-box { background: white; padding: 40px; border-radius: 10px; width: 350px; text-align: center; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); }
-        .login-input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #d1d5db; border-radius: 6px; }
-        .login-btn { width: 100%; padding: 12px; background: var(--purple-primary); color: white; border: none; border-radius: 6px; font-weight: 700; cursor: pointer; margin-top: 10px; }
-        .hidden { display: none !important; }
-
-        /* LOADING */
-        #loading { position: fixed; inset: 0; background: white; z-index: 2000; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-        .spinner { width: 50px; height: 50px; border: 5px solid #f3f3f3; border-top: 5px solid var(--purple-primary); border-radius: 50%; animation: spin 1s linear infinite; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-
-        /* Responsive */
-        @media (max-width: 900px) {
-            .hero-stats { flex-direction: column; }
-            .hero-left { border-right: none; border-bottom: 1px solid rgba(255,255,255,0.2); padding: 20px; }
-            .main-header { flex-direction: column; text-align: center; gap: 15px; }
-            .nav-bar { font-size: 12px; padding: 10px; }
-            .section-wrapper { flex-direction: column; align-items: flex-start; gap: 0; }
-            .section-header { width: 100%; border-radius: 6px 6px 0 0; }
-            .summary-mini { width: 100%; border-radius: 0 0 6px 6px; border-top: none; }
-        }
     </style>
 </head>
 <body>
 
-    <div id="loading">
-        <div class="spinner"></div>
-        <p style="margin-top: 15px; font-weight: 600; color: #555;">Initializing System...</p>
-    </div>
-
-    <div id="authModal" class="modal-overlay">
-        <div class="login-box">
-            <h2 style="color: var(--purple-primary); margin-bottom: 20px;">SYSTEM LOGIN</h2>
-            <input type="text" id="username" class="login-input" placeholder="Username (admin)">
-            <input type="password" id="password" class="login-input" placeholder="Password (admin123)">
-            <button onclick="App.Auth.login()" class="login-btn">ACCESS DASHBOARD</button>
+    <header class="top-header">
+        <div class="header-titles">
+            <h1>SARDINES PRODUCTION</h1>
+            <h2>PASIFIK HARVEST INDONESIA</h2>
         </div>
-    </div>
+        <div class="header-logo-area">
+            <img src="https://via.placeholder.com/150x60/ddd/999?text=LOGO+PHI" alt="Logo PHI Placeholder" class="placeholder-logo" style="border:none;">
+        </div>
+    </header>
 
-    <div id="appContent" class="hidden">
-        
-        <header class="main-header">
-            <div class="title-group">
-                <h1>SARDINES PRODUCTION</h1>
-                <h2>PASIFIK HARVEST INDONESIA</h2>
-            </div>
-            <div class="logo-placeholder">
-                <div style="text-align: right; font-size: 11px; font-weight: 600; color: #374151;">
-                    PT. PASIFIK HARVEST<br>INDONESIA
-                </div>
-                <div style="width: 50px; height: 50px; background: #e5e7eb; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; color: var(--blue-title);">PHI</div>
-            </div>
-        </header>
-
-        <nav class="nav-bar">
-            <div class="nav-left">Real Time System</div>
-            <div class="nav-right">
-                <span class="active">LIVE</span> / 
-                <span onclick="alert('Feature coming soon')">ANALYSIS</span> / 
-                <span onclick="alert('Feature coming soon')">HISTORY</span> / 
-                <span onclick="App.Auth.logout()" title="Logout">👤</span>
-            </div>
-        </nav>
-
-        <div class="container">
+    <nav class="purple-nav">
+        <div class="nav-left">Real Time System</div>
+        <div class="nav-right">
+            <a href="#" class="nav-btn active">LIVE</a>
+            <span class="nav-separator">/</span>
+            <a href="#" class="nav-btn">ANALYSIS</a>
+            <span class="nav-separator">/</span>
+            <a href="#" class="nav-btn">HISTORY</a>
             
-            <div class="hero-stats">
-                <div class="hero-left">
-                    <div class="hero-title">TOTAL PRODUCTION :</div>
-                    <div class="hero-value" id="grandTotal">0</div>
-                </div>
-                <div class="hero-right">
-                    <div class="hero-sub-header">OVERALL PERFORMANCE PRODUCTION</div>
-                    <div class="perf-grid">
-                        <div>
-                            <div class="perf-row">
-                                <span>ACTUAL</span> <span class="perf-val" id="grandActual">0</span>
-                            </div>
-                            <div class="perf-row">
-                                <span>TEORYTHICAL</span> <span class="perf-val" id="grandTheory">0</span>
-                            </div>
-                        </div>
-                        <div class="eff-box">
-                            <div class="eff-label">Efficien :</div>
-                            <div class="eff-val" id="grandEff">0%</div>
-                        </div>
-                    </div>
-                </div>
+            <div class="admin-icon-area" title="User Profile">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
             </div>
-
-            <div>
-                <div class="section-wrapper">
-                    <div class="section-header bg-purple">OVERALL CLUB CAN</div>
-                    <div class="summary-mini">
-                        <div class="mini-row"><span>ACTUAL :</span> <span class="mini-val" id="clubActual">0</span> <span style="border-left:1px solid #ccc; margin:0 5px;"></span> <span>Efficien:</span></div>
-                        <div class="mini-row"><span>TEORYTHICAL :</span> <span class="mini-val" id="clubTheory">0</span> <span style="border-left:1px solid #ccc; margin:0 5px;"></span> <span class="mini-val" style="font-weight:900; color:var(--purple-primary)" id="clubEff">0%</span></div>
-                    </div>
-                    <button onclick="App.Data.manualReset()" style="margin-left: auto; padding: 8px 15px; background: white; border: 1px solid var(--red-accent); color: var(--red-accent); border-radius: 4px; cursor: pointer; font-weight: 600;">RESET ALL</button>
-                </div>
-                
-                <div class="cards-grid" id="clubGrid">
-                    </div>
-            </div>
-
-            <div style="margin-top: 40px;">
-                <div class="section-wrapper">
-                    <div class="section-header bg-green">OVERALL ROUND CAN</div>
-                    <div class="summary-mini">
-                        <div class="mini-row"><span>ACTUAL :</span> <span class="mini-val" id="roundActual">0</span> <span style="border-left:1px solid #ccc; margin:0 5px;"></span> <span>Efficien:</span></div>
-                        <div class="mini-row"><span>TEORYTHICAL :</span> <span class="mini-val" id="roundTheory">0</span> <span style="border-left:1px solid #ccc; margin:0 5px;"></span> <span class="mini-val" style="font-weight:900; color:var(--green-primary)" id="roundEff">0%</span></div>
-                    </div>
-                </div>
-
-                <div class="cards-grid" id="roundGrid">
-                    </div>
-            </div>
-
         </div>
-    </div>
+    </nav>
 
-    <script>
-        // --- 1. CONFIGURATION ---
-        const Config = {
-            firebase: {
-                apiKey: "AIzaSyAC8Il1tbSGONHO6mLdEoe698XVnYmoJTY",
-                authDomain: "iot-cntr.firebaseapp.com",
-                databaseURL: "https://iot-cntr-default-rtdb.asia-southeast1.firebasedatabase.app",
-                projectId: "iot-cntr",
-                storageBucket: "iot-phi.firebasestorage.app",
-                messagingSenderId: "634140620662",
-                appId: "1:634140620662:web:12912eb4d52002f1966c57"
-            },
-            mqtt: {
-                host: "wss://72ebeae451364089a9ebe5b5f5702548.s1.eu.hivemq.cloud:8884/mqtt",
-                options: { username: "admin", password: "Admin123", reconnectPeriod: 5000 }
-            },
-            // DEFINISI LINE SESUAI GAMBAR (Urutan ID Penting)
-            machines: [
-                // CLUB CAN (Ungu)
-                { id: 'L1', name: 'LINE 01', type: 'club', cpm: 70, machineId: 'machine01' },
-                { id: 'L2', name: 'LINE 02', type: 'club', cpm: 70, machineId: 'machine01' },
-                { id: 'L3', name: 'LINE 03', type: 'club', cpm: 70, machineId: 'machine02' },
-                { id: 'L4', name: 'LINE 04', type: 'club', cpm: 70, machineId: 'machine02' },
-                { id: 'L7', name: 'LINE 07', type: 'club', cpm: 70, machineId: 'machine04' },
-                { id: 'L8', name: 'LINE 08', type: 'club', cpm: 70, machineId: 'machine04' },
-                { id: 'L9', name: 'LINE 09', type: 'club', cpm: 70, machineId: 'machine05' },
-                { id: 'L10', name: 'LINE 10', type: 'club', cpm: 70, machineId: 'machine05' },
-                { id: 'L11', name: 'LINE 11', type: 'club', cpm: 70, machineId: 'machine06' },
-                { id: 'L12', name: 'LINE 12', type: 'club', cpm: 70, machineId: 'machine06' },
-                { id: 'L14', name: 'LINE 14', type: 'club', cpm: 70, machineId: 'machine07' }, // Asumsi machine ID
-                { id: 'L15', name: 'LINE 15', type: 'club', cpm: 70, machineId: 'machine07' },
+    <main class="dashboard-container">
 
-                // ROUND CAN (Hijau)
-                { id: 'L5', name: 'LINE 05', type: 'round', cpm: 80, machineId: 'machine03' },
-                { id: 'L6', name: 'LINE 06', type: 'round', cpm: 80, machineId: 'machine03' }
-            ]
-        };
-
-        // --- 2. STATE ---
-        const State = {
-            counters: {},
-            startTime: Date.now(),
-            manualOffset: 0,
-            isConnected: { mqtt: false, firebase: false }
-        };
-
-        // --- 3. SERVICES (BACKEND) ---
-        const Services = {
-            db: null,
-            mqttClient: null,
-
-            init() {
-                // Firebase Init
-                if (!firebase.apps.length) {
-                    firebase.initializeApp(Config.firebase);
-                }
-                this.db = firebase.database();
-                
-                // Read Config
-                this.db.ref('config').on('value', (snap) => {
-                    const val = snap.val();
-                    if(val) {
-                        State.startTime = val.productionStartTime || Date.now();
-                        State.manualOffset = val.manualOffset || 0;
-                        UI.updateValues();
-                    }
-                    State.isConnected.firebase = true;
-                });
-
-                // MQTT Connect
-                this.connectMQTT();
-            },
-
-            connectMQTT() {
-                this.mqttClient = mqtt.connect(Config.mqtt.host, Config.mqtt.options);
-                
-                this.mqttClient.on('connect', () => {
-                    console.log("MQTT Connected");
-                    State.isConnected.mqtt = true;
-                    
-                    // Subscribe Topics
-                    const uniqueMachines = [...new Set(Config.machines.map(m => m.machineId))];
-                    uniqueMachines.forEach(mId => {
-                        this.mqttClient.subscribe(`iot/esp32/${mId}/counter`);
-                    });
-                });
-
-                this.mqttClient.on('message', (topic, message) => {
-                    try {
-                        const data = JSON.parse(message.toString());
-                        if(data.counter) {
-                            Object.assign(State.counters, data.counter);
-                            UI.updateValues(); // Refresh UI on new data
-                        }
-                    } catch (e) { console.error("MQTT Error", e); }
-                });
-            },
-
-            calculateData(lineId, actual) {
-                const lineConf = Config.machines.find(m => m.id === lineId) || { cpm: 70 };
-                const elapsedMins = (Date.now() - State.startTime) / 60000;
-                
-                const target = Math.floor(elapsedMins * lineConf.cpm);
-                const eff = target > 0 ? ((actual / target) * 100) : 0;
-                
-                return {
-                    target: target,
-                    eff: Math.min(eff, 100).toFixed(0) // Bulatkan tanpa desimal sesuai gambar
-                };
-            },
-
-            async resetSystem() {
-                if(!confirm("RESET ALL PRODUCTION DATA?")) return;
-                
-                const historyEntry = {
-                    timestamp: Date.now(),
-                    date: new Date().toLocaleString(),
-                    counters: { ...State.counters },
-                    total: parseInt(document.getElementById('grandTotal').innerText.replace(/,/g,''))
-                };
-                
-                try {
-                    await this.db.ref('history').push(historyEntry);
-                    
-                    // Reset Command to all machines
-                    const uniqueMachines = [...new Set(Config.machines.map(m => m.machineId))];
-                    uniqueMachines.forEach(mId => {
-                        this.mqttClient.publish(`iot/esp32/${mId}/cmd`, JSON.stringify({cmd: "RESET", source: "web"}));
-                    });
-
-                    await this.db.ref('config').set({ productionStartTime: Date.now(), manualOffset: 0 });
-
-                    State.counters = {};
-                    Swal.fire("Success", "System Reset Successful", "success");
-                } catch (error) {
-                    Swal.fire("Error", error.message, "error");
-                }
-            }
-        };
-
-        // --- 4. UI MANAGER ---
-        const UI = {
-            init() {
-                this.renderCards();
-                // Update time-based calculations every 5 seconds
-                setInterval(() => this.updateValues(), 5000);
-                
-                // Hide loader
-                setTimeout(() => document.getElementById('loading').classList.add('hidden'), 1000);
-            },
-
-            renderCards() {
-                const clubContainer = document.getElementById('clubGrid');
-                const roundContainer = document.getElementById('roundGrid');
-
-                Config.machines.forEach(m => {
-                    const themeClass = m.type === 'club' ? 'card-purple' : 'card-green';
-                    const html = `
-                        <div class="card ${themeClass}">
-                            <div class="card-header">${m.name}</div>
-                            <div class="card-body">
-                                <div class="card-stats">
-                                    <div class="stat-row">
-                                        <span>ACTUAL</span> <span class="stat-val" id="act-${m.id}">0</span>
-                                    </div>
-                                    <div class="stat-row">
-                                        <span>TEORYTHICAL</span> <span class="stat-val" id="theo-${m.id}">0</span>
-                                    </div>
-                                </div>
-                                <div class="card-eff">
-                                    <div class="eff-text">Efficien :</div>
-                                    <div class="eff-circle" id="eff-${m.id}">0%</div>
-                                </div>
-                            </div>
+        <section class="hero-box">
+            <div class="hero-left">
+                <div class="hero-label">Total Production :</div>
+                <div class="hero-value-big">295,334</div>
+            </div>
+            <div class="hero-right">
+                <div class="hero-ribbon">OVERALL PERFORMANCE PRODUCTION</div>
+                <div class="hero-details-grid">
+                    <div class="hero-details-col-left">
+                        <div class="hero-details-row">
+                            <span>ACTUAL</span> <span class="hero-details-val">295,334</span>
                         </div>
-                    `;
-                    
-                    if(m.type === 'club') clubContainer.innerHTML += html;
-                    else roundContainer.innerHTML += html;
-                });
-            },
+                        <div class="hero-details-row">
+                            <span>TEORYTHICAL</span> <span class="hero-details-val">306,977</span>
+                        </div>
+                    </div>
+                    <div class="hero-details-col-right">
+                        <div class="eff-label-hero">Efficien :</div>
+                        <div class="eff-val-hero">96%</div>
+                    </div>
+                </div>
+            </div>
+        </section>
 
-            updateValues() {
-                let grandAct = 0, grandTheo = 0;
-                let clubAct = 0, clubTheo = 0;
-                let roundAct = 0, roundTheo = 0;
+        <section class="section-container theme-purple">
+            <div class="section-title-group">
+                <div class="section-header-label">Overall Club Can</div>
+                <div class="summary-box">
+                    <div class="summary-item">ACTUAL : <span class="summary-val">254,566</span></div>
+                    <span class="summary-separator">|</span>
+                    <div class="summary-item">Efficien : <span class="summary-eff-val">96%</span></div>
+                    <span class="summary-separator" style="margin-left: 30px;">|</span> <div class="summary-item">TEORYTHICAL : <span class="summary-val">263,802</span></div>
+                    <span class="summary-separator">|</span>
+                    <div class="summary-eff-val">96%</div>
+                </div>
+            </div>
 
-                Config.machines.forEach(m => {
-                    const actual = State.counters[m.id] || 0;
-                    const calc = Services.calculateData(m.id, actual);
-
-                    // Update Card DOM
-                    this.setText(`act-${m.id}`, actual);
-                    this.setText(`theo-${m.id}`, calc.target);
-                    this.setText(`eff-${m.id}`, calc.eff + '%');
-
-                    // Aggregate Data
-                    grandAct += actual;
-                    grandTheo += calc.target;
-                    
-                    if(m.type === 'club') {
-                        clubAct += actual; clubTheo += calc.target;
-                    } else {
-                        roundAct += actual; roundTheo += calc.target;
-                    }
-                });
-
-                // Update Grand Total (Big Box)
-                this.setText('grandTotal', (grandAct + State.manualOffset).toLocaleString());
-                this.setText('grandActual', (grandAct + State.manualOffset).toLocaleString());
-                this.setText('grandTheory', grandTheo.toLocaleString());
+            <div class="cards-grid">
+                <div class="card"><div class="card-header">LINE 01</div><div class="card-body"><div class="card-left-stats"><div class="card-stat-row"><span>ACTUAL</span><span class="card-stat-val">21,348</span></div><div class="card-stat-row"><span>TEORYTHICAL</span><span class="card-stat-val">21,983</span></div></div><div class="card-right-eff"><div class="card-eff-label">Efficien :</div><div class="card-eff-val">97%</div></div></div></div>
+                <div class="card"><div class="card-header">LINE 02</div><div class="card-body"><div class="card-left-stats"><div class="card-stat-row"><span>ACTUAL</span><span class="card-stat-val">21,348</span></div><div class="card-stat-row"><span>TEORYTHICAL</span><span class="card-stat-val">21,983</span></div></div><div class="card-right-eff"><div class="card-eff-label">Efficien :</div><div class="card-eff-val">97%</div></div></div></div>
+                <div class="card"><div class="card-header">LINE 03</div><div class="card-body"><div class="card-left-stats"><div class="card-stat-row"><span>ACTUAL</span><span class="card-stat-val">21,348</span></div><div class="card-stat-row"><span>TEORYTHICAL</span><span class="card-stat-val">21,983</span></div></div><div class="card-right-eff"><div class="card-eff-label">Efficien :</div><div class="card-eff-val">97%</div></div></div></div>
+                <div class="card"><div class="card-header">LINE 04</div><div class="card-body"><div class="card-left-stats"><div class="card-stat-row"><span>ACTUAL</span><span class="card-stat-val">21,348</span></div><div class="card-stat-row"><span>TEORYTHICAL</span><span class="card-stat-val">21,983</span></div></div><div class="card-right-eff"><div class="card-eff-label">Efficien :</div><div class="card-eff-val">97%</div></div></div></div>
                 
-                const grandEff = grandTheo > 0 ? ((grandAct / grandTheo) * 100).toFixed(0) : 0;
-                this.setText('grandEff', grandEff + '%');
+                <div class="card"><div class="card-header">LINE 07</div><div class="card-body"><div class="card-left-stats"><div class="card-stat-row"><span>ACTUAL</span><span class="card-stat-val">21,348</span></div><div class="card-stat-row"><span>TEORYTHICAL</span><span class="card-stat-val">21,983</span></div></div><div class="card-right-eff"><div class="card-eff-label">Efficien :</div><div class="card-eff-val">97%</div></div></div></div>
+                <div class="card"><div class="card-header">LINE 08</div><div class="card-body"><div class="card-left-stats"><div class="card-stat-row"><span>ACTUAL</span><span class="card-stat-val">21,348</span></div><div class="card-stat-row"><span>TEORYTHICAL</span><span class="card-stat-val">21,983</span></div></div><div class="card-right-eff"><div class="card-eff-label">Efficien :</div><div class="card-eff-val">97%</div></div></div></div>
+                <div class="card"><div class="card-header">LINE 09</div><div class="card-body"><div class="card-left-stats"><div class="card-stat-row"><span>ACTUAL</span><span class="card-stat-val">21,348</span></div><div class="card-stat-row"><span>TEORYTHICAL</span><span class="card-stat-val">21,983</span></div></div><div class="card-right-eff"><div class="card-eff-label">Efficien :</div><div class="card-eff-val">97%</div></div></div></div>
+                <div class="card"><div class="card-header">LINE 10</div><div class="card-body"><div class="card-left-stats"><div class="card-stat-row"><span>ACTUAL</span><span class="card-stat-val">21,348</span></div><div class="card-stat-row"><span>TEORYTHICAL</span><span class="card-stat-val">21,983</span></div></div><div class="card-right-eff"><div class="card-eff-label">Efficien :</div><div class="card-eff-val">97%</div></div></div></div>
 
-                // Update Section Summaries
-                this.setText('clubActual', clubAct.toLocaleString());
-                this.setText('clubTheory', clubTheo.toLocaleString());
-                const clubEff = clubTheo > 0 ? ((clubAct / clubTheo) * 100).toFixed(0) : 0;
-                this.setText('clubEff', clubEff + '%');
+                <div class="card"><div class="card-header">LINE 11</div><div class="card-body"><div class="card-left-stats"><div class="card-stat-row"><span>ACTUAL</span><span class="card-stat-val">21,348</span></div><div class="card-stat-row"><span>TEORYTHICAL</span><span class="card-stat-val">21,983</span></div></div><div class="card-right-eff"><div class="card-eff-label">Efficien :</div><div class="card-eff-val">97%</div></div></div></div>
+                <div class="card"><div class="card-header">LINE 12</div><div class="card-body"><div class="card-left-stats"><div class="card-stat-row"><span>ACTUAL</span><span class="card-stat-val">21,348</span></div><div class="card-stat-row"><span>TEORYTHICAL</span><span class="card-stat-val">21,983</span></div></div><div class="card-right-eff"><div class="card-eff-label">Efficien :</div><div class="card-eff-val">97%</div></div></div></div>
+                <div class="card"><div class="card-header">LINE 14</div><div class="card-body"><div class="card-left-stats"><div class="card-stat-row"><span>ACTUAL</span><span class="card-stat-val">21,348</span></div><div class="card-stat-row"><span>TEORYTHICAL</span><span class="card-stat-val">21,983</span></div></div><div class="card-right-eff"><div class="card-eff-label">Efficien :</div><div class="card-eff-val">97%</div></div></div></div>
+                <div class="card"><div class="card-header">LINE 15</div><div class="card-body"><div class="card-left-stats"><div class="card-stat-row"><span>ACTUAL</span><span class="card-stat-val">21,348</span></div><div class="card-stat-row"><span>TEORYTHICAL</span><span class="card-stat-val">21,983</span></div></div><div class="card-right-eff"><div class="card-eff-label">Efficien :</div><div class="card-eff-val">97%</div></div></div></div>
+            </div>
+        </section>
 
-                this.setText('roundActual', roundAct.toLocaleString());
-                this.setText('roundTheory', roundTheo.toLocaleString());
-                const roundEff = roundTheo > 0 ? ((roundAct / roundTheo) * 100).toFixed(0) : 0;
-                this.setText('roundEff', roundEff + '%');
-            },
+        <section class="section-container theme-green">
+            <div class="section-title-group">
+                <div class="section-header-label">Overall Round Can</div>
+                <div class="summary-box">
+                    <div class="summary-item">ACTUAL : <span class="summary-val">40,768</span></div>
+                    <span class="summary-separator">|</span>
+                    <div class="summary-item">Efficien : <span class="summary-eff-val">94%</span></div>
+                    <span class="summary-separator" style="margin-left: 30px;">|</span>
+                    <div class="summary-item">TEORYTHICAL : <span class="summary-val">43,175</span></div>
+                    <span class="summary-separator">|</span>
+                    <div class="summary-eff-val">94%</div>
+                </div>
+            </div>
 
-            setText(id, val) {
-                const el = document.getElementById(id);
-                if(el && el.innerText != val) el.innerText = val;
-            }
-        };
+            <div class="cards-grid">
+                <div class="card"><div class="card-header">LINE 05</div><div class="card-body"><div class="card-left-stats"><div class="card-stat-row"><span>ACTUAL</span><span class="card-stat-val">20,384</span></div><div class="card-stat-row"><span>TEORYTHICAL</span><span class="card-stat-val">21,587</span></div></div><div class="card-right-eff"><div class="card-eff-label">Efficien :</div><div class="card-eff-val">94%</div></div></div></div>
+                <div class="card"><div class="card-header">LINE 06</div><div class="card-body"><div class="card-left-stats"><div class="card-stat-row"><span>ACTUAL</span><span class="card-stat-val">20,384</span></div><div class="card-stat-row"><span>TEORYTHICAL</span><span class="card-stat-val">21,587</span></div></div><div class="card-right-eff"><div class="card-eff-label">Efficien :</div><div class="card-eff-val">94%</div></div></div></div>
+            </div>
+        </section>
 
-        // --- 5. AUTHENTICATION ---
-        const Auth = {
-            login() {
-                const u = document.getElementById('username').value;
-                const p = document.getElementById('password').value;
-                if(u === 'admin' && p === 'admin123') {
-                    localStorage.setItem('phi_auth', 'true');
-                    document.getElementById('authModal').classList.add('hidden');
-                    document.getElementById('appContent').classList.remove('hidden');
-                    Services.init();
-                    UI.init();
-                } else {
-                    Swal.fire("Error", "Username/Password Wrong", "error");
-                }
-            },
-            logout() {
-                localStorage.removeItem('phi_auth');
-                location.reload();
-            },
-            check() {
-                if(localStorage.getItem('phi_auth')) {
-                    document.getElementById('authModal').classList.add('hidden');
-                    document.getElementById('appContent').classList.remove('hidden');
-                    Services.init();
-                    UI.init();
-                } else {
-                    document.getElementById('authModal').classList.remove('hidden');
-                    document.getElementById('loading').classList.add('hidden');
-                }
-            }
-        };
+    </main>
 
-        // EXPOSE TO GLOBAL
-        window.App = { Auth, Data: { manualReset: () => Services.resetSystem() } };
-
-        // START APP
-        window.onload = () => {
-            setTimeout(() => Auth.check(), 500);
-        };
-    </script>
 </body>
 </html>
