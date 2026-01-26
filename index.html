@@ -2,398 +2,732 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SARDINES PRODUCTION - Professional Dashboard</title>
+    <meta name="viewport" content="width=1366, initial-scale=1.0">
+    <title>SARDINES PRODUCTION - PHI (Prototype Live & Analysis)</title>
     
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&family=Roboto+Mono:wght@500;700&display=swap" rel="stylesheet">
 
     <style>
-        /* --- DESIGN TOKENS --- */
+        /* --- 1. SETTING WARNA & FONT SESUAI GAMBAR --- */
         :root {
-            --bg-body: #f3f4f6;
-            --card-bg: #ffffff;
-            
-            /* Warna sesuai gambar referensi */
-            --header-purple: #5b1bf2; /* Ungu cerah header */
-            --header-green: #15803d;  /* Hijau untuk variasi Round Can */
-            
-            --text-label: #1e3a8a;    /* Biru tua untuk label ACTUAL/TEORYTHICAL */
-            --text-value: #374151;    /* Abu gelap untuk angka */
-            --divider-color: #5b1bf2; /* Garis vertikal ungu */
-            
-            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --bg-canvas: #f4f6f8;
+            --purple-header: #4a1ee3;
+            --green-header: #8cc63f;
+            --text-label: #1a3c75;    
+            --text-value: #444444;    
+            --text-efficien: #1a3c75;
+            --card-radius: 8px;
+            --card-shadow: 0 2px 6px rgba(0,0,0,0.08);
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
         
         body { 
-            background-color: var(--bg-body); 
-            font-family: 'Inter', sans-serif; 
-            color: var(--text-value);
-            padding-bottom: 50px;
+            background-color: var(--bg-canvas); 
+            font-family: 'Roboto', sans-serif; 
+            min-width: 1360px; 
+            overflow-x: auto;
+            padding-bottom: 60px;
         }
 
-        .container {
-            max-width: 1440px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-
-        /* --- HEADER ATAS --- */
-        .top-header {
-            display: flex; justify-content: space-between; align-items: center;
-            background: #fff; padding: 20px 30px; border-radius: 12px;
-            box-shadow: var(--shadow); margin-bottom: 30px;
-        }
-        .brand h1 { color: var(--header-purple); font-weight: 800; font-size: 24px; }
-        .brand h2 { color: #b91c1c; font-size: 14px; font-weight: 600; letter-spacing: 1px; }
-
-        /* --- NAVIGASI --- */
-        .nav-bar {
-            display: flex; gap: 20px; margin-bottom: 40px;
-            background: #4c1d95; color: white; padding: 15px 30px;
-            border-radius: 8px; align-items: center; font-weight: 600;
-        }
-        .nav-item.active { color: #fbbf24; text-decoration: underline; text-underline-offset: 4px; }
-
-        /* --- SECTION TITLES --- */
-        .section-title {
-            font-size: 20px; font-weight: 700; color: #1f2937;
-            margin-bottom: 20px; border-left: 5px solid var(--header-purple);
-            padding-left: 15px; text-transform: uppercase;
-        }
-        .section-title.green { border-color: var(--header-green); }
-
-        /* --- LAYOUT GRID --- */
-        .cards-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); /* Card agak lebar sesuai gambar */
-            gap: 25px;
-            margin-bottom: 50px;
-        }
-
-        /* --- DESAIN KARTU (MENGIKUTI GAMBAR) --- */
-        .prod-card {
-            background: var(--card-bg);
-            border-radius: 15px; /* Sudut membulat */
-            overflow: hidden;
-            box-shadow: var(--shadow);
-            transition: transform 0.2s;
-        }
-        .prod-card:hover { transform: translateY(-5px); }
-
-        /* Header Kartu */
-        .card-header {
-            background-color: var(--header-purple);
-            color: white;
-            padding: 15px 25px;
-            font-family: 'Space Mono', monospace; /* Font teknis */
-            font-size: 22px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
+        .wrapper { width: 1340px; margin: 0 auto; padding-top: 10px; }
         
-        /* Tema Hijau untuk Round Can */
-        .theme-green .card-header { background-color: var(--header-green); }
-        .theme-green .divider-line { background-color: var(--header-green); }
+        /* Utility Class untuk Hide/Show Tab */
+        .hidden { display: none !important; }
 
-        /* Body Kartu */
-        .card-body {
-            padding: 20px 25px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
+        /* HEADER & NAV */
+        .top-header { background: #fff; height: 80px; padding: 0 30px; display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid #e0e0e0; margin-bottom: 20px; }
+        .brand h1 { color: #1e3a8a; font-weight: 900; font-size: 28px; letter-spacing: 0.5px; line-height: 1.1; }
+        .brand h2 { color: #ea2e2e; font-weight: 700; font-size: 18px; letter-spacing: 0.5px; }
+        .logo-box { width: 140px; height: 50px; background: #eee; border: 2px dashed #bbb; display:flex; align-items:center; justify-content:center; color:#888; font-size:12px; }
 
-        /* Bagian Kiri (Actual/Teorythical) */
-        .data-left {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            flex: 1.5;
-        }
+        .nav-bar { background: #4a148c; color: white; height: 46px; padding: 0 30px; display: flex; justify-content: space-between; align-items: center; font-weight: 700; font-size: 14px; margin-bottom: 30px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .nav-right span { margin: 0 8px; cursor: pointer; opacity: 0.6; transition: 0.2s; } 
+        .nav-right span:hover { opacity: 1; color: #fff; }
         
-        .data-row {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            font-family: 'Space Mono', monospace;
-            font-size: 18px;
-        }
-
-        .label {
-            color: var(--text-label);
-            font-weight: 700;
-            text-transform: uppercase;
-            font-family: 'Inter', sans-serif; /* Label tetap sans-serif agar bersih */
-            font-size: 14px;
-            letter-spacing: 0.5px;
-        }
-
-        .value {
-            font-weight: 700;
-            color: var(--text-value);
-        }
+        /* Style untuk Menu Aktif */
+        .nav-right span.active { opacity: 1; color: #ffd700; text-decoration: underline; }
         
-        .colon { margin: 0 10px; color: var(--text-value); font-weight: 700;}
+        .user-icon { width: 28px; height: 28px; background: rgba(255,255,255,0.25); border-radius: 50%; display:inline-block; vertical-align:middle; margin-left:10px; }
 
-        /* Garis Vertikal Pemisah */
-        .divider-line {
-            width: 4px;
-            height: 60px;
-            background-color: var(--divider-color);
-            border-radius: 2px;
-            margin: 0 20px;
-        }
+        /* HERO SECTION */
+        .hero { background: linear-gradient(135deg, #5e35b1, #4527a0); border-radius: 8px; height: 210px; display: flex; color: white; margin-bottom: 40px; box-shadow: 0 5px 15px rgba(0,0,0,0.2); border: 2px solid #fff; outline: 2px solid #5e35b1; }
+        .hero-left { width: 35%; border-right: 2px solid rgba(255,255,255,0.3); display: flex; flex-direction: column; justify-content: center; align-items: center; }
+        .hero-title { font-size: 18px; font-weight: 700; margin-bottom: 5px; }
+        .hero-num { font-size: 72px; font-weight: 900; }
+        .hero-right { width: 65%; padding: 20px 40px; display: flex; flex-direction: column; }
+        .ribbon { background: #ea2e2e; text-align: center; padding: 8px; font-weight: 700; border-radius: 4px; margin-bottom: 15px; font-size: 16px; }
+        .hero-grid { display: flex; align-items: center; justify-content: space-between; height: 100%; }
+        
+        /* Modifikasi Hero untuk Analysis (3 Baris Data) */
+        .h-row { font-size: 19px; font-weight: 700; display: flex; justify-content: space-between; width: 300px; margin-bottom: 8px; }
+        .h-eff-box { text-align: center; border-left: 2px solid rgba(255,255,255,0.3); padding-left: 40px; }
+        .h-eff-val { font-size: 56px; font-weight: 900; line-height: 1; }
 
-        /* Bagian Kanan (Efisiensi) */
-        .eff-right {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            /* align-items: center;  Hapus ini jika ingin rata kiri seperti gambar */ 
-        }
+        /* GRID SYSTEM */
+        .grid-container { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-top: 15px; }
 
-        .eff-label {
-            color: var(--text-label);
-            font-weight: 700;
-            font-size: 16px;
-            margin-bottom: 5px;
-        }
+        /* CARD DESIGN */
+        .card { background: white; border-radius: var(--card-radius); box-shadow: var(--card-shadow); overflow: hidden; display: flex; flex-direction: column; height: 135px; } /* Tinggi sedikit ditambah agar muat 3 baris di analysis */
 
-        .eff-value {
-            font-family: 'Inter', sans-serif;
-            font-size: 42px; /* Ukuran besar seperti gambar */
-            font-weight: 800;
-            color: #374151;
-            line-height: 1;
-        }
+        .card-header { height: 42px; display: flex; justify-content: space-between; align-items: center; padding: 0 15px; font-family: 'Roboto Mono', monospace; font-size: 20px; font-weight: 700; color: white; text-transform: uppercase; letter-spacing: 1px; }
+        
+        /* Jam Operasi di Header Card (Khusus Analysis) */
+        .time-op { font-size: 11px; font-family: 'Roboto', sans-serif; font-weight: 500; opacity: 0.9; letter-spacing: 0; }
+        .time-op::before { content: "TIME OPERATION: "; font-size: 9px; opacity: 0.7; margin-right: 5px;}
 
-        /* --- SPECIAL OVERALL CARD --- */
-        /* Kartu Overall dibuat lebih lebar atau menonjol */
-        .overall-wrapper {
-            margin-bottom: 25px;
-        }
-        .overall-card {
-            border: 2px solid var(--header-purple); /* Border tambahan untuk pembeda */
-        }
-        .theme-green .overall-card { border-color: var(--header-green); }
+        .purple .card-header, .purple .divider { background-color: var(--purple-header); }
+        .green .card-header, .green .divider { background-color: var(--green-header); }
+
+        .card-body { flex-grow: 1; display: flex; padding: 10px 15px; align-items: center; }
+
+        /* Grid Data (Kiri) */
+        .card-data-left { flex: 1.8; display: grid; grid-template-columns: max-content max-content auto; column-gap: 8px; row-gap: 4px; align-items: baseline; }
+        .lbl { font-family: 'Roboto Mono', monospace; font-size: 12px; font-weight: 700; color: var(--text-label); text-transform: uppercase; }
+        .cln { font-family: 'Roboto Mono', monospace; font-weight: 700; color: var(--text-label); }
+        .val { font-family: 'Roboto Mono', monospace; font-size: 16px; font-weight: 700; color: var(--text-value); }
+        
+        /* Warna Khusus Loss (Merah) */
+        .text-loss { color: #ea2e2e !important; }
+
+        .divider { width: 3px; height: 55px; border-radius: 4px; margin: 0 10px; opacity: 1; }
+
+        .card-eff-right { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: flex-start; padding-left: 5px; }
+        .eff-lbl { font-family: 'Roboto Mono', monospace; font-size: 13px; font-weight: 700; color: var(--text-efficien); margin-bottom: 2px; }
+        .eff-val { font-family: 'Roboto', sans-serif; font-size: 32px; font-weight: 900; color: #444; letter-spacing: -1px; }
+
+        .overall-wrapper { width: 320px; margin-bottom: 20px; }
 
     </style>
 </head>
 <body>
 
-    <div class="container">
-        
+    <div class="wrapper">
         <header class="top-header">
             <div class="brand">
                 <h1>SARDINES PRODUCTION</h1>
                 <h2>PASIFIK HARVEST INDONESIA</h2>
             </div>
-            <div>
-                <svg width="40" height="40" viewBox="0 0 24 24" fill="#4c1d95" xmlns="http://www.w3.org/2000/svg">
-                    <circle cx="12" cy="12" r="12" opacity="0.1"/>
-                    <path d="M12 11C14.2091 11 16 9.20914 16 7C16 4.79086 14.2091 3 12 3C9.79086 3 8 4.79086 8 7C8 9.20914 9.79086 11 12 11ZM12 13C7.58172 13 4 16.5817 4 21H20C20 16.5817 16.4183 13 12 13Z" fill="currentColor"/>
-                </svg>
-            </div>
+            <div class="logo-box">LOGO PHI</div>
         </header>
 
         <nav class="nav-bar">
-            <span>Real Time System</span>
-            <div style="margin-left: auto; display: flex; gap: 20px;">
-                <span class="nav-item active">LIVE</span>
-                <span class="nav-item">ANALYSIS</span>
-                <span class="nav-item">HISTORY</span>
+            <div>Real Time System</div>
+            <div class="nav-right">
+                <span id="btn-live" class="active" onclick="switchView('live')">LIVE</span> / 
+                <span id="btn-analysis" onclick="switchView('analysis')">ANALYSIS</span> / 
+                <span>HISTORY</span> / 
+                <span>GRAFIK</span> 
+                <div class="user-icon"></div>
             </div>
         </nav>
 
-        <div class="section-title">Club Can Production</div>
-
-        <div class="overall-wrapper">
-            <div class="prod-card overall-card">
-                <div class="card-header">OVERALL CLUB CAN</div>
-                <div class="card-body">
-                    <div class="data-left">
-                        <div class="data-row">
-                            <span class="label">ACTUAL</span>
-                            <div><span class="colon">:</span><span class="value">254,566</span></div>
+        <div id="view-live">
+            <section class="hero">
+                <div class="hero-left">
+                    <div class="hero-title">TOTAL PRODUCTION :</div>
+                    <div class="hero-num">14567</div>
+                </div>
+                <div class="hero-right">
+                    <div class="ribbon">OVERALL PERFORMANCE PRODUCTION</div>
+                    <div class="hero-grid">
+                        <div>
+                            <div class="h-row"><span>ACTUAL</span><span>: 8675</span></div>
+                            <div class="h-row"><span>TEORYTHICAL</span><span>: 9675</span></div>
                         </div>
-                        <div class="data-row">
-                            <span class="label">TEORYTHICAL</span>
-                            <div><span class="colon">:</span><span class="value">263,802</span></div>
+                        <div class="h-eff-box">
+                            <div style="font-size:16px; font-weight:700;">Efficien :</div>
+                            <div class="h-eff-val">90%</div>
                         </div>
                     </div>
-                    <div class="divider-line"></div>
-                    <div class="eff-right">
-                        <span class="eff-label">Efficien:</span>
-                        <span class="eff-value">96%</span>
+                </div>
+            </section>
+
+            <div style="margin-bottom: 40px;">
+                <div class="overall-wrapper">
+                    <div class="card purple">
+                        <div class="card-header">OVERALL CLUB CAN</div>
+                        <div class="card-body">
+                            <div class="card-data-left">
+                                <div class="lbl">ACTUAL</div> <div class="cln">:</div> <div class="val">8675</div>
+                                <div class="lbl">TEORYTHICAL</div> <div class="cln">:</div> <div class="val">9876</div>
+                            </div>
+                            <div class="divider"></div>
+                            <div class="card-eff-right">
+                                <div class="eff-lbl">Efficien:</div>
+                                <div class="eff-val">90%</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid-container">
+                    <div class="card purple">
+                        <div class="card-header">LINE 01</div>
+                        <div class="card-body">
+                            <div class="card-data-left">
+                                <div class="lbl">ACTUAL</div> <div class="cln">:</div> <div class="val">8675</div>
+                                <div class="lbl">TEORYTHICAL</div> <div class="cln">:</div> <div class="val">9876</div>
+                            </div>
+                            <div class="divider"></div>
+                            <div class="card-eff-right"><div class="eff-lbl">Efficien:</div><div class="eff-val">90%</div></div>
+                        </div>
+                    </div>
+
+                    <div class="card purple">
+                        <div class="card-header">LINE 02</div>
+                        <div class="card-body">
+                            <div class="card-data-left">
+                                <div class="lbl">ACTUAL</div> <div class="cln">:</div> <div class="val">8675</div>
+                                <div class="lbl">TEORYTHICAL</div> <div class="cln">:</div> <div class="val">9876</div>
+                            </div>
+                            <div class="divider"></div>
+                            <div class="card-eff-right"><div class="eff-lbl">Efficien:</div><div class="eff-val">90%</div></div>
+                        </div>
+                    </div>
+
+                    <div class="card purple">
+                        <div class="card-header">LINE 03</div>
+                        <div class="card-body">
+                            <div class="card-data-left">
+                                <div class="lbl">ACTUAL</div> <div class="cln">:</div> <div class="val">8675</div>
+                                <div class="lbl">TEORYTHICAL</div> <div class="cln">:</div> <div class="val">9876</div>
+                            </div>
+                            <div class="divider"></div>
+                            <div class="card-eff-right"><div class="eff-lbl">Efficien:</div><div class="eff-val">90%</div></div>
+                        </div>
+                    </div>
+
+                    <div class="card purple">
+                        <div class="card-header">LINE 04</div>
+                        <div class="card-body">
+                            <div class="card-data-left">
+                                <div class="lbl">ACTUAL</div> <div class="cln">:</div> <div class="val">8675</div>
+                                <div class="lbl">TEORYTHICAL</div> <div class="cln">:</div> <div class="val">9876</div>
+                            </div>
+                            <div class="divider"></div>
+                            <div class="card-eff-right"><div class="eff-lbl">Efficien:</div><div class="eff-val">90%</div></div>
+                        </div>
+                    </div>
+
+                    <div class="card purple">
+                        <div class="card-header">LINE 05</div>
+                        <div class="card-body">
+                            <div class="card-data-left">
+                                <div class="lbl">ACTUAL</div> <div class="cln">:</div> <div class="val">8675</div>
+                                <div class="lbl">TEORYTHICAL</div> <div class="cln">:</div> <div class="val">9876</div>
+                            </div>
+                            <div class="divider"></div>
+                            <div class="card-eff-right"><div class="eff-lbl">Efficien:</div><div class="eff-val">90%</div></div>
+                        </div>
+                    </div>
+
+                    <div class="card purple">
+                        <div class="card-header">LINE 06</div>
+                        <div class="card-body">
+                            <div class="card-data-left">
+                                <div class="lbl">ACTUAL</div> <div class="cln">:</div> <div class="val">8675</div>
+                                <div class="lbl">TEORYTHICAL</div> <div class="cln">:</div> <div class="val">9876</div>
+                            </div>
+                            <div class="divider"></div>
+                            <div class="card-eff-right"><div class="eff-lbl">Efficien:</div><div class="eff-val">90%</div></div>
+                        </div>
+                    </div>
+
+                    <div class="card purple">
+                        <div class="card-header">LINE 07</div>
+                        <div class="card-body">
+                            <div class="card-data-left">
+                                <div class="lbl">ACTUAL</div> <div class="cln">:</div> <div class="val">8675</div>
+                                <div class="lbl">TEORYTHICAL</div> <div class="cln">:</div> <div class="val">9876</div>
+                            </div>
+                            <div class="divider"></div>
+                            <div class="card-eff-right"><div class="eff-lbl">Efficien:</div><div class="eff-val">90%</div></div>
+                        </div>
+                    </div>
+
+                    <div class="card purple">
+                        <div class="card-header">LINE 08</div>
+                        <div class="card-body">
+                            <div class="card-data-left">
+                                <div class="lbl">ACTUAL</div> <div class="cln">:</div> <div class="val">8675</div>
+                                <div class="lbl">TEORYTHICAL</div> <div class="cln">:</div> <div class="val">9876</div>
+                            </div>
+                            <div class="divider"></div>
+                            <div class="card-eff-right"><div class="eff-lbl">Efficien:</div><div class="eff-val">90%</div></div>
+                        </div>
+                    </div>
+
+                    <div class="card purple">
+                        <div class="card-header">LINE 9</div>
+                        <div class="card-body">
+                            <div class="card-data-left">
+                                <div class="lbl">ACTUAL</div> <div class="cln">:</div> <div class="val">8675</div>
+                                <div class="lbl">TEORYTHICAL</div> <div class="cln">:</div> <div class="val">9876</div>
+                            </div>
+                            <div class="divider"></div>
+                            <div class="card-eff-right"><div class="eff-lbl">Efficien:</div><div class="eff-val">90%</div></div>
+                        </div>
+                    </div>
+
+                    <div class="card purple">
+                        <div class="card-header">LINE 10</div>
+                        <div class="card-body">
+                            <div class="card-data-left">
+                                <div class="lbl">ACTUAL</div> <div class="cln">:</div> <div class="val">8675</div>
+                                <div class="lbl">TEORYTHICAL</div> <div class="cln">:</div> <div class="val">9876</div>
+                            </div>
+                            <div class="divider"></div>
+                            <div class="card-eff-right"><div class="eff-lbl">Efficien:</div><div class="eff-val">90%</div></div>
+                        </div>
+                    </div>
+
+                
+                    <div class="card purple">
+                        <div class="card-header">LINE 11</div>
+                        <div class="card-body">
+                            <div class="card-data-left">
+                                <div class="lbl">ACTUAL</div> <div class="cln">:</div> <div class="val">8675</div>
+                                <div class="lbl">TEORYTHICAL</div> <div class="cln">:</div> <div class="val">9876</div>
+                            </div>
+                            <div class="divider"></div>
+                            <div class="card-eff-right"><div class="eff-lbl">Efficien:</div><div class="eff-val">90%</div></div>
+                        </div>
+                    </div>
+
+                    <div class="card purple">
+                        <div class="card-header">LINE 12</div>
+                        <div class="card-body">
+                            <div class="card-data-left">
+                                <div class="lbl">ACTUAL</div> <div class="cln">:</div> <div class="val">8675</div>
+                                <div class="lbl">TEORYTHICAL</div> <div class="cln">:</div> <div class="val">9876</div>
+                            </div>
+                            <div class="divider"></div>
+                            <div class="card-eff-right"><div class="eff-lbl">Efficien:</div><div class="eff-val">90%</div></div>
+                        </div>
+                    </div>
+
+                    <div class="card purple">
+                        <div class="card-header">LINE 14</div>
+                        <div class="card-body">
+                            <div class="card-data-left">
+                                <div class="lbl">ACTUAL</div> <div class="cln">:</div> <div class="val">8675</div>
+                                <div class="lbl">TEORYTHICAL</div> <div class="cln">:</div> <div class="val">9876</div>
+                            </div>
+                            <div class="divider"></div>
+                            <div class="card-eff-right"><div class="eff-lbl">Efficien:</div><div class="eff-val">90%</div></div>
+                        </div>
+                    </div>
+
+                    
+                    <div class="card purple">
+                        <div class="card-header">LINE 15</div>
+                        <div class="card-body">
+                            <div class="card-data-left">
+                                <div class="lbl">ACTUAL</div> <div class="cln">:</div> <div class="val">8675</div>
+                                <div class="lbl">TEORYTHICAL</div> <div class="cln">:</div> <div class="val">9876</div>
+                            </div>
+                            <div class="divider"></div>
+                            <div class="card-eff-right"><div class="eff-lbl">Efficien:</div><div class="eff-val">90%</div></div>
+                        </div>
+                    </div>
+                    </div>
+            </div>
+
+            <div>
+                <div class="overall-wrapper">
+                    <div class="card green">
+                        <div class="card-header">OVERALL ROUND CAN</div>
+                        <div class="card-body">
+                            <div class="card-data-left">
+                                <div class="lbl">ACTUAL</div> <div class="cln">:</div> <div class="val">8675</div>
+                                <div class="lbl">TEORYTHICAL</div> <div class="cln">:</div> <div class="val">9876</div>
+                            </div>
+                            <div class="divider"></div>
+                            <div class="card-eff-right"><div class="eff-lbl">Efficien:</div><div class="eff-val">90%</div></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+                   <div class="grid-container">
+                    <div class="card green">
+                        <div class="card-header">LINE 05</div>
+                        <div class="card-body">
+                            <div class="card-data-left">
+                                <div class="lbl">ACTUAL</div> <div class="cln">:</div> <div class="val">8675</div>
+                                <div class="lbl">TEORYTHICAL</div> <div class="cln">:</div> <div class="val">9876</div>
+                            </div>
+                            <div class="divider"></div>
+                            <div class="card-eff-right"><div class="eff-lbl">Efficien:</div><div class="eff-val">90%</div></div>
+                        </div>
+                    </div>
+
+                    <div class="card green">
+                        <div class="card-header">LINE 06</div>
+                        <div class="card-body">
+                            <div class="card-data-left">
+                                <div class="lbl">ACTUAL</div> <div class="cln">:</div> <div class="val">8675</div>
+                                <div class="lbl">TEORYTHICAL</div> <div class="cln">:</div> <div class="val">9876</div>
+                            </div>
+                            <div class="divider"></div>
+                            <div class="card-eff-right"><div class="eff-lbl">Efficien:</div><div class="eff-val">90%</div></div>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <div class="cards-grid">
-            
-            <div class="prod-card">
-                <div class="card-header">LINE 01</div>
-                <div class="card-body">
-                    <div class="data-left">
-                        <div class="data-row">
-                            <span class="label">ACTUAL</span>
-                            <div><span class="colon">:</span><span class="value">8675</span></div>
+        <div id="view-analysis" class="hidden">
+            <section class="hero">
+                <div class="hero-left">
+                    <div class="hero-title">TOTAL PRODUCTION :</div>
+                    <div class="hero-num">14567</div>
+                </div>
+                <div class="hero-right">
+                    <div class="ribbon">OVERALL EQUIPMENT EFFECTIVENESS</div>
+                    <div class="hero-grid">
+                        <div style="width:300px;">
+                            <div class="h-row"><span>AVAILABILITY</span><span>: 80%</span></div>
+                            <div class="h-row"><span>PERFORMANCE</span><span>: 87%</span></div>
+                            <div class="h-row text-loss"><span>LOSS</span><span>: 10%</span></div>
                         </div>
-                        <div class="data-row">
-                            <span class="label">TEORYTHICAL</span>
-                            <div><span class="colon">:</span><span class="value">9876</span></div>
+                        <div class="h-eff-box">
+                            <div style="font-size:16px; font-weight:700;">OEE :</div>
+                            <div class="h-eff-val">90%</div>
                         </div>
-                    </div>
-                    <div class="divider-line"></div>
-                    <div class="eff-right">
-                        <span class="eff-label">Efficien:</span>
-                        <span class="eff-value">90%</span>
                     </div>
                 </div>
-            </div>
+            </section>
 
-            <div class="prod-card">
-                <div class="card-header">LINE 02</div>
-                <div class="card-body">
-                    <div class="data-left">
-                        <div class="data-row">
-                            <span class="label">ACTUAL</span>
-                            <div><span class="colon">:</span><span class="value">21,348</span></div>
+            <div style="margin-bottom: 40px;">
+                <div class="overall-wrapper">
+                    <div class="card purple">
+                        <div class="card-header">OVERALL CLUB CAN</div>
+                        <div class="card-body">
+                            <div class="card-data-left">
+                                <div class="lbl">AVAILABILITY</div> <div class="cln">:</div> <div class="val">80%</div>
+                                <div class="lbl">PERFORMANCE</div> <div class="cln">:</div> <div class="val">87%</div>
+                                <div class="lbl text-loss">LOSS</div> <div class="cln text-loss">:</div> <div class="val text-loss">10%</div>
+                            </div>
+                            <div class="divider"></div>
+                            <div class="card-eff-right">
+                                <div class="eff-lbl">OEE:</div>
+                                <div class="eff-val">90%</div>
+                            </div>
                         </div>
-                        <div class="data-row">
-                            <span class="label">TEORYTHICAL</span>
-                            <div><span class="colon">:</span><span class="value">21,983</span></div>
-                        </div>
-                    </div>
-                    <div class="divider-line"></div>
-                    <div class="eff-right">
-                        <span class="eff-label">Efficien:</span>
-                        <span class="eff-value">97%</span>
                     </div>
                 </div>
+
+                <div class="grid-container">
+                    <div class="card purple">
+                        <div class="card-header">
+                            <span>LINE 01</span>
+                            <span class="time-op">05:35:05</span>
+                        </div>
+                        <div class="card-body">
+                            <div class="card-data-left">
+                                <div class="lbl">AVAILABILITY</div> <div class="cln">:</div> <div class="val">80%</div>
+                                <div class="lbl">PERFORMANCE</div> <div class="cln">:</div> <div class="val">87%</div>
+                                <div class="lbl text-loss">LOSS</div> <div class="cln text-loss">:</div> <div class="val text-loss">10%</div>
+                            </div>
+                            <div class="divider"></div>
+                            <div class="card-eff-right"><div class="eff-lbl">OEE:</div><div class="eff-val">90%</div></div>
+                        </div>
+                    </div>
+
+                    <div class="card purple">
+                        <div class="card-header">
+                            <span>LINE 02</span>
+                            <span class="time-op">05:35:05</span>
+                        </div>
+                        <div class="card-body">
+                            <div class="card-data-left">
+                                <div class="lbl">AVAILABILITY</div> <div class="cln">:</div> <div class="val">80%</div>
+                                <div class="lbl">PERFORMANCE</div> <div class="cln">:</div> <div class="val">87%</div>
+                                <div class="lbl text-loss">LOSS</div> <div class="cln text-loss">:</div> <div class="val text-loss">10%</div>
+                            </div>
+                            <div class="divider"></div>
+                            <div class="card-eff-right"><div class="eff-lbl">OEE:</div><div class="eff-val">90%</div></div>
+                        </div>
+                    </div>
+
+                     <div class="card purple">
+                        <div class="card-header">
+                            <span>LINE 03</span>
+                            <span class="time-op">05:35:05</span>
+                        </div>
+                        <div class="card-body">
+                            <div class="card-data-left">
+                                <div class="lbl">AVAILABILITY</div> <div class="cln">:</div> <div class="val">80%</div>
+                                <div class="lbl">PERFORMANCE</div> <div class="cln">:</div> <div class="val">87%</div>
+                                <div class="lbl text-loss">LOSS</div> <div class="cln text-loss">:</div> <div class="val text-loss">10%</div>
+                            </div>
+                            <div class="divider"></div>
+                            <div class="card-eff-right"><div class="eff-lbl">OEE:</div><div class="eff-val">90%</div></div>
+                        </div>
+                    </div>
+
+                     <div class="card purple">
+                        <div class="card-header">
+                            <span>LINE 04</span>
+                            <span class="time-op">05:35:05</span>
+                        </div>
+                        <div class="card-body">
+                            <div class="card-data-left">
+                                <div class="lbl">AVAILABILITY</div> <div class="cln">:</div> <div class="val">80%</div>
+                                <div class="lbl">PERFORMANCE</div> <div class="cln">:</div> <div class="val">87%</div>
+                                <div class="lbl text-loss">LOSS</div> <div class="cln text-loss">:</div> <div class="val text-loss">10%</div>
+                            </div>
+                            <div class="divider"></div>
+                            <div class="card-eff-right"><div class="eff-lbl">OEE:</div><div class="eff-val">90%</div></div>
+                        </div>
+                    </div>
+
+                     <div class="card purple">
+                        <div class="card-header">
+                            <span>LINE 05</span>
+                            <span class="time-op">05:35:05</span>
+                        </div>
+                        <div class="card-body">
+                            <div class="card-data-left">
+                                <div class="lbl">AVAILABILITY</div> <div class="cln">:</div> <div class="val">80%</div>
+                                <div class="lbl">PERFORMANCE</div> <div class="cln">:</div> <div class="val">87%</div>
+                                <div class="lbl text-loss">LOSS</div> <div class="cln text-loss">:</div> <div class="val text-loss">10%</div>
+                            </div>
+                            <div class="divider"></div>
+                            <div class="card-eff-right"><div class="eff-lbl">OEE:</div><div class="eff-val">90%</div></div>
+                        </div>
+                    </div>
+
+                     <div class="card purple">
+                        <div class="card-header">
+                            <span>LINE 06</span>
+                            <span class="time-op">05:35:05</span>
+                        </div>
+                        <div class="card-body">
+                            <div class="card-data-left">
+                                <div class="lbl">AVAILABILITY</div> <div class="cln">:</div> <div class="val">80%</div>
+                                <div class="lbl">PERFORMANCE</div> <div class="cln">:</div> <div class="val">87%</div>
+                                <div class="lbl text-loss">LOSS</div> <div class="cln text-loss">:</div> <div class="val text-loss">10%</div>
+                            </div>
+                            <div class="divider"></div>
+                            <div class="card-eff-right"><div class="eff-lbl">OEE:</div><div class="eff-val">90%</div></div>
+                        </div>
+                    </div>
+
+                     <div class="card purple">
+                        <div class="card-header">
+                            <span>LINE 07</span>
+                            <span class="time-op">05:35:05</span>
+                        </div>
+                        <div class="card-body">
+                            <div class="card-data-left">
+                                <div class="lbl">AVAILABILITY</div> <div class="cln">:</div> <div class="val">80%</div>
+                                <div class="lbl">PERFORMANCE</div> <div class="cln">:</div> <div class="val">87%</div>
+                                <div class="lbl text-loss">LOSS</div> <div class="cln text-loss">:</div> <div class="val text-loss">10%</div>
+                            </div>
+                            <div class="divider"></div>
+                            <div class="card-eff-right"><div class="eff-lbl">OEE:</div><div class="eff-val">90%</div></div>
+                        </div>
+                    </div>
+
+                     <div class="card purple">
+                        <div class="card-header">
+                            <span>LINE 08</span>
+                            <span class="time-op">05:35:05</span>
+                        </div>
+                        <div class="card-body">
+                            <div class="card-data-left">
+                                <div class="lbl">AVAILABILITY</div> <div class="cln">:</div> <div class="val">80%</div>
+                                <div class="lbl">PERFORMANCE</div> <div class="cln">:</div> <div class="val">87%</div>
+                                <div class="lbl text-loss">LOSS</div> <div class="cln text-loss">:</div> <div class="val text-loss">10%</div>
+                            </div>
+                            <div class="divider"></div>
+                            <div class="card-eff-right"><div class="eff-lbl">OEE:</div><div class="eff-val">90%</div></div>
+                        </div>
+                    </div>
+
+                     <div class="card purple">
+                        <div class="card-header">
+                            <span>LINE 09</span>
+                            <span class="time-op">05:35:05</span>
+                        </div>
+                        <div class="card-body">
+                            <div class="card-data-left">
+                                <div class="lbl">AVAILABILITY</div> <div class="cln">:</div> <div class="val">80%</div>
+                                <div class="lbl">PERFORMANCE</div> <div class="cln">:</div> <div class="val">87%</div>
+                                <div class="lbl text-loss">LOSS</div> <div class="cln text-loss">:</div> <div class="val text-loss">10%</div>
+                            </div>
+                            <div class="divider"></div>
+                            <div class="card-eff-right"><div class="eff-lbl">OEE:</div><div class="eff-val">90%</div></div>
+                        </div>
+                    </div>
+
+
+                     <div class="card purple">
+                        <div class="card-header">
+                            <span>LINE 10</span>
+                            <span class="time-op">05:35:05</span>
+                        </div>
+                        <div class="card-body">
+                            <div class="card-data-left">
+                                <div class="lbl">AVAILABILITY</div> <div class="cln">:</div> <div class="val">80%</div>
+                                <div class="lbl">PERFORMANCE</div> <div class="cln">:</div> <div class="val">87%</div>
+                                <div class="lbl text-loss">LOSS</div> <div class="cln text-loss">:</div> <div class="val text-loss">10%</div>
+                            </div>
+                            <div class="divider"></div>
+                            <div class="card-eff-right"><div class="eff-lbl">OEE:</div><div class="eff-val">90%</div></div>
+                        </div>
+                    </div>
+
+                     <div class="card purple">
+                        <div class="card-header">
+                            <span>LINE 11</span>
+                            <span class="time-op">05:35:05</span>
+                        </div>
+                        <div class="card-body">
+                            <div class="card-data-left">
+                                <div class="lbl">AVAILABILITY</div> <div class="cln">:</div> <div class="val">80%</div>
+                                <div class="lbl">PERFORMANCE</div> <div class="cln">:</div> <div class="val">87%</div>
+                                <div class="lbl text-loss">LOSS</div> <div class="cln text-loss">:</div> <div class="val text-loss">10%</div>
+                            </div>
+                            <div class="divider"></div>
+                            <div class="card-eff-right"><div class="eff-lbl">OEE:</div><div class="eff-val">90%</div></div>
+                        </div>
+                    </div>
+
+                     <div class="card purple">
+                        <div class="card-header">
+                            <span>LINE 12</span>
+                            <span class="time-op">05:35:05</span>
+                        </div>
+                        <div class="card-body">
+                            <div class="card-data-left">
+                                <div class="lbl">AVAILABILITY</div> <div class="cln">:</div> <div class="val">80%</div>
+                                <div class="lbl">PERFORMANCE</div> <div class="cln">:</div> <div class="val">87%</div>
+                                <div class="lbl text-loss">LOSS</div> <div class="cln text-loss">:</div> <div class="val text-loss">10%</div>
+                            </div>
+                            <div class="divider"></div>
+                            <div class="card-eff-right"><div class="eff-lbl">OEE:</div><div class="eff-val">90%</div></div>
+                        </div>
+                    </div>
+
+                     <div class="card purple">
+                        <div class="card-header">
+                            <span>LINE 14</span>
+                            <span class="time-op">05:35:05</span>
+                        </div>
+                        <div class="card-body">
+                            <div class="card-data-left">
+                                <div class="lbl">AVAILABILITY</div> <div class="cln">:</div> <div class="val">80%</div>
+                                <div class="lbl">PERFORMANCE</div> <div class="cln">:</div> <div class="val">87%</div>
+                                <div class="lbl text-loss">LOSS</div> <div class="cln text-loss">:</div> <div class="val text-loss">10%</div>
+                            </div>
+                            <div class="divider"></div>
+                            <div class="card-eff-right"><div class="eff-lbl">OEE:</div><div class="eff-val">90%</div></div>
+                        </div>
+                    </div>
+
+                     <div class="card purple">
+                        <div class="card-header">
+                            <span>LINE 15</span>
+                            <span class="time-op">05:35:05</span>
+                        </div>
+                        <div class="card-body">
+                            <div class="card-data-left">
+                                <div class="lbl">AVAILABILITY</div> <div class="cln">:</div> <div class="val">80%</div>
+                                <div class="lbl">PERFORMANCE</div> <div class="cln">:</div> <div class="val">87%</div>
+                                <div class="lbl text-loss">LOSS</div> <div class="cln text-loss">:</div> <div class="val text-loss">10%</div>
+                            </div>
+                            <div class="divider"></div>
+                            <div class="card-eff-right"><div class="eff-lbl">OEE:</div><div class="eff-val">90%</div></div>
+                        </div>
+                    </div>
+                    
+                    </div>
             </div>
 
-            <div class="prod-card">
-                <div class="card-header">LINE 03</div>
-                <div class="card-body">
-                    <div class="data-left">
-                        <div class="data-row">
-                            <span class="label">ACTUAL</span>
-                            <div><span class="colon">:</span><span class="value">21,348</span></div>
-                        </div>
-                        <div class="data-row">
-                            <span class="label">TEORYTHICAL</span>
-                            <div><span class="colon">:</span><span class="value">21,983</span></div>
-                        </div>
-                    </div>
-                    <div class="divider-line"></div>
-                    <div class="eff-right">
-                        <span class="eff-label">Efficien:</span>
-                        <span class="eff-value">97%</span>
-                    </div>
-                </div>
+            <div>
+<div class="overall-wrapper">
+    <div class="card green">
+        <div class="card-header">OVERALL ROUND CAN</div>
+        <div class="card-body">
+            <div class="card-data-left">
+                <div class="lbl">AVAILABILITY</div> <div class="cln">:</div> <div class="val">80%</div>
+                <div class="lbl">PERFORMANCE</div> <div class="cln">:</div> <div class="val">87%</div>
+                <div class="lbl text-loss">LOSS</div> <div class="cln text-loss">:</div> <div class="val text-loss">10%</div>
             </div>
-
-            <div class="prod-card">
-                <div class="card-header">LINE 04</div>
-                <div class="card-body">
-                    <div class="data-left">
-                        <div class="data-row">
-                            <span class="label">ACTUAL</span>
-                            <div><span class="colon">:</span><span class="value">21,348</span></div>
-                        </div>
-                        <div class="data-row">
-                            <span class="label">TEORYTHICAL</span>
-                            <div><span class="colon">:</span><span class="value">21,983</span></div>
-                        </div>
-                    </div>
-                    <div class="divider-line"></div>
-                    <div class="eff-right">
-                        <span class="eff-label">Efficien:</span>
-                        <span class="eff-value">97%</span>
-                    </div>
-                </div>
+            <div class="divider"></div>
+            <div class="card-eff-right">
+                <div class="eff-lbl">OEE:</div>
+                <div class="eff-val">90%</div>
             </div>
-
         </div>
-
-        <div class="section-title green">Round Can Production</div>
-
-        <div class="overall-wrapper theme-green">
-            <div class="prod-card overall-card">
-                <div class="card-header">OVERALL ROUND CAN</div>
-                <div class="card-body">
-                    <div class="data-left">
-                        <div class="data-row">
-                            <span class="label">ACTUAL</span>
-                            <div><span class="colon">:</span><span class="value">40,768</span></div>
-                        </div>
-                        <div class="data-row">
-                            <span class="label">TEORYTHICAL</span>
-                            <div><span class="colon">:</span><span class="value">43,175</span></div>
-                        </div>
-                    </div>
-                    <div class="divider-line"></div>
-                    <div class="eff-right">
-                        <span class="eff-label">Efficien:</span>
-                        <span class="eff-value">94%</span>
-                    </div>
-                </div>
+    </div>
+</div> <div class="grid-container">
+    <div class="card green">
+        <div class="card-header">
+            <span>LINE 05</span>
+            <span class="time-op">05:35:05</span>
+        </div>
+        <div class="card-body">
+            <div class="card-data-left">
+                <div class="lbl">AVAILABILITY</div> <div class="cln">:</div> <div class="val">80%</div>
+                <div class="lbl">PERFORMANCE</div> <div class="cln">:</div> <div class="val">87%</div>
+                <div class="lbl text-loss">LOSS</div> <div class="cln text-loss">:</div> <div class="val text-loss">10%</div>
+            </div>
+            <div class="divider"></div>
+            <div class="card-eff-right">
+                <div class="eff-lbl">OEE:</div>
+                <div class="eff-val">90%</div>
             </div>
         </div>
+    </div>
 
-        <div class="cards-grid theme-green">
-            
-            <div class="prod-card">
-                <div class="card-header">LINE 05</div>
-                <div class="card-body">
-                    <div class="data-left">
-                        <div class="data-row">
-                            <span class="label">ACTUAL</span>
-                            <div><span class="colon">:</span><span class="value">20,384</span></div>
-                        </div>
-                        <div class="data-row">
-                            <span class="label">TEORYTHICAL</span>
-                            <div><span class="colon">:</span><span class="value">21,587</span></div>
-                        </div>
-                    </div>
-                    <div class="divider-line"></div>
-                    <div class="eff-right">
-                        <span class="eff-label">Efficien:</span>
-                        <span class="eff-value">94%</span>
-                    </div>
-                </div>
+    <div class="card green">
+        <div class="card-header">
+            <span>LINE 06</span>
+            <span class="time-op">05:35:05</span>
+        </div>
+        <div class="card-body">
+            <div class="card-data-left">
+                <div class="lbl">AVAILABILITY</div> <div class="cln">:</div> <div class="val">80%</div>
+                <div class="lbl">PERFORMANCE</div> <div class="cln">:</div> <div class="val">87%</div>
+                <div class="lbl text-loss">LOSS</div> <div class="cln text-loss">:</div> <div class="val text-loss">10%</div>
             </div>
-
-            <div class="prod-card">
-                <div class="card-header">LINE 06</div>
-                <div class="card-body">
-                    <div class="data-left">
-                        <div class="data-row">
-                            <span class="label">ACTUAL</span>
-                            <div><span class="colon">:</span><span class="value">20,384</span></div>
-                        </div>
-                        <div class="data-row">
-                            <span class="label">TEORYTHICAL</span>
-                            <div><span class="colon">:</span><span class="value">21,587</span></div>
-                        </div>
-                    </div>
-                    <div class="divider-line"></div>
-                    <div class="eff-right">
-                        <span class="eff-label">Efficien:</span>
-                        <span class="eff-value">94%</span>
-                    </div>
-                </div>
+            <div class="divider"></div>
+            <div class="card-eff-right">
+                <div class="eff-lbl">OEE:</div>
+                <div class="eff-val">90%</div>
             </div>
-
+        </div>
+    </div>
+</div>
         </div>
 
     </div>
+
+    <script>
+        function switchView(viewName) {
+            // Sembunyikan semua
+            document.getElementById('view-live').classList.add('hidden');
+            document.getElementById('view-analysis').classList.add('hidden');
+            
+            // Reset tombol nav
+            document.getElementById('btn-live').classList.remove('active');
+            document.getElementById('btn-analysis').classList.remove('active');
+
+            // Tampilkan yang dipilih
+            if (viewName === 'live') {
+                document.getElementById('view-live').classList.remove('hidden');
+                document.getElementById('btn-live').classList.add('active');
+            } else if (viewName === 'analysis') {
+                document.getElementById('view-analysis').classList.remove('hidden');
+                document.getElementById('btn-analysis').classList.add('active');
+            }
+        }
+    </script>
 
 </body>
 </html>
