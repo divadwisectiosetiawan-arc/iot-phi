@@ -1,169 +1,332 @@
 <!DOCTYPE html>
-<html lang="id" data-theme="dark">
+<html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Production Dashboard | Pasifik Harvest Indonesia</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SARDINES PRODUCTION - Pasifik Harvest Indonesia</title>
     
     <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script> 
     
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
 
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&display=swap" rel="stylesheet">
+    
     <style>
-        /* --- CSS SAMA SEPERTI SEBELUMNYA --- */
+        /* --- DESIGN SYSTEM SESUAI GAMBAR --- */
         :root {
-            --bg-body: #0f172a; --bg-card: #1e293b; --bg-header: rgba(15, 23, 42, 0.95);
-            --border: #334155; --text-main: #f8fafc; --text-muted: #94a3b8;
-            --primary: #38bdf8; --primary-dim: rgba(56, 189, 248, 0.1);
-            --success: #22c55e; --warning: #f59e0b; --danger: #ef4444; --purple: #a855f7;
-            --radius: 12px; --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3); --transition: all 0.3s ease;
+            --bg-color: #f3f4f6;
+            
+            /* Warna Ungu (Club Can & Header) */
+            --purple-primary: #4c1d95; 
+            --purple-light: #6200ea;
+            
+            /* Warna Hijau (Round Can) */
+            --green-primary: #65a30d;
+            --green-light: #84cc16;
+            
+            /* Warna Aksen */
+            --red-accent: #dc2626;
+            --blue-title: #1e3a8a;
+            
+            --text-dark: #1f2937;
+            --white: #ffffff;
         }
-        [data-theme="light"] {
-            --bg-body: #f1f5f9; --bg-card: #ffffff; --bg-header: rgba(255, 255, 255, 0.95);
-            --border: #e2e8f0; --text-main: #0f172a; --text-muted: #64748b;
-            --primary: #0284c7; --primary-dim: rgba(2, 132, 199, 0.1); --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Roboto', sans-serif; }
+        body { background-color: var(--bg-color); padding-bottom: 50px; }
+
+        /* HEADER ATAS (PUTIH) */
+        .main-header {
+            background: var(--white);
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #e5e7eb;
         }
-        * { box-sizing: border-box; outline: none; -webkit-tap-highlight-color: transparent; }
-        body { margin: 0; font-family: 'Inter', sans-serif; background: var(--bg-body); color: var(--text-main); transition: var(--transition); padding-bottom: 80px; }
+        .title-group h1 { color: #3b5998; font-weight: 900; font-size: 28px; letter-spacing: 0.5px; text-transform: uppercase; margin: 0; }
+        .title-group h2 { color: var(--red-accent); font-weight: 700; font-size: 18px; margin-top: 2px; text-transform: uppercase; margin: 0; }
+        .logo-placeholder { 
+            display: flex; align-items: center; gap: 10px; text-align: right;
+        }
         
-        .flex-center { display: flex; align-items: center; justify-content: center; }
-        .flex-between { display: flex; align-items: center; justify-content: space-between; }
+        /* NAV BAR (UNGU) */
+        .nav-bar {
+            background: #4b0082; /* Deep Purple */
+            color: var(--white);
+            padding: 12px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 600;
+            font-family: monospace;
+            font-size: 16px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        .nav-right span { margin: 0 10px; cursor: pointer; opacity: 0.8; }
+        .nav-right span:hover { opacity: 1; color: #fbbf24; }
+        .nav-right .active { opacity: 1; font-weight: 700; color: #fbbf24; }
+
+        .container { max-width: 1400px; margin: 25px auto; padding: 0 20px; }
+
+        /* KOTAK STATISTIK UTAMA (GRADIENT UNGU) */
+        .hero-stats {
+            background: linear-gradient(135deg, #4b0082, #7c3aed);
+            border-radius: 4px;
+            color: var(--white);
+            display: flex;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+            margin-bottom: 30px;
+            min-height: 180px;
+        }
+        /* Bagian Kiri (Total Production) */
+        .hero-left {
+            flex: 1;
+            padding: 30px;
+            text-align: center;
+            border-right: 2px solid rgba(255,255,255,0.3);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        .hero-title { font-size: 18px; font-weight: 600; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 1px; }
+        .hero-value { font-size: 72px; font-weight: 900; line-height: 1; text-shadow: 2px 2px 4px rgba(0,0,0,0.3); }
+
+        /* Bagian Kanan (Overall Performance) */
+        .hero-right { flex: 1.3; padding: 20px; display: flex; flex-direction: column; }
+        .hero-sub-header {
+            background: var(--red-accent);
+            padding: 8px;
+            text-align: center;
+            font-weight: 700;
+            text-transform: uppercase;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            font-size: 16px;
+            letter-spacing: 0.5px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        .perf-grid { display: grid; grid-template-columns: 1.2fr 1fr; gap: 20px; align-items: center; flex-grow: 1; }
+        .perf-row { display: flex; justify-content: space-between; margin-bottom: 15px; font-size: 18px; font-weight: 500; }
+        .perf-val { font-weight: 700; font-family: monospace; font-size: 24px; }
+        .eff-box { text-align: center; border-left: 3px solid rgba(255,255,255,0.3); padding-left: 20px; height: 100%; display: flex; flex-direction: column; justify-content: center; }
+        .eff-val { font-size: 48px; font-weight: 800; line-height: 1.1; }
+        .eff-label { font-size: 16px; opacity: 0.9; margin-bottom: 5px; }
+
+        /* SECTION HEADERS (CLUB & ROUND) */
+        .section-wrapper { margin-top: 30px; margin-bottom: 15px; display: flex; align-items: flex-end; gap: 20px;}
+        .section-header {
+            padding: 8px 25px;
+            border-radius: 6px 6px 0 0;
+            color: white;
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 16px;
+            min-width: 250px;
+            text-align: center;
+        }
+        .bg-purple { background: #6200ea; }
+        .bg-green { background: #84cc16; }
+
+        .summary-mini {
+            background: white;
+            padding: 8px 20px;
+            border-radius: 0 6px 6px 6px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            min-width: 250px;
+            font-size: 13px;
+            font-weight: 700;
+            color: #333;
+            border: 1px solid #e5e7eb;
+        }
+        .mini-row { display: flex; justify-content: space-between; margin-bottom: 4px; }
+        .mini-val { color: #555; }
+
+        /* GRID KARTU LINE */
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 15px;
+        }
+
+        /* CARD STYLE */
+        .card {
+            background: white;
+            border-radius: 6px;
+            overflow: hidden;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            border: 1px solid #e5e7eb;
+        }
+        .card-header {
+            padding: 10px 15px;
+            color: white;
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 18px;
+            letter-spacing: 0.5px;
+        }
+        .card-purple .card-header { background: #6200ea; }
+        .card-green .card-header { background: #84cc16; }
+
+        .card-body {
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .card-stats { flex: 2; padding-right: 15px; }
+        .stat-row { 
+            display: flex; 
+            justify-content: space-between; 
+            margin-bottom: 10px; 
+            font-size: 12px; 
+            color: #6b7280; 
+            font-weight: 700; 
+            text-transform: uppercase;
+        }
+        .stat-val { color: var(--text-dark); font-weight: 900; font-size: 18px; font-family: monospace; }
+        
+        /* Kolom Kanan Kartu (Effisiensi) */
+        .card-eff {
+            flex: 1;
+            text-align: center;
+            border-left: 2px solid #f3f4f6;
+            padding-left: 10px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        .eff-circle { font-size: 26px; font-weight: 900; color: #374151; }
+        .eff-text { font-size: 10px; color: #6b7280; font-weight: 700; text-transform: uppercase; margin-bottom: 2px;}
+
+        /* MODAL LOGIN (Overlay) */
+        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 1000; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
+        .login-box { background: white; padding: 40px; border-radius: 10px; width: 350px; text-align: center; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); }
+        .login-input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #d1d5db; border-radius: 6px; }
+        .login-btn { width: 100%; padding: 12px; background: var(--purple-primary); color: white; border: none; border-radius: 6px; font-weight: 700; cursor: pointer; margin-top: 10px; }
         .hidden { display: none !important; }
-        .text-success { color: var(--success); } .text-warning { color: var(--warning); } .text-danger { color: var(--danger); }
-        
-        header { position: sticky; top: 0; z-index: 50; background: var(--bg-header); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); padding: 1rem 1.5rem; }
-        .brand { gap: 12px; font-weight: 800; font-size: 1.25rem; color: var(--primary); letter-spacing: -0.5px; }
-        
-        .nav-controls button, .nav-controls select { background: var(--bg-card); border: 1px solid var(--border); color: var(--text-main); padding: 8px 16px; border-radius: 8px; font-size: 0.875rem; font-weight: 500; cursor: pointer; transition: var(--transition); }
-        .nav-controls button:hover { border-color: var(--primary); color: var(--primary); }
 
-        .container { max-width: 1440px; margin: 0 auto; padding: 24px; }
-        .grid-dashboard { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; }
-        
-        .card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; box-shadow: var(--shadow); position: relative; overflow: hidden; transition: transform 0.2s; }
-        .card:hover { transform: translateY(-4px); border-color: var(--primary); }
-        .card-header { margin-bottom: 15px; }
-        .card-title { font-size: 0.85rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
-        .card-value { font-size: 1.75rem; font-weight: 800; color: var(--text-main); margin: 5px 0; }
-        
-        .oee-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 15px; padding-top: 15px; border-top: 1px dashed var(--border); }
-        .oee-item { text-align: center; }
-        .oee-label { font-size: 0.65rem; font-weight: 700; color: var(--text-muted); margin-bottom: 2px; }
-        .oee-val { font-size: 0.85rem; font-weight: 700; }
+        /* LOADING */
+        #loading { position: fixed; inset: 0; background: white; z-index: 2000; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .spinner { width: 50px; height: 50px; border: 5px solid #f3f3f3; border-top: 5px solid var(--purple-primary); border-radius: 50%; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        .status-pill { padding: 4px 8px; border-radius: 20px; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; background: var(--bg-body); border: 1px solid var(--border); }
-        
-        #loadingOverlay { position: fixed; inset: 0; background: var(--bg-body); z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: opacity 0.5s; }
-        .loader { width: 48px; height: 48px; border: 5px solid var(--border); border-bottom-color: var(--primary); border-radius: 50%; animation: rotation 1s linear infinite; }
-        @keyframes rotation { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-
-        .modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(4px); z-index: 1000; display: none; align-items: center; justify-content: center; }
-        .modal-content { background: var(--bg-card); padding: 30px; border-radius: 16px; width: 100%; max-width: 400px; border: 1px solid var(--border); box-shadow: 0 20px 25px -5px rgba(0,0,0,0.3); }
-
-        @media (max-width: 768px) {
-            header { display: none; }
-            .mobile-header { display: flex; padding: 15px; background: var(--bg-header); position: sticky; top: 0; z-index: 50; border-bottom: 1px solid var(--border); }
-            .container { padding: 15px; }
-            .grid-dashboard { grid-template-columns: 1fr; }
+        /* Responsive */
+        @media (max-width: 900px) {
+            .hero-stats { flex-direction: column; }
+            .hero-left { border-right: none; border-bottom: 1px solid rgba(255,255,255,0.2); padding: 20px; }
+            .main-header { flex-direction: column; text-align: center; gap: 15px; }
+            .nav-bar { font-size: 12px; padding: 10px; }
+            .section-wrapper { flex-direction: column; align-items: flex-start; gap: 0; }
+            .section-header { width: 100%; border-radius: 6px 6px 0 0; }
+            .summary-mini { width: 100%; border-radius: 0 0 6px 6px; border-top: none; }
         }
     </style>
 </head>
 <body>
 
-    <div id="loadingOverlay">
-        <div class="loader"></div>
-        <p style="margin-top: 15px; font-weight: 600; color: var(--text-muted)">Initializing System...</p>
+    <div id="loading">
+        <div class="spinner"></div>
+        <p style="margin-top: 15px; font-weight: 600; color: #555;">Initializing System...</p>
     </div>
 
-    <div id="authModal" class="modal-backdrop flex-center" style="display: flex;">
-        <div class="modal-content">
-            <div class="flex-center" style="margin-bottom: 20px;">
-                <h2 style="margin:0; color: var(--primary);">PHI DASHBOARD</h2>
-            </div>
-            <div style="margin-bottom: 15px;">
-                <label style="font-size: 12px; font-weight: 600; color: var(--text-muted);">USERNAME</label>
-                <input type="text" id="username" class="card" style="width: 100%; padding: 10px; margin-top: 5px;" placeholder="Enter: admin">
-            </div>
-            <div style="margin-bottom: 20px;">
-                <label style="font-size: 12px; font-weight: 600; color: var(--text-muted);">PASSWORD</label>
-                <input type="password" id="password" class="card" style="width: 100%; padding: 10px; margin-top: 5px;" placeholder="Enter: admin123">
-            </div>
-            <button onclick="App.Auth.login()" style="width: 100%; padding: 12px; background: var(--primary); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">ACCESS SYSTEM</button>
+    <div id="authModal" class="modal-overlay">
+        <div class="login-box">
+            <h2 style="color: var(--purple-primary); margin-bottom: 20px;">SYSTEM LOGIN</h2>
+            <input type="text" id="username" class="login-input" placeholder="Username (admin)">
+            <input type="password" id="password" class="login-input" placeholder="Password (admin123)">
+            <button onclick="App.Auth.login()" class="login-btn">ACCESS DASHBOARD</button>
         </div>
     </div>
 
     <div id="appContent" class="hidden">
-        <header class="flex-between">
-            <div class="brand flex-center">
-                <span>OEE SYSTEM</span>
-                <span style="font-size: 0.8rem; background: var(--primary-dim); padding: 4px 8px; border-radius: 6px;" id="clock">00:00:00</span>
+        
+        <header class="main-header">
+            <div class="title-group">
+                <h1>SARDINES PRODUCTION</h1>
+                <h2>PASIFIK HARVEST INDONESIA</h2>
             </div>
-            <div class="nav-controls flex-center" style="gap: 10px;">
-                <div id="connectionStatus" style="font-size: 12px; font-weight: 600; color: var(--text-muted);">Connecting...</div>
-                <button onclick="App.UI.toggleTheme()">Theme</button>
-                <button onclick="App.Auth.logout()" class="text-danger" style="border-color: var(--danger);">Logout</button>
+            <div class="logo-placeholder">
+                <div style="text-align: right; font-size: 11px; font-weight: 600; color: #374151;">
+                    PT. PASIFIK HARVEST<br>INDONESIA
+                </div>
+                <div style="width: 50px; height: 50px; background: #e5e7eb; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; color: var(--blue-title);">PHI</div>
             </div>
         </header>
 
-        <div class="mobile-header flex-between">
-            <span style="font-weight: 700; font-size: 1.1rem; color: var(--primary);">PHI MOBILE</span>
-            <button onclick="App.UI.toggleTheme()" style="background: none; border: none; color: var(--text-main); font-size: 1.2rem;">◑</button>
-        </div>
+        <nav class="nav-bar">
+            <div class="nav-left">Real Time System</div>
+            <div class="nav-right">
+                <span class="active">LIVE</span> / 
+                <span onclick="alert('Feature coming soon')">ANALYSIS</span> / 
+                <span onclick="alert('Feature coming soon')">HISTORY</span> / 
+                <span onclick="App.Auth.logout()" title="Logout">👤</span>
+            </div>
+        </nav>
 
         <div class="container">
-            <div style="margin-bottom: 30px;">
-                <h3 style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 15px;">GLOBAL PERFORMANCE</h3>
-                <div class="grid-dashboard" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));">
-                    <div class="card" style="border-left: 4px solid var(--purple);">
-                        <div class="card-title">TOTAL PRODUCTION</div>
-                        <div class="card-value" id="totalProd">0</div>
-                        <small class="text-muted">Units Today</small>
-                    </div>
-                    <div class="card" style="border-left: 4px solid var(--success);">
-                        <div class="card-title">AVG AVAILABILITY</div>
-                        <div class="card-value text-success" id="avgAvail">0%</div>
-                    </div>
-                    <div class="card" style="border-left: 4px solid var(--warning);">
-                        <div class="card-title">AVG PERFORMANCE</div>
-                        <div class="card-value text-warning" id="avgPerf">0%</div>
-                    </div>
-                    <div class="card" style="border-left: 4px solid var(--primary);">
-                        <div class="card-title">GLOBAL OEE SCORE</div>
-                        <div class="card-value" style="color: var(--primary);" id="avgOee">0%</div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="card" style="margin-bottom: 30px; min-height: 400px;">
-                <div class="flex-between card-header">
-                    <span class="card-title">PRODUCTION TREND</span>
-                    <div class="nav-controls">
-                        <button onclick="App.Charts.setPeriod('daily')">Daily</button>
-                        <button onclick="App.Charts.setPeriod('weekly')">Weekly</button>
-                    </div>
-                </div>
-                <div style="height: 320px; width: 100%;">
-                    <canvas id="productionChart"></canvas>
-                </div>
-            </div>
-
-            <div style="margin-bottom: 15px;" class="flex-between">
-                <h3 style="color: var(--text-muted); font-size: 0.9rem;">LINE DETAILS (1-15)</h3>
-                <button class="nav-controls" onclick="App.Data.manualReset()" style="background: var(--bg-card); color: var(--danger); border: 1px solid var(--danger); padding: 5px 10px; border-radius: 6px; cursor: pointer;">Reset All</button>
-            </div>
             
-            <div class="grid-dashboard" id="linesContainer"></div>
+            <div class="hero-stats">
+                <div class="hero-left">
+                    <div class="hero-title">TOTAL PRODUCTION :</div>
+                    <div class="hero-value" id="grandTotal">0</div>
+                </div>
+                <div class="hero-right">
+                    <div class="hero-sub-header">OVERALL PERFORMANCE PRODUCTION</div>
+                    <div class="perf-grid">
+                        <div>
+                            <div class="perf-row">
+                                <span>ACTUAL</span> <span class="perf-val" id="grandActual">0</span>
+                            </div>
+                            <div class="perf-row">
+                                <span>TEORYTHICAL</span> <span class="perf-val" id="grandTheory">0</span>
+                            </div>
+                        </div>
+                        <div class="eff-box">
+                            <div class="eff-label">Efficien :</div>
+                            <div class="eff-val" id="grandEff">0%</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div>
+                <div class="section-wrapper">
+                    <div class="section-header bg-purple">OVERALL CLUB CAN</div>
+                    <div class="summary-mini">
+                        <div class="mini-row"><span>ACTUAL :</span> <span class="mini-val" id="clubActual">0</span> <span style="border-left:1px solid #ccc; margin:0 5px;"></span> <span>Efficien:</span></div>
+                        <div class="mini-row"><span>TEORYTHICAL :</span> <span class="mini-val" id="clubTheory">0</span> <span style="border-left:1px solid #ccc; margin:0 5px;"></span> <span class="mini-val" style="font-weight:900; color:var(--purple-primary)" id="clubEff">0%</span></div>
+                    </div>
+                    <button onclick="App.Data.manualReset()" style="margin-left: auto; padding: 8px 15px; background: white; border: 1px solid var(--red-accent); color: var(--red-accent); border-radius: 4px; cursor: pointer; font-weight: 600;">RESET ALL</button>
+                </div>
+                
+                <div class="cards-grid" id="clubGrid">
+                    </div>
+            </div>
+
+            <div style="margin-top: 40px;">
+                <div class="section-wrapper">
+                    <div class="section-header bg-green">OVERALL ROUND CAN</div>
+                    <div class="summary-mini">
+                        <div class="mini-row"><span>ACTUAL :</span> <span class="mini-val" id="roundActual">0</span> <span style="border-left:1px solid #ccc; margin:0 5px;"></span> <span>Efficien:</span></div>
+                        <div class="mini-row"><span>TEORYTHICAL :</span> <span class="mini-val" id="roundTheory">0</span> <span style="border-left:1px solid #ccc; margin:0 5px;"></span> <span class="mini-val" style="font-weight:900; color:var(--green-primary)" id="roundEff">0%</span></div>
+                    </div>
+                </div>
+
+                <div class="cards-grid" id="roundGrid">
+                    </div>
+            </div>
+
         </div>
     </div>
 
     <script>
-        // --- CONFIGURATION ---
+        // --- 1. CONFIGURATION ---
         const Config = {
             firebase: {
                 apiKey: "AIzaSyAC8Il1tbSGONHO6mLdEoe698XVnYmoJTY",
@@ -178,38 +341,43 @@
                 host: "wss://72ebeae451364089a9ebe5b5f5702548.s1.eu.hivemq.cloud:8884/mqtt",
                 options: { username: "admin", password: "Admin123", reconnectPeriod: 5000 }
             },
+            // DEFINISI LINE SESUAI GAMBAR (Urutan ID Penting)
             machines: [
-                { id: 'L1', name: 'Line 01', cpm: 70, machineId: 'machine01' },
-                { id: 'L2', name: 'Line 02', cpm: 70, machineId: 'machine01' },
-                { id: 'L3', name: 'Line 03', cpm: 70, machineId: 'machine02' },
-                { id: 'L4', name: 'Line 04', cpm: 70, machineId: 'machine02' },
-                { id: 'L5', name: 'Line 05', cpm: 80, machineId: 'machine03' },
-                { id: 'L6', name: 'Line 06', cpm: 80, machineId: 'machine03' },
-                { id: 'L7', name: 'Line 07', cpm: 70, machineId: 'machine04' },
-                { id: 'L8', name: 'Line 08', cpm: 70, machineId: 'machine04' },
-                { id: 'L9', name: 'Line 09', cpm: 70, machineId: 'machine05' },
-                { id: 'L10', name: 'Line 10', cpm: 70, machineId: 'machine05' },
-                { id: 'L11', name: 'Line 11', cpm: 70, machineId: 'machine06' },
-                { id: 'L12', name: 'Line 12', cpm: 70, machineId: 'machine06' }
+                // CLUB CAN (Ungu)
+                { id: 'L1', name: 'LINE 01', type: 'club', cpm: 70, machineId: 'machine01' },
+                { id: 'L2', name: 'LINE 02', type: 'club', cpm: 70, machineId: 'machine01' },
+                { id: 'L3', name: 'LINE 03', type: 'club', cpm: 70, machineId: 'machine02' },
+                { id: 'L4', name: 'LINE 04', type: 'club', cpm: 70, machineId: 'machine02' },
+                { id: 'L7', name: 'LINE 07', type: 'club', cpm: 70, machineId: 'machine04' },
+                { id: 'L8', name: 'LINE 08', type: 'club', cpm: 70, machineId: 'machine04' },
+                { id: 'L9', name: 'LINE 09', type: 'club', cpm: 70, machineId: 'machine05' },
+                { id: 'L10', name: 'LINE 10', type: 'club', cpm: 70, machineId: 'machine05' },
+                { id: 'L11', name: 'LINE 11', type: 'club', cpm: 70, machineId: 'machine06' },
+                { id: 'L12', name: 'LINE 12', type: 'club', cpm: 70, machineId: 'machine06' },
+                { id: 'L14', name: 'LINE 14', type: 'club', cpm: 70, machineId: 'machine07' }, // Asumsi machine ID
+                { id: 'L15', name: 'LINE 15', type: 'club', cpm: 70, machineId: 'machine07' },
+
+                // ROUND CAN (Hijau)
+                { id: 'L5', name: 'LINE 05', type: 'round', cpm: 80, machineId: 'machine03' },
+                { id: 'L6', name: 'LINE 06', type: 'round', cpm: 80, machineId: 'machine03' }
             ]
         };
 
-        // --- STATE MANAGEMENT ---
+        // --- 2. STATE ---
         const State = {
             counters: {},
             startTime: Date.now(),
             manualOffset: 0,
-            isConnected: { mqtt: false, firebase: false },
-            chartInstance: null
+            isConnected: { mqtt: false, firebase: false }
         };
 
-        // --- SERVICES ---
+        // --- 3. SERVICES (BACKEND) ---
         const Services = {
             db: null,
             mqttClient: null,
 
             init() {
-                // Init Firebase (Compat Mode)
+                // Firebase Init
                 if (!firebase.apps.length) {
                     firebase.initializeApp(Config.firebase);
                 }
@@ -221,12 +389,12 @@
                     if(val) {
                         State.startTime = val.productionStartTime || Date.now();
                         State.manualOffset = val.manualOffset || 0;
-                        UI.updateDashboard();
+                        UI.updateValues();
                     }
                     State.isConnected.firebase = true;
-                    UI.updateStatus();
                 });
 
+                // MQTT Connect
                 this.connectMQTT();
             },
 
@@ -234,9 +402,10 @@
                 this.mqttClient = mqtt.connect(Config.mqtt.host, Config.mqtt.options);
                 
                 this.mqttClient.on('connect', () => {
-                    State.isConnected.mqtt = true;
-                    UI.updateStatus();
                     console.log("MQTT Connected");
+                    State.isConnected.mqtt = true;
+                    
+                    // Subscribe Topics
                     const uniqueMachines = [...new Set(Config.machines.map(m => m.machineId))];
                     uniqueMachines.forEach(mId => {
                         this.mqttClient.subscribe(`iot/esp32/${mId}/counter`);
@@ -248,257 +417,185 @@
                         const data = JSON.parse(message.toString());
                         if(data.counter) {
                             Object.assign(State.counters, data.counter);
-                            UI.updateDashboard();
+                            UI.updateValues(); // Refresh UI on new data
                         }
-                    } catch (e) { console.error("MQTT Parse Error", e); }
-                });
-
-                this.mqttClient.on('offline', () => {
-                    State.isConnected.mqtt = false;
-                    UI.updateStatus();
+                    } catch (e) { console.error("MQTT Error", e); }
                 });
             },
 
-            calculateOEE(lineId, actual) {
+            calculateData(lineId, actual) {
                 const lineConf = Config.machines.find(m => m.id === lineId) || { cpm: 70 };
                 const elapsedMins = (Date.now() - State.startTime) / 60000;
                 
                 const target = Math.floor(elapsedMins * lineConf.cpm);
-                const performance = target > 0 ? (actual / target) : 0;
-                const availability = 1.0; 
-                const quality = 1.0; 
-                const oee = performance * availability * quality;
-
+                const eff = target > 0 ? ((actual / target) * 100) : 0;
+                
                 return {
-                    target,
-                    performance: Math.min(performance * 100, 100).toFixed(1),
-                    availability: (availability * 100).toFixed(1),
-                    quality: (quality * 100).toFixed(1),
-                    oee: Math.min(oee * 100, 100).toFixed(1)
+                    target: target,
+                    eff: Math.min(eff, 100).toFixed(0) // Bulatkan tanpa desimal sesuai gambar
                 };
             },
 
             async resetSystem() {
-                if(!confirm("Are you sure you want to RESET all counters?")) return;
+                if(!confirm("RESET ALL PRODUCTION DATA?")) return;
                 
                 const historyEntry = {
                     timestamp: Date.now(),
                     date: new Date().toLocaleString(),
                     counters: { ...State.counters },
-                    total: parseInt(document.getElementById('totalProd').innerText.replace(/,/g,''))
+                    total: parseInt(document.getElementById('grandTotal').innerText.replace(/,/g,''))
                 };
                 
                 try {
                     await this.db.ref('history').push(historyEntry);
                     
+                    // Reset Command to all machines
                     const uniqueMachines = [...new Set(Config.machines.map(m => m.machineId))];
                     uniqueMachines.forEach(mId => {
                         this.mqttClient.publish(`iot/esp32/${mId}/cmd`, JSON.stringify({cmd: "RESET", source: "web"}));
                     });
 
-                    await this.db.ref('config').set({
-                        productionStartTime: Date.now(),
-                        manualOffset: 0
-                    });
+                    await this.db.ref('config').set({ productionStartTime: Date.now(), manualOffset: 0 });
 
                     State.counters = {};
-                    Swal.fire("Success", "System has been reset & saved.", "success");
+                    Swal.fire("Success", "System Reset Successful", "success");
                 } catch (error) {
-                    Swal.fire("Error", "Failed to reset system: " + error.message, "error");
+                    Swal.fire("Error", error.message, "error");
                 }
             }
         };
 
-        // --- UI MANAGER ---
+        // --- 4. UI MANAGER ---
         const UI = {
             init() {
-                this.renderLineCards();
-                this.initChart();
-                setInterval(() => this.updateClock(), 1000);
-                setInterval(() => this.updateDashboard(), 5000);
+                this.renderCards();
+                // Update time-based calculations every 5 seconds
+                setInterval(() => this.updateValues(), 5000);
                 
-                // Hide Loader
-                setTimeout(() => {
-                    document.getElementById('loadingOverlay').classList.add('hidden');
-                }, 1000);
+                // Hide loader
+                setTimeout(() => document.getElementById('loading').classList.add('hidden'), 1000);
             },
 
-            renderLineCards() {
-                const container = document.getElementById('linesContainer');
-                container.innerHTML = Config.machines.map(m => `
-                    <div class="card" id="card-${m.id}">
-                        <div class="flex-between card-header">
-                            <div>
-                                <div class="card-title">${m.name}</div>
-                                <span class="status-pill text-muted">Waiting...</span>
+            renderCards() {
+                const clubContainer = document.getElementById('clubGrid');
+                const roundContainer = document.getElementById('roundGrid');
+
+                Config.machines.forEach(m => {
+                    const themeClass = m.type === 'club' ? 'card-purple' : 'card-green';
+                    const html = `
+                        <div class="card ${themeClass}">
+                            <div class="card-header">${m.name}</div>
+                            <div class="card-body">
+                                <div class="card-stats">
+                                    <div class="stat-row">
+                                        <span>ACTUAL</span> <span class="stat-val" id="act-${m.id}">0</span>
+                                    </div>
+                                    <div class="stat-row">
+                                        <span>TEORYTHICAL</span> <span class="stat-val" id="theo-${m.id}">0</span>
+                                    </div>
+                                </div>
+                                <div class="card-eff">
+                                    <div class="eff-text">Efficien :</div>
+                                    <div class="eff-circle" id="eff-${m.id}">0%</div>
+                                </div>
                             </div>
-                            <div class="status-pill">${m.cpm} CPM</div>
                         </div>
-                        <div class="flex-between">
-                            <div>
-                                <div class="text-muted" style="font-size: 10px; font-weight:700;">ACTUAL</div>
-                                <div class="card-value val-actual" id="val-${m.id}">0</div>
-                            </div>
-                            <div style="text-align:right">
-                                <div class="text-muted" style="font-size: 10px; font-weight:700;">TARGET</div>
-                                <div class="card-value" style="color:var(--text-muted); font-size: 1.2rem;" id="target-${m.id}">0</div>
-                            </div>
-                        </div>
-                        <div class="oee-row">
-                            <div class="oee-item"><div class="oee-label">AVAIL</div><div class="oee-val text-success" id="avail-${m.id}">0%</div></div>
-                            <div class="oee-item"><div class="oee-label">PERF</div><div class="oee-val text-warning" id="perf-${m.id}">0%</div></div>
-                            <div class="oee-item"><div class="oee-label">QUAL</div><div class="oee-val text-success" id="qual-${m.id}">0%</div></div>
-                            <div class="oee-item"><div class="oee-label">OEE</div><div class="oee-val" style="color:var(--purple)" id="oee-${m.id}">0%</div></div>
-                        </div>
-                    </div>
-                `).join('');
+                    `;
+                    
+                    if(m.type === 'club') clubContainer.innerHTML += html;
+                    else roundContainer.innerHTML += html;
+                });
             },
 
-            updateDashboard() {
-                let globalTotal = 0;
-                let sumOee = 0;
-                let count = 0;
+            updateValues() {
+                let grandAct = 0, grandTheo = 0;
+                let clubAct = 0, clubTheo = 0;
+                let roundAct = 0, roundTheo = 0;
 
                 Config.machines.forEach(m => {
                     const actual = State.counters[m.id] || 0;
-                    const calculations = Services.calculateOEE(m.id, actual);
+                    const calc = Services.calculateData(m.id, actual);
 
-                    this.setValidText(`val-${m.id}`, actual);
-                    this.setValidText(`target-${m.id}`, calculations.target);
-                    this.setValidText(`avail-${m.id}`, calculations.availability + '%');
-                    this.setValidText(`perf-${m.id}`, calculations.performance + '%');
-                    this.setValidText(`oee-${m.id}`, calculations.oee + '%');
+                    // Update Card DOM
+                    this.setText(`act-${m.id}`, actual);
+                    this.setText(`theo-${m.id}`, calc.target);
+                    this.setText(`eff-${m.id}`, calc.eff + '%');
 
-                    globalTotal += actual;
-                    sumOee += parseFloat(calculations.oee);
-                    count++;
-                });
-
-                const avgOee = count > 0 ? (sumOee / count).toFixed(1) : 0;
-                this.setValidText('totalProd', (globalTotal + State.manualOffset).toLocaleString());
-                this.setValidText('avgOee', avgOee + '%');
-                
-                Config.machines.forEach(m => {
-                    const el = document.getElementById(`oee-${m.id}`);
-                    if(el) {
-                        const oee = parseFloat(el.innerText);
-                        const card = document.getElementById(`card-${m.id}`);
-                        card.style.borderLeft = `4px solid ${oee >= 85 ? 'var(--success)' : oee >= 60 ? 'var(--warning)' : 'var(--danger)'}`;
+                    // Aggregate Data
+                    grandAct += actual;
+                    grandTheo += calc.target;
+                    
+                    if(m.type === 'club') {
+                        clubAct += actual; clubTheo += calc.target;
+                    } else {
+                        roundAct += actual; roundTheo += calc.target;
                     }
                 });
+
+                // Update Grand Total (Big Box)
+                this.setText('grandTotal', (grandAct + State.manualOffset).toLocaleString());
+                this.setText('grandActual', (grandAct + State.manualOffset).toLocaleString());
+                this.setText('grandTheory', grandTheo.toLocaleString());
+                
+                const grandEff = grandTheo > 0 ? ((grandAct / grandTheo) * 100).toFixed(0) : 0;
+                this.setText('grandEff', grandEff + '%');
+
+                // Update Section Summaries
+                this.setText('clubActual', clubAct.toLocaleString());
+                this.setText('clubTheory', clubTheo.toLocaleString());
+                const clubEff = clubTheo > 0 ? ((clubAct / clubTheo) * 100).toFixed(0) : 0;
+                this.setText('clubEff', clubEff + '%');
+
+                this.setText('roundActual', roundAct.toLocaleString());
+                this.setText('roundTheory', roundTheo.toLocaleString());
+                const roundEff = roundTheo > 0 ? ((roundAct / roundTheo) * 100).toFixed(0) : 0;
+                this.setText('roundEff', roundEff + '%');
             },
 
-            setValidText(id, val) {
+            setText(id, val) {
                 const el = document.getElementById(id);
                 if(el && el.innerText != val) el.innerText = val;
-            },
-
-            updateStatus() {
-                const el = document.getElementById('connectionStatus');
-                if(State.isConnected.mqtt && State.isConnected.firebase) {
-                    el.innerText = "● SYSTEM ONLINE";
-                    el.style.color = "var(--success)";
-                } else {
-                    el.innerText = "○ CONNECTING...";
-                    el.style.color = "var(--warning)";
-                }
-            },
-
-            updateClock() {
-                const now = new Date();
-                document.getElementById('clock').innerText = now.toLocaleTimeString('id-ID');
-            },
-
-            toggleTheme() {
-                const html = document.documentElement;
-                const current = html.getAttribute('data-theme');
-                const next = current === 'dark' ? 'light' : 'dark';
-                html.setAttribute('data-theme', next);
-                localStorage.setItem('theme', next);
-            },
-
-            initChart() {
-                const ctx = document.getElementById('productionChart').getContext('2d');
-                State.chartInstance = new Chart(ctx, {
-                    type: 'bar',
-                    data: {
-                        labels: ['08:00', '09:00', '10:00', '11:00', '12:00', '13:00', '14:00'],
-                        datasets: [{
-                            label: 'Hourly Output',
-                            data: [1200, 1900, 300, 500, 200, 300, 100],
-                            backgroundColor: '#38bdf8',
-                            borderRadius: 4
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: { legend: { display: false } },
-                        scales: {
-                            y: { grid: { color: '#334155', borderDash: [5, 5] } },
-                            x: { grid: { display: false } }
-                        }
-                    }
-                });
             }
         };
 
-        // --- AUTH SYSTEM ---
+        // --- 5. AUTHENTICATION ---
         const Auth = {
             login() {
                 const u = document.getElementById('username').value;
                 const p = document.getElementById('password').value;
-                if(u === "admin" && p === "admin123") {
-                    document.getElementById('authModal').style.display = 'none';
+                if(u === 'admin' && p === 'admin123') {
+                    localStorage.setItem('phi_auth', 'true');
+                    document.getElementById('authModal').classList.add('hidden');
                     document.getElementById('appContent').classList.remove('hidden');
-                    
-                    document.getElementById('loadingOverlay').classList.remove('hidden');
-                    
-                    localStorage.setItem('isAuth', 'true');
                     Services.init();
                     UI.init();
                 } else {
-                    Swal.fire("Error", "Invalid Credentials", "error");
+                    Swal.fire("Error", "Username/Password Wrong", "error");
                 }
             },
             logout() {
-                localStorage.removeItem('isAuth');
+                localStorage.removeItem('phi_auth');
                 location.reload();
             },
             check() {
-                const loading = document.getElementById('loadingOverlay');
-                
-                if(localStorage.getItem('isAuth')) {
-                    document.getElementById('authModal').style.display = 'none';
+                if(localStorage.getItem('phi_auth')) {
+                    document.getElementById('authModal').classList.add('hidden');
                     document.getElementById('appContent').classList.remove('hidden');
                     Services.init();
-                    UI.init(); 
+                    UI.init();
                 } else {
-                    // Jika belum login, pastikan modal muncul
-                    if(loading) loading.classList.add('hidden');
-                    document.getElementById('authModal').style.display = 'flex';
+                    document.getElementById('authModal').classList.remove('hidden');
+                    document.getElementById('loading').classList.add('hidden');
                 }
             }
         };
 
-        // --- EXPOSE TO GLOBAL WINDOW ---
-        // Dengan script biasa, ini sebenarnya otomatis global,
-        // tapi kita definisikan eksplisit agar aman.
-        window.App = { 
-            Auth: Auth, 
-            UI: UI, 
-            Data: { manualReset: () => Services.resetSystem() }, 
-            Charts: { setPeriod: (p) => alert("Feature: " + p) } 
-        };
+        // EXPOSE TO GLOBAL
+        window.App = { Auth, Data: { manualReset: () => Services.resetSystem() } };
 
-        // --- BOOTSTRAP ---
+        // START APP
         window.onload = () => {
-            const savedTheme = localStorage.getItem('theme') || 'dark';
-            document.documentElement.setAttribute('data-theme', savedTheme);
-            
-            setTimeout(() => {
-                Auth.check();
-            }, 500); 
+            setTimeout(() => Auth.check(), 500);
         };
     </script>
 </body>
