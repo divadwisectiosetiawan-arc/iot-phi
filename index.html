@@ -1,196 +1,387 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 <head>
-<meta charset="UTF-8">
-<title>Sardines Production Dashboard</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SARDINES PRODUCTION - Professional Dashboard</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
-<style>
-*{
-    box-sizing:border-box;
-    font-family:Arial, Helvetica, sans-serif;
-}
+    <style>
+        /* --- DESIGN TOKENS (Palette Warna Profesional) --- */
+        :root {
+            --bg-body: #f8f9fa; /* Abu-abu sangat muda, bersih */
+            --text-primary: #1f2937; /* Hampir hitam, lebih lembut di mata */
+            --text-secondary: #6b7280; /* Abu-abu untuk label */
+            --text-header-blue: #1e40af; /* Biru tua profesional */
+            --text-header-red: #b91c1c;
 
-body{
-    margin:0;
-    background:#f2f2f2;
-}
+            /* Gradient Ungu Elegan */
+            --purple-primary: #5b21b6;
+            --purple-grad-start: #4c1d95;
+            --purple-grad-end: #6d28d9;
 
-.container{
-    width:1300px;
-    margin:auto;
-    padding:20px;
-}
+            /* Gradient Hijau Elegan */
+            --green-primary: #15803d;
+            --green-grad-start: #166534;
+            --green-grad-end: #15803d;
 
-/* HEADER */
-.header{
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-}
+            --red-ribbon: #dc2626;
+            --white: #ffffff;
+            --border-subtle: #e5e7eb;
+            
+            /* Bayangan lembut untuk kesan elegan */
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
 
-.header h1{
-    margin:0;
-    color:#3a4da3;
-    letter-spacing:2px;
-}
+        /* --- BASE STYLES --- */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            background-color: var(--bg-body); 
+            font-family: 'Inter', sans-serif; 
+            color: var(--text-primary);
+            line-height: 1.5;
+        }
 
-.header h2{
-    margin:0;
-    color:red;
-}
+        /* Layout Container agar rapi di tengah */
+        .container {
+            max-width: 1440px; /* Lebar maksimal ideal */
+            margin: 0 auto;
+        }
 
-/* TOP BAR */
-.topbar{
-    margin-top:20px;
-    background:#5b2cff;
-    color:white;
-    padding:15px 25px;
-    border-radius:12px;
-    display:flex;
-    justify-content:space-between;
-    font-weight:bold;
-}
+        /* --- HEADER SECTION --- */
+        .top-header {
+            background: var(--white);
+            padding: 20px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-subtle);
+        }
+        .header-brand h1 {
+            color: var(--text-header-blue);
+            font-weight: 800; font-size: 24px; letter-spacing: -0.5px; line-height: 1.2;
+        }
+        .header-brand h2 {
+            color: var(--text-header-red);
+            font-weight: 600; font-size: 16px; letter-spacing: -0.5px;
+        }
+        .logo-area {
+            height: 50px; width: 150px;
+            background: #f3f4f6; border-radius: 4px; border: 1px dashed #d1d5db;
+            display: flex; align-items: center; justify-content: center; color: var(--text-secondary); font-size: 12px; font-weight: 500;
+        }
 
-/* MAIN */
-.main{
-    margin-top:20px;
-    background:#5b2cff;
-    border-radius:15px;
-    padding:25px;
-    display:flex;
-    justify-content:space-between;
-    color:white;
-}
+        /* --- NAVIGATION BAR --- */
+        .nav-bar {
+            background: var(--purple-primary);
+            color: var(--white);
+            padding: 0 30px;
+            height: 56px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: var(--shadow-md);
+        }
+        .nav-left { font-weight: 600; letter-spacing: 0.5px; }
+        .nav-links { display: flex; align-items: center; gap: 20px; font-weight: 600; font-size: 14px; }
+        .nav-link { cursor: pointer; opacity: 0.8; transition: all 0.2s; }
+        .nav-link:hover, .nav-link.active { opacity: 1; color: #fbbf24; }
+        .nav-divider { opacity: 0.4; }
+        .user-profile {
+            width: 36px; height: 36px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: background 0.2s;
+        }
+        .user-profile:hover { background: rgba(255,255,255,0.3); }
 
-.total-box p{
-    margin:0;
-}
+        /* --- DASHBOARD CONTENT WRAPPER --- */
+        .dashboard-content { padding: 30px; }
 
-.total-box h1{
-    margin:0;
-    font-size:90px;
-}
+        /* --- HERO STATS (KOTAK BESAR) --- */
+        .hero-card {
+            background: linear-gradient(135deg, var(--purple-grad-start), var(--purple-grad-end));
+            border-radius: 12px; /* Sudut lebih halus */
+            color: var(--white);
+            display: flex;
+            overflow: hidden;
+            box-shadow: var(--shadow-lg);
+            margin-bottom: 40px;
+            min-height: 220px;
+        }
+        .hero-main {
+            flex: 1;
+            padding: 40px;
+            display: flex; flex-direction: column; justify-content: center;
+            border-right: 1px solid rgba(255,255,255,0.15);
+        }
+        .hero-label { text-transform: uppercase; font-weight: 600; letter-spacing: 1px; opacity: 0.9; margin-bottom: 10px; }
+        .hero-value { font-size: 64px; font-weight: 800; line-height: 1; letter-spacing: -1px; }
 
-.performance{
-    background:#6d3cff;
-    padding:20px 30px;
-    border-radius:12px;
-}
+        .hero-details { flex: 1.4; display: flex; flex-direction: column; }
+        .hero-ribbon {
+            background: var(--red-ribbon);
+            padding: 12px; text-align: center; font-weight: 700; letter-spacing: 1px;
+            box-shadow: var(--shadow-sm);
+        }
+        .hero-metrics-container { flex-grow: 1; display: flex; }
+        .hero-metrics-left {
+            flex: 1.5; padding: 30px; display: flex; flex-direction: column; justify-content: center; gap: 20px;
+        }
+        .metric-row { display: flex; justify-content: space-between; align-items: center; }
+        .metric-label { font-weight: 600; opacity: 0.9; }
+        .metric-value { font-size: 24px; font-weight: 700; }
+        
+        .hero-metrics-right {
+            flex: 1;
+            background: rgba(0,0,0,0.1); /* Sedikit gelap untuk pembeda */
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+        }
+        .eff-label-large { font-weight: 600; opacity: 0.9; margin-bottom: 5px; }
+        .eff-value-large { font-size: 56px; font-weight: 800; }
 
-.performance h3{
-    background:#ff3b3b;
-    display:inline-block;
-    padding:6px 15px;
-    border-radius:6px;
-}
+        /* --- SECTIONS & CARDS --- */
+        .section-container { margin-bottom: 50px; }
+        
+        /* Header Section yang Rapi */
+        .section-header-group {
+            display: flex;
+            align-items: stretch;
+            margin-bottom: 20px;
+            box-shadow: var(--shadow-sm);
+            border-radius: 8px; overflow: hidden;
+        }
+        .section-title-tab {
+            padding: 15px 30px;
+            font-weight: 700; color: var(--white); text-transform: uppercase; letter-spacing: 0.5px;
+            display: flex; align-items: center;
+        }
+        .section-summary-bar {
+            flex-grow: 1;
+            background: var(--white);
+            padding: 0 30px;
+            display: flex; align-items: center; justify-content: space-between;
+            border: 1px solid var(--border-subtle); border-left: none;
+            font-weight: 600; color: var(--text-secondary); font-size: 14px;
+        }
+        .summary-point { display: flex; align-items: center; gap: 8px; }
+        .summary-val { color: var(--text-primary); font-weight: 700; font-size: 16px; }
+        .summary-divider { height: 20px; width: 1px; background: var(--border-subtle); }
 
-.performance p{
-    margin:8px 0;
-}
+        /* Tema Warna */
+        .theme-purple .section-title-tab { background: linear-gradient(to right, var(--purple-grad-start), var(--purple-grad-end)); }
+        .theme-purple .accent-color { color: var(--purple-primary); }
+        .theme-green .section-title-tab { background: linear-gradient(to right, var(--green-grad-start), var(--green-grad-end)); }
+        .theme-green .accent-color { color: var(--green-primary); }
 
-/* GRID */
-.grid{
-    margin-top:30px;
-    display:grid;
-    grid-template-columns:repeat(3,1fr);
-    gap:20px;
-}
+        /* GRID KARTU yang Responsif dan Rapi */
+        .cards-grid {
+            display: grid;
+            /* Otomatis mengatur kolom, minimal lebar kartu 280px */
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+        }
 
-.card{
-    background:white;
-    border-radius:12px;
-    padding:15px;
-}
+        /* DESAIN KARTU yang Elegan */
+        .prod-card {
+            background: var(--white);
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--border-subtle);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .prod-card:hover {
+            transform: translateY(-3px); /* Efek naik sedikit saat di-hover */
+            box-shadow: var(--shadow-md);
+        }
+        .card-header {
+            padding: 12px 20px;
+            font-weight: 700; color: var(--white); letter-spacing: 0.5px;
+        }
+        .theme-purple .card-header { background: var(--purple-primary); }
+        .theme-green .card-header { background: var(--green-primary); }
 
-.card h4{
-    background:#5b2cff;
-    color:white;
-    margin:-15px -15px 10px -15px;
-    padding:10px;
-    border-radius:12px 12px 0 0;
-}
+        .card-body {
+            padding: 20px;
+            display: flex;
+            align-items: center;
+        }
+        .card-stats-left {
+            flex: 1.5;
+            display: flex; flex-direction: column; gap: 12px;
+        }
+        .stat-pair { display: flex; justify-content: space-between; align-items: baseline; }
+        .stat-label { font-size: 12px; font-weight: 600; color: var(--text-secondary); }
+        .stat-val { font-size: 18px; font-weight: 700; color: var(--text-primary); font-feature-settings: "tnum"; /* Angka monospaced agar rapi */ }
+        
+        .card-eff-right {
+            flex: 1;
+            border-left: 2px solid var(--bg-body);
+            padding-left: 20px;
+            text-align: center;
+        }
+        .eff-label-small { font-size: 12px; font-weight: 600; color: var(--text-secondary); margin-bottom: 4px; }
+        .eff-val-small { font-size: 32px; font-weight: 800; }
 
-.card p{
-    margin:5px 0;
-}
-
-.card span{
-    font-weight:bold;
-}
-
-/* GREEN SECTION */
-.green h4{
-    background:#8bc34a;
-}
-
-</style>
+    </style>
 </head>
-
 <body>
 
-<div class="container">
+    <div class="container">
+        <header class="top-header">
+            <div class="header-brand">
+                <h1>SARDINES PRODUCTION</h1>
+                <h2>PASIFIK HARVEST INDONESIA</h2>
+            </div>
+            <div class="logo-area">LOGO PLACEHOLDER</div>
+        </header>
 
-    <div class="header">
-        <div>
-            <h1>SARDINES PRODUCTION</h1>
-            <h2>PASIFIK HARVEST INDONESIA</h2>
-        </div>
-    </div>
+        <nav class="nav-bar">
+            <div class="nav-left">Real Time System</div>
+            <div class="nav-links">
+                <span class="nav-link active">LIVE</span>
+                <span class="nav-divider">/</span>
+                <span class="nav-link">ANALYSIS</span>
+                <span class="nav-divider">/</span>
+                <span class="nav-link">HISTORY</span>
+                <div class="user-profile">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                </div>
+            </div>
+        </nav>
 
-    <div class="topbar">
-        <div>Real Time System</div>
-        <div>LIVE / ANALYSIS / HISTORY</div>
-    </div>
+        <div class="dashboard-content">
+            
+            <section class="hero-card">
+                <div class="hero-main">
+                    <div class="hero-label">Total Production</div>
+                    <div class="hero-value">295,334</div>
+                </div>
+                <div class="hero-details">
+                    <div class="hero-ribbon">OVERALL PERFORMANCE PRODUCTION</div>
+                    <div class="hero-metrics-container">
+                        <div class="hero-metrics-left">
+                            <div class="metric-row"><span class="metric-label">ACTUAL</span><span class="metric-value">295,334</span></div>
+                            <div class="metric-row"><span class="metric-label">TEORYTHICAL</span><span class="metric-value">306,977</span></div>
+                        </div>
+                        <div class="hero-metrics-right">
+                            <div class="eff-label-large">Efficien</div>
+                            <div class="eff-val-large">96%</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
 
-    <div class="main">
-        <div class="total-box">
-            <p>TOTAL PRODUCTION :</p>
-            <h1>14567</h1>
-        </div>
+            <section class="section-container theme-purple">
+                <div class="section-header-group">
+                    <div class="section-title-tab">Overall Club Can</div>
+                    <div class="section-summary-bar">
+                        <div class="summary-point">ACTUAL: <span class="summary-val">254,566</span></div>
+                        <div class="summary-divider"></div>
+                        <div class="summary-point">Efficien: <span class="summary-val accent-color">96%</span></div>
+                        <div class="summary-divider"></div>
+                        <div class="summary-point">TEORYTHICAL: <span class="summary-val">263,802</span></div>
+                        <div class="summary-divider"></div>
+                        <div class="summary-point"><span class="summary-val accent-color">96%</span></div>
+                    </div>
+                </div>
 
-        <div class="performance">
-            <h3>OVERALL PERFORMANCE PRODUCTION</h3>
-            <p>ACTUAL : 8675</p>
-            <p>TEORYTHICAL : 9675</p>
-            <p>Efficien : <b>90%</b></p>
-        </div>
-    </div>
+                <div class="cards-grid">
+                    <div class="prod-card">
+                        <div class="card-header">LINE 01</div>
+                        <div class="card-body">
+                            <div class="card-stats-left">
+                                <div class="stat-pair"><span class="stat-label">ACTUAL</span><span class="stat-val">21,348</span></div>
+                                <div class="stat-pair"><span class="stat-label">TEORYTHICAL</span><span class="stat-val">21,983</span></div>
+                            </div>
+                            <div class="card-eff-right">
+                                <div class="eff-label-small">Efficien</div><div class="eff-val-small accent-color">97%</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="prod-card">
+                        <div class="card-header">LINE 02</div>
+                        <div class="card-body">
+                            <div class="card-stats-left">
+                                <div class="stat-pair"><span class="stat-label">ACTUAL</span><span class="stat-val">21,348</span></div>
+                                <div class="stat-pair"><span class="stat-label">TEORYTHICAL</span><span class="stat-val">21,983</span></div>
+                            </div>
+                            <div class="card-eff-right">
+                                <div class="eff-label-small">Efficien</div><div class="eff-val-small accent-color">97%</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="prod-card">
+                        <div class="card-header">LINE 03</div>
+                        <div class="card-body">
+                            <div class="card-stats-left">
+                                <div class="stat-pair"><span class="stat-label">ACTUAL</span><span class="stat-val">21,348</span></div>
+                                <div class="stat-pair"><span class="stat-label">TEORYTHICAL</span><span class="stat-val">21,983</span></div>
+                            </div>
+                            <div class="card-eff-right">
+                                <div class="eff-label-small">Efficien</div><div class="eff-val-small accent-color">97%</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="prod-card">
+                        <div class="card-header">LINE 04</div>
+                        <div class="card-body">
+                            <div class="card-stats-left">
+                                <div class="stat-pair"><span class="stat-label">ACTUAL</span><span class="stat-val">21,348</span></div>
+                                <div class="stat-pair"><span class="stat-label">TEORYTHICAL</span><span class="stat-val">21,983</span></div>
+                            </div>
+                            <div class="card-eff-right">
+                                <div class="eff-label-small">Efficien</div><div class="eff-val-small accent-color">97%</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
 
-    <div class="grid">
+            <section class="section-container theme-green">
+                <div class="section-header-group">
+                    <div class="section-title-tab">Overall Round Can</div>
+                    <div class="section-summary-bar">
+                        <div class="summary-point">ACTUAL: <span class="summary-val">40,768</span></div>
+                        <div class="summary-divider"></div>
+                        <div class="summary-point">Efficien: <span class="summary-val accent-color">94%</span></div>
+                        <div class="summary-divider"></div>
+                        <div class="summary-point">TEORYTHICAL: <span class="summary-val">43,175</span></div>
+                        <div class="summary-divider"></div>
+                        <div class="summary-point"><span class="summary-val accent-color">94%</span></div>
+                    </div>
+                </div>
 
-        <div class="card">
-            <h4>OVERALL CLUB CAN</h4>
-            <p>ACTUAL : 8675</p>
-            <p>TEORYTHICAL : 9876</p>
-            <span>Efficien : 90%</span>
-        </div>
+                <div class="cards-grid">
+                    <div class="prod-card">
+                        <div class="card-header">LINE 05</div>
+                        <div class="card-body">
+                            <div class="card-stats-left">
+                                <div class="stat-pair"><span class="stat-label">ACTUAL</span><span class="stat-val">20,384</span></div>
+                                <div class="stat-pair"><span class="stat-label">TEORYTHICAL</span><span class="stat-val">21,587</span></div>
+                            </div>
+                            <div class="card-eff-right">
+                                <div class="eff-label-small">Efficien</div><div class="eff-val-small accent-color">94%</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="prod-card">
+                        <div class="card-header">LINE 06</div>
+                        <div class="card-body">
+                            <div class="card-stats-left">
+                                <div class="stat-pair"><span class="stat-label">ACTUAL</span><span class="stat-val">20,384</span></div>
+                                <div class="stat-pair"><span class="stat-label">TEORYTHICAL</span><span class="stat-val">21,587</span></div>
+                            </div>
+                            <div class="card-eff-right">
+                                <div class="eff-label-small">Efficien</div><div class="eff-val-small accent-color">94%</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
 
-        <div class="card"><h4>LINE 01</h4><p>ACTUAL : 8675</p><p>TEORYTHICAL : 9876</p><span>Efficien : 90%</span></div>
-        <div class="card"><h4>LINE 02</h4><p>ACTUAL : 8675</p><p>TEORYTHICAL : 9876</p><span>Efficien : 90%</span></div>
-        <div class="card"><h4>LINE 03</h4><p>ACTUAL : 8675</p><p>TEORYTHICAL : 9876</p><span>Efficien : 90%</span></div>
-        <div class="card"><h4>LINE 04</h4><p>ACTUAL : 8675</p><p>TEORYTHICAL : 9876</p><span>Efficien : 90%</span></div>
-        <div class="card"><h4>LINE 07</h4><p>ACTUAL : 8675</p><p>TEORYTHICAL : 9876</p><span>Efficien : 90%</span></div>
-        <div class="card"><h4>LINE 08</h4><p>ACTUAL : 8675</p><p>TEORYTHICAL : 9876</p><span>Efficien : 90%</span></div>
-        <div class="card"><h4>LINE 09</h4><p>ACTUAL : 8675</p><p>TEORYTHICAL : 9876</p><span>Efficien : 90%</span></div>
-        <div class="card"><h4>LINE 10</h4><p>ACTUAL : 8675</p><p>TEORYTHICAL : 9876</p><span>Efficien : 90%</span></div>
-        <div class="card"><h4>LINE 11</h4><p>ACTUAL : 8675</p><p>TEORYTHICAL : 9876</p><span>Efficien : 90%</span></div>
-        <div class="card"><h4>LINE 12</h4><p>ACTUAL : 8675</p><p>TEORYTHICAL : 9876</p><span>Efficien : 90%</span></div>
-        <div class="card"><h4>LINE 14</h4><p>ACTUAL : 8675</p><p>TEORYTHICAL : 9876</p><span>Efficien : 90%</span></div>
-        <div class="card"><h4>LINE 15</h4><p>ACTUAL : 8675</p><p>TEORYTHICAL : 9876</p><span>Efficien : 90%</span></div>
-
-        <div class="card green">
-            <h4>OVERALL ROUND CAN</h4>
-            <p>ACTUAL : 8675</p>
-            <p>TEORYTHICAL : 9876</p>
-            <span>Efficien : 90%</span>
-        </div>
-
-        <div class="card green"><h4>LINE 05</h4><p>ACTUAL : 8675</p><p>TEORYTHICAL : 9876</p><span>Efficien : 90%</span></div>
-        <div class="card green"><h4>LINE 06</h4><p>ACTUAL : 8675</p><p>TEORYTHICAL : 9876</p><span>Efficien : 90%</span></div>
-
-    </div>
-
-</div>
-
-</body>
+        </div> </div> </body>
 </html>
