@@ -41,9 +41,8 @@
         .brand h1 { color: #1e3a8a; font-weight: 900; font-size: 28px; letter-spacing: 0.5px; line-height: 1.1; }
         .brand h2 { color: var(--color-loss); font-weight: 700; font-size: 18px; letter-spacing: 0.5px; }
         
-        /* PERBAIKAN CSS LOGO BOX */
         .logo-box { 
-            width: 150px; /* Lebar disesuaikan */
+            width: 150px; 
             height: 60px; 
             display: flex; 
             align-items: center; 
@@ -52,7 +51,7 @@
         .logo-box img {
             max-width: 100%;
             max-height: 100%;
-            object-fit: contain; /* Agar logo tidak gepeng */
+            object-fit: contain; 
         }
 
         .nav-bar { background: #4a148c; color: white; height: 46px; padding: 0 30px; display: flex; justify-content: space-between; align-items: center; font-weight: 700; font-size: 14px; margin-bottom: 30px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
@@ -60,22 +59,24 @@
         .nav-right span:hover { opacity: 1; color: #fff; }
         .nav-right span.active { opacity: 1; color: #ffd700; text-decoration: underline; }
         
-        /* PERBAIKAN CSS USER ICON */
         .user-icon { 
             width: 32px; 
             height: 32px; 
-            background: #ccc; /* Warna fallback jika gambar tidak ada */
+            background: #ccc; 
             border-radius: 50%; 
             display: inline-block; 
             vertical-align: middle; 
             margin-left: 10px;
-            overflow: hidden; /* Penting agar gambar tetap bulat */
+            overflow: hidden; 
             border: 2px solid rgba(255,255,255,0.3);
+            cursor: pointer; /* Menambahkan kursor jari saat dihover */
         }
+        .user-icon:hover { border-color: #ffd700; } /* Efek hover pada icon */
+
         .user-icon img {
             width: 100%;
             height: 100%;
-            object-fit: cover; /* Agar foto memenuhi lingkaran */
+            object-fit: cover; 
         }
 
         /* --- 3. HERO SECTION --- */
@@ -149,6 +150,25 @@
         }
         .white-table tr:nth-child(even) td { background-color: #f9f9f9; }
         .white-table tr:hover td { background-color: #f0f0f0; }
+
+        /* --- 6. MODAL LOGIN STYLE (BARU) --- */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.6); z-index: 1000;
+            display: flex; justify-content: center; align-items: center;
+        }
+        .modal-box {
+            background: white; width: 350px; padding: 30px;
+            border-radius: 8px; box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+            text-align: center; font-family: 'Roboto', sans-serif;
+        }
+        .modal-title { font-weight: 900; font-size: 20px; color: var(--purple-header); margin-bottom: 20px; }
+        .form-group { margin-bottom: 15px; text-align: left; }
+        .form-group label { display: block; font-size: 12px; font-weight: 700; color: #666; margin-bottom: 5px; }
+        .form-input { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; }
+        .btn-login { width: 100%; background: var(--purple-header); color: white; border: none; padding: 12px; border-radius: 4px; font-weight: 700; cursor: pointer; margin-top: 10px; }
+        .btn-cancel { width: 100%; background: #ccc; color: #333; border: none; padding: 12px; border-radius: 4px; font-weight: 700; cursor: pointer; margin-top: 10px; }
+
     </style>
 </head>
 <body>
@@ -167,12 +187,15 @@
         <nav class="nav-bar">
             <div>Real Time System</div>
             <div class="nav-right">
+                <span id="btn-setting" class="hidden" onclick="alert('Menu Setting')">SETTING</span> 
+                <span id="sep-setting" class="hidden">/</span>
+
                 <span id="btn-live" class="active" onclick="switchView('live')">LIVE</span> / 
                 <span id="btn-analysis" onclick="switchView('analysis')">ANALYSIS</span> / 
                 <span id="btn-history" onclick="switchView('history')">HISTORY</span>/ 
                 <span id="btn-grafik" onclick="switchView('grafik')">GRAFIK</span> 
                 
-                <div class="user-icon">
+                <div class="user-icon" onclick="openLoginModal()" title="Login Operator">
                     <img src="ikon.png" alt="User Profile">
                 </div>
             </div>
@@ -390,6 +413,22 @@
 
     </div>
 
+    <div id="login-modal" class="modal-overlay hidden">
+        <div class="modal-box">
+            <div class="modal-title">LOGIN OPERATOR</div>
+            <div class="form-group">
+                <label>USERNAME</label>
+                <input type="text" id="username" class="form-input" placeholder="Masukkan Username">
+            </div>
+            <div class="form-group">
+                <label>PASSWORD</label>
+                <input type="password" id="password" class="form-input" placeholder="Masukkan Password">
+            </div>
+            <button class="btn-login" onclick="handleLogin()">MASUK</button>
+            <button class="btn-cancel" onclick="closeLoginModal()">BATAL</button>
+        </div>
+    </div>
+
     <script>
         const Config = {
             machines: [
@@ -431,6 +470,34 @@
                 document.getElementById('view-grafik').classList.remove('hidden');
                 document.getElementById('btn-grafik').classList.add('active');
                 renderCharts(); 
+            }
+        }
+
+        // --- FITUR LOGIN OPERATOR ---
+        function openLoginModal() {
+            document.getElementById('login-modal').classList.remove('hidden');
+        }
+
+        function closeLoginModal() {
+            document.getElementById('login-modal').classList.add('hidden');
+        }
+
+        function handleLogin() {
+            const user = document.getElementById('username').value;
+            const pass = document.getElementById('password').value;
+
+            // Username: admin, Password: 123
+            if(user === 'admin' && pass === '123') {
+                alert('LOGIN BERHASIL! Mode Operator Aktif.');
+                
+                // Tampilkan Menu Setting
+                document.getElementById('btn-setting').classList.remove('hidden');
+                document.getElementById('sep-setting').classList.remove('hidden');
+                
+                // Tutup Modal
+                closeLoginModal();
+            } else {
+                alert('Username atau Password Salah!');
             }
         }
 
