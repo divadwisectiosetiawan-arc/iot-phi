@@ -75,9 +75,18 @@
 
         /* --- 4. CARD DESIGN --- */
         .grid-container { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-top: 15px; }
+        /* Tinggi card dikembalikan normal karena speed pindah ke header */
         .card { background: white; border-radius: var(--card-radius); box-shadow: var(--card-shadow); overflow: hidden; display: flex; flex-direction: column; height: 135px; } 
 
-        .card-header { height: 42px; display: flex; justify-content: space-between; align-items: center; padding: 0 15px; font-family: 'Roboto Mono', monospace; font-size: 20px; font-weight: 700; color: white; text-transform: uppercase; letter-spacing: 1px; }
+        .card-header { height: 45px; display: flex; justify-content: space-between; align-items: center; padding: 0 15px; font-family: 'Roboto Mono', monospace; color: white; text-transform: uppercase; letter-spacing: 1px; }
+        /* Style Line Name */
+        .line-name { font-size: 20px; font-weight: 700; }
+        
+        /* Style Baru untuk Speed di Header */
+        .speed-box { text-align: right; line-height: 1.1; }
+        .speed-lbl { font-size: 10px; font-weight: 700; opacity: 0.9; }
+        .speed-val { font-size: 13px; font-weight: 900; }
+
         .time-op { font-size: 11px; font-family: 'Roboto', sans-serif; font-weight: 500; opacity: 0.9; letter-spacing: 0; }
         .time-op::before { content: "TIME OPERATION: "; font-size: 9px; opacity: 0.7; margin-right: 5px;}
 
@@ -171,7 +180,7 @@
         </header>
 
         <nav class="nav-bar">
-            <div>Real Time System</div>
+            <div>DASHBOARD MONITORING SYSTEM</div>
             <div class="nav-right">
                 <span id="btn-setting" class="hidden" onclick="switchView('setting')">SETTING</span> 
                 <span id="sep-setting" class="hidden">/</span>
@@ -210,30 +219,225 @@
 
             <div style="margin-bottom: 40px;">
                 <div class="overall-wrapper">
-                    <div class="card purple"><div class="card-header">OVERALL CLUB CAN</div><div class="card-body"><div class="card-data-left"><div class="lbl">ACTUAL</div><div class="cln">:</div><div class="val">8675</div><div class="lbl">TEORYTHICAL</div><div class="cln">:</div><div class="val">9876</div></div><div class="divider"></div><div class="card-eff-right"><div class="eff-lbl">Efficien:</div><div class="eff-val">90%</div></div></div></div>
+                    <div class="card purple"><div class="card-header"><span class="line-name">OVERALL CLUB CAN</span></div><div class="card-body"><div class="card-data-left"><div class="lbl">ACTUAL</div><div class="cln">:</div><div class="val">8675</div><div class="lbl">TEORYTHICAL</div><div class="cln">:</div><div class="val">9876</div></div><div class="divider"></div><div class="card-eff-right"><div class="eff-lbl">Efficien:</div><div class="eff-val">90%</div></div></div></div>
                 </div>
                 <div class="grid-container">
-                    <div class="card purple"><div class="card-header">LINE 01</div><div class="card-body"><div class="card-data-left"><div class="lbl">ACTUAL</div><div class="cln">:</div><div class="val">8675</div><div class="lbl">TEORYTHICAL</div><div class="cln">:</div><div class="val">9876</div></div><div class="divider"></div><div class="card-eff-right"><div class="eff-lbl">Efficien:</div><div class="eff-val">90%</div></div></div></div>
-                    <div class="card purple"><div class="card-header">LINE 02</div><div class="card-body"><div class="card-data-left"><div class="lbl">ACTUAL</div><div class="cln">:</div><div class="val">8675</div><div class="lbl">TEORYTHICAL</div><div class="cln">:</div><div class="val">9876</div></div><div class="divider"></div><div class="card-eff-right"><div class="eff-lbl">Efficien:</div><div class="eff-val">90%</div></div></div></div>
-                    <div class="card purple"><div class="card-header">LINE 03</div><div class="card-body"><div class="card-data-left"><div class="lbl">ACTUAL</div><div class="cln">:</div><div class="val">8675</div><div class="lbl">TEORYTHICAL</div><div class="cln">:</div><div class="val">9876</div></div><div class="divider"></div><div class="card-eff-right"><div class="eff-lbl">Efficien:</div><div class="eff-val">90%</div></div></div></div>
-                    <div class="card purple"><div class="card-header">LINE 04</div><div class="card-body"><div class="card-data-left"><div class="lbl">ACTUAL</div><div class="cln">:</div><div class="val">8675</div><div class="lbl">TEORYTHICAL</div><div class="cln">:</div><div class="val">9876</div></div><div class="divider"></div><div class="card-eff-right"><div class="eff-lbl">Efficien:</div><div class="eff-val">90%</div></div></div></div>
-                    <div class="card purple"><div class="card-header">LINE 07</div><div class="card-body"><div class="card-data-left"><div class="lbl">ACTUAL</div><div class="cln">:</div><div class="val">8675</div><div class="lbl">TEORYTHICAL</div><div class="cln">:</div><div class="val">9876</div></div><div class="divider"></div><div class="card-eff-right"><div class="eff-lbl">Efficien:</div><div class="eff-val">90%</div></div></div></div>
-                    <div class="card purple"><div class="card-header">LINE 08</div><div class="card-body"><div class="card-data-left"><div class="lbl">ACTUAL</div><div class="cln">:</div><div class="val">8675</div><div class="lbl">TEORYTHICAL</div><div class="cln">:</div><div class="val">9876</div></div><div class="divider"></div><div class="card-eff-right"><div class="eff-lbl">Efficien:</div><div class="eff-val">90%</div></div></div></div>
-                    <div class="card purple"><div class="card-header">LINE 09</div><div class="card-body"><div class="card-data-left"><div class="lbl">ACTUAL</div><div class="cln">:</div><div class="val">8675</div><div class="lbl">TEORYTHICAL</div><div class="cln">:</div><div class="val">9876</div></div><div class="divider"></div><div class="card-eff-right"><div class="eff-lbl">Efficien:</div><div class="eff-val">90%</div></div></div></div>
-                    <div class="card purple"><div class="card-header">LINE 10</div><div class="card-body"><div class="card-data-left"><div class="lbl">ACTUAL</div><div class="cln">:</div><div class="val">8675</div><div class="lbl">TEORYTHICAL</div><div class="cln">:</div><div class="val">9876</div></div><div class="divider"></div><div class="card-eff-right"><div class="eff-lbl">Efficien:</div><div class="eff-val">90%</div></div></div></div>
-                    <div class="card purple"><div class="card-header">LINE 11</div><div class="card-body"><div class="card-data-left"><div class="lbl">ACTUAL</div><div class="cln">:</div><div class="val">8675</div><div class="lbl">TEORYTHICAL</div><div class="cln">:</div><div class="val">9876</div></div><div class="divider"></div><div class="card-eff-right"><div class="eff-lbl">Efficien:</div><div class="eff-val">90%</div></div></div></div>
-                    <div class="card purple"><div class="card-header">LINE 12</div><div class="card-body"><div class="card-data-left"><div class="lbl">ACTUAL</div><div class="cln">:</div><div class="val">8675</div><div class="lbl">TEORYTHICAL</div><div class="cln">:</div><div class="val">9876</div></div><div class="divider"></div><div class="card-eff-right"><div class="eff-lbl">Efficien:</div><div class="eff-val">90%</div></div></div></div>
-                    <div class="card purple"><div class="card-header">LINE 14</div><div class="card-body"><div class="card-data-left"><div class="lbl">ACTUAL</div><div class="cln">:</div><div class="val">8675</div><div class="lbl">TEORYTHICAL</div><div class="cln">:</div><div class="val">9876</div></div><div class="divider"></div><div class="card-eff-right"><div class="eff-lbl">Efficien:</div><div class="eff-val">90%</div></div></div></div>
-                    <div class="card purple"><div class="card-header">LINE 15</div><div class="card-body"><div class="card-data-left"><div class="lbl">ACTUAL</div><div class="cln">:</div><div class="val">8675</div><div class="lbl">TEORYTHICAL</div><div class="cln">:</div><div class="val">9876</div></div><div class="divider"></div><div class="card-eff-right"><div class="eff-lbl">Efficien:</div><div class="eff-val">90%</div></div></div></div>
+                    <div class="card purple">
+                        <div class="card-header">
+                            <span class="line-name">LINE 01</span>
+                            <div class="speed-box"><div class="speed-lbl">SPEED:</div><div class="speed-val">70/CPM</div></div>
+                        </div>
+                        <div class="card-body">
+                            <div class="card-data-left">
+                                <div class="lbl">ACTUAL</div><div class="cln">:</div><div class="val">8675</div>
+                                <div class="lbl">TEORYTHICAL</div><div class="cln">:</div><div class="val">9876</div>
+                            </div>
+                            <div class="divider"></div>
+                            <div class="card-eff-right"><div class="eff-lbl">Efficien:</div><div class="eff-val">90%</div></div>
+                        </div>
+                    </div>
+
+                    <div class="card purple">
+                        <div class="card-header">
+                            <span class="line-name">LINE 02</span>
+                            <div class="speed-box"><div class="speed-lbl">SPEED:</div><div class="speed-val">70/CPM</div></div>
+                        </div>
+                        <div class="card-body">
+                            <div class="card-data-left">
+                                <div class="lbl">ACTUAL</div><div class="cln">:</div><div class="val">8675</div>
+                                <div class="lbl">TEORYTHICAL</div><div class="cln">:</div><div class="val">9876</div>
+                            </div>
+                            <div class="divider"></div>
+                            <div class="card-eff-right"><div class="eff-lbl">Efficien:</div><div class="eff-val">90%</div></div>
+                        </div>
+                    </div>
+
+                    <div class="card purple">
+                        <div class="card-header">
+                            <span class="line-name">LINE 03</span>
+                            <div class="speed-box"><div class="speed-lbl">SPEED:</div><div class="speed-val">70/CPM</div></div>
+                        </div>
+                        <div class="card-body">
+                            <div class="card-data-left">
+                                <div class="lbl">ACTUAL</div><div class="cln">:</div><div class="val">8675</div>
+                                <div class="lbl">TEORYTHICAL</div><div class="cln">:</div><div class="val">9876</div>
+                            </div>
+                            <div class="divider"></div>
+                            <div class="card-eff-right"><div class="eff-lbl">Efficien:</div><div class="eff-val">90%</div></div>
+                        </div>
+                    </div>
+
+                    <div class="card purple">
+                        <div class="card-header">
+                            <span class="line-name">LINE 04</span>
+                            <div class="speed-box"><div class="speed-lbl">SPEED:</div><div class="speed-val">70/CPM</div></div>
+                        </div>
+                        <div class="card-body">
+                            <div class="card-data-left">
+                                <div class="lbl">ACTUAL</div><div class="cln">:</div><div class="val">8675</div>
+                                <div class="lbl">TEORYTHICAL</div><div class="cln">:</div><div class="val">9876</div>
+                            </div>
+                            <div class="divider"></div>
+                            <div class="card-eff-right"><div class="eff-lbl">Efficien:</div><div class="eff-val">90%</div></div>
+                        </div>
+                    </div>
+
+                    <div class="card purple">
+                        <div class="card-header">
+                            <span class="line-name">LINE 07</span>
+                            <div class="speed-box"><div class="speed-lbl">SPEED:</div><div class="speed-val">70/CPM</div></div>
+                        </div>
+                        <div class="card-body">
+                            <div class="card-data-left">
+                                <div class="lbl">ACTUAL</div><div class="cln">:</div><div class="val">8675</div>
+                                <div class="lbl">TEORYTHICAL</div><div class="cln">:</div><div class="val">9876</div>
+                            </div>
+                            <div class="divider"></div>
+                            <div class="card-eff-right"><div class="eff-lbl">Efficien:</div><div class="eff-val">90%</div></div>
+                        </div>
+                    </div>
+
+                    <div class="card purple">
+                        <div class="card-header">
+                            <span class="line-name">LINE 08</span>
+                            <div class="speed-box"><div class="speed-lbl">SPEED:</div><div class="speed-val">70/CPM</div></div>
+                        </div>
+                        <div class="card-body">
+                            <div class="card-data-left">
+                                <div class="lbl">ACTUAL</div><div class="cln">:</div><div class="val">8675</div>
+                                <div class="lbl">TEORYTHICAL</div><div class="cln">:</div><div class="val">9876</div>
+                            </div>
+                            <div class="divider"></div>
+                            <div class="card-eff-right"><div class="eff-lbl">Efficien:</div><div class="eff-val">90%</div></div>
+                        </div>
+                    </div>
+
+                    <div class="card purple">
+                        <div class="card-header">
+                            <span class="line-name">LINE 09</span>
+                            <div class="speed-box"><div class="speed-lbl">SPEED:</div><div class="speed-val">70/CPM</div></div>
+                        </div>
+                        <div class="card-body">
+                            <div class="card-data-left">
+                                <div class="lbl">ACTUAL</div><div class="cln">:</div><div class="val">8675</div>
+                                <div class="lbl">TEORYTHICAL</div><div class="cln">:</div><div class="val">9876</div>
+                            </div>
+                            <div class="divider"></div>
+                            <div class="card-eff-right"><div class="eff-lbl">Efficien:</div><div class="eff-val">90%</div></div>
+                        </div>
+                    </div>
+
+                    <div class="card purple">
+                        <div class="card-header">
+                            <span class="line-name">LINE 10</span>
+                            <div class="speed-box"><div class="speed-lbl">SPEED:</div><div class="speed-val">70/CPM</div></div>
+                        </div>
+                        <div class="card-body">
+                            <div class="card-data-left">
+                                <div class="lbl">ACTUAL</div><div class="cln">:</div><div class="val">8675</div>
+                                <div class="lbl">TEORYTHICAL</div><div class="cln">:</div><div class="val">9876</div>
+                            </div>
+                            <div class="divider"></div>
+                            <div class="card-eff-right"><div class="eff-lbl">Efficien:</div><div class="eff-val">90%</div></div>
+                        </div>
+                    </div>
+
+                    <div class="card purple">
+                        <div class="card-header">
+                            <span class="line-name">LINE 11</span>
+                            <div class="speed-box"><div class="speed-lbl">SPEED:</div><div class="speed-val">70/CPM</div></div>
+                        </div>
+                        <div class="card-body">
+                            <div class="card-data-left">
+                                <div class="lbl">ACTUAL</div><div class="cln">:</div><div class="val">8675</div>
+                                <div class="lbl">TEORYTHICAL</div><div class="cln">:</div><div class="val">9876</div>
+                            </div>
+                            <div class="divider"></div>
+                            <div class="card-eff-right"><div class="eff-lbl">Efficien:</div><div class="eff-val">90%</div></div>
+                        </div>
+                    </div>
+
+                    <div class="card purple">
+                        <div class="card-header">
+                            <span class="line-name">LINE 12</span>
+                            <div class="speed-box"><div class="speed-lbl">SPEED:</div><div class="speed-val">70/CPM</div></div>
+                        </div>
+                        <div class="card-body">
+                            <div class="card-data-left">
+                                <div class="lbl">ACTUAL</div><div class="cln">:</div><div class="val">8675</div>
+                                <div class="lbl">TEORYTHICAL</div><div class="cln">:</div><div class="val">9876</div>
+                            </div>
+                            <div class="divider"></div>
+                            <div class="card-eff-right"><div class="eff-lbl">Efficien:</div><div class="eff-val">90%</div></div>
+                        </div>
+                    </div>
+
+                    <div class="card purple">
+                        <div class="card-header">
+                            <span class="line-name">LINE 14</span>
+                            <div class="speed-box"><div class="speed-lbl">SPEED:</div><div class="speed-val">70/CPM</div></div>
+                        </div>
+                        <div class="card-body">
+                            <div class="card-data-left">
+                                <div class="lbl">ACTUAL</div><div class="cln">:</div><div class="val">8675</div>
+                                <div class="lbl">TEORYTHICAL</div><div class="cln">:</div><div class="val">9876</div>
+                            </div>
+                            <div class="divider"></div>
+                            <div class="card-eff-right"><div class="eff-lbl">Efficien:</div><div class="eff-val">90%</div></div>
+                        </div>
+                    </div>
+
+                    <div class="card purple">
+                        <div class="card-header">
+                            <span class="line-name">LINE 15</span>
+                            <div class="speed-box"><div class="speed-lbl">SPEED:</div><div class="speed-val">70/CPM</div></div>
+                        </div>
+                        <div class="card-body">
+                            <div class="card-data-left">
+                                <div class="lbl">ACTUAL</div><div class="cln">:</div><div class="val">8675</div>
+                                <div class="lbl">TEORYTHICAL</div><div class="cln">:</div><div class="val">9876</div>
+                            </div>
+                            <div class="divider"></div>
+                            <div class="card-eff-right"><div class="eff-lbl">Efficien:</div><div class="eff-val">90%</div></div>
+                        </div>
+                    </div>
                 </div>
             </div>
+            
             <div>
                 <div class="overall-wrapper">
-                    <div class="card green"><div class="card-header">OVERALL ROUND CAN</div><div class="card-body"><div class="card-data-left"><div class="lbl">ACTUAL</div><div class="cln">:</div><div class="val">8675</div><div class="lbl">TEORYTHICAL</div><div class="cln">:</div><div class="val">9876</div></div><div class="divider"></div><div class="card-eff-right"><div class="eff-lbl">Efficien:</div><div class="eff-val">90%</div></div></div></div>
+                    <div class="card green"><div class="card-header"><span class="line-name">OVERALL ROUND CAN</span></div><div class="card-body"><div class="card-data-left"><div class="lbl">ACTUAL</div><div class="cln">:</div><div class="val">8675</div><div class="lbl">TEORYTHICAL</div><div class="cln">:</div><div class="val">9876</div></div><div class="divider"></div><div class="card-eff-right"><div class="eff-lbl">Efficien:</div><div class="eff-val">90%</div></div></div></div>
                 </div>
                 <div class="grid-container">
-                    <div class="card green"><div class="card-header">LINE 05</div><div class="card-body"><div class="card-data-left"><div class="lbl">ACTUAL</div><div class="cln">:</div><div class="val">8675</div><div class="lbl">TEORYTHICAL</div><div class="cln">:</div><div class="val">9876</div></div><div class="divider"></div><div class="card-eff-right"><div class="eff-lbl">Efficien:</div><div class="eff-val">90%</div></div></div></div>
-                    <div class="card green"><div class="card-header">LINE 06</div><div class="card-body"><div class="card-data-left"><div class="lbl">ACTUAL</div><div class="cln">:</div><div class="val">8675</div><div class="lbl">TEORYTHICAL</div><div class="cln">:</div><div class="val">9876</div></div><div class="divider"></div><div class="card-eff-right"><div class="eff-lbl">Efficien:</div><div class="eff-val">90%</div></div></div></div>
+                    <div class="card green">
+                        <div class="card-header">
+                            <span class="line-name">LINE 05</span>
+                            <div class="speed-box"><div class="speed-lbl">SPEED:</div><div class="speed-val">70/CPM</div></div>
+                        </div>
+                        <div class="card-body">
+                            <div class="card-data-left">
+                                <div class="lbl">ACTUAL</div><div class="cln">:</div><div class="val">8675</div>
+                                <div class="lbl">TEORYTHICAL</div><div class="cln">:</div><div class="val">9876</div>
+                            </div>
+                            <div class="divider"></div>
+                            <div class="card-eff-right"><div class="eff-lbl">Efficien:</div><div class="eff-val">90%</div></div>
+                        </div>
+                    </div>
+
+                    <div class="card green">
+                        <div class="card-header">
+                            <span class="line-name">LINE 06</span>
+                            <div class="speed-box"><div class="speed-lbl">SPEED:</div><div class="speed-val">70/CPM</div></div>
+                        </div>
+                        <div class="card-body">
+                            <div class="card-data-left">
+                                <div class="lbl">ACTUAL</div><div class="cln">:</div><div class="val">8675</div>
+                                <div class="lbl">TEORYTHICAL</div><div class="cln">:</div><div class="val">9876</div>
+                            </div>
+                            <div class="divider"></div>
+                            <div class="card-eff-right"><div class="eff-lbl">Efficien:</div><div class="eff-val">90%</div></div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
