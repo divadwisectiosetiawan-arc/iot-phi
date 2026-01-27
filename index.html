@@ -98,24 +98,19 @@
 
         .overall-wrapper { width: 320px; margin-bottom: 20px; }
 
-        /* --- 5. SETTING PAGE SPECIFIC STYLES (BARU) --- */
+        /* --- 5. SETTING PAGE SPECIFIC STYLES --- */
         .setting-top-section { display: flex; gap: 20px; height: 180px; margin-bottom: 20px; }
         
         .setting-total-box {
-            flex: 1;
-            background: var(--neon-purple);
-            border-radius: 8px;
+            flex: 1; background: var(--neon-purple); border-radius: 8px;
             border: 2px solid white; outline: 2px solid var(--neon-purple);
-            display: flex; flex-direction: column; justify-content: center; align-items: center;
-            color: white;
+            display: flex; flex-direction: column; justify-content: center; align-items: center; color: white;
         }
         .setting-total-title { font-weight: 700; font-size: 18px; margin-bottom: 10px; text-transform: uppercase; }
         .setting-total-val { font-weight: 900; font-size: 80px; line-height: 1; }
 
         .setting-perf-box {
-            flex: 1;
-            border-radius: 8px; overflow: hidden;
-            display: flex; flex-direction: column;
+            flex: 1; border-radius: 8px; overflow: hidden; display: flex; flex-direction: column;
             border: 2px solid white; outline: 2px solid var(--btn-red);
         }
         .setting-perf-header { background: var(--btn-red); color: white; padding: 10px; font-weight: 900; text-align: center; font-size: 16px; }
@@ -127,7 +122,6 @@
         .btn-red { background: var(--btn-red); }
         .btn-green { background: var(--green-header); }
         
-        /* Badge Setting di Header Kartu */
         .setting-badge { 
             background: var(--btn-red); color: #3a1b85; 
             padding: 2px 8px; font-size: 14px; font-weight: 900; 
@@ -327,23 +321,8 @@
 
             <div style="margin-bottom: 40px;">
                 <div class="overall-wrapper">
-                    <div class="card purple">
-                        <div class="card-header">OVERALL CLUB CAN</div>
-                        <div class="card-body">
-                            <div class="card-data-left">
-                                <div class="lbl">AVAILABILITY</div> <div class="cln">:</div> <div class="val">80%</div>
-                                <div class="lbl">PERFORMANCE</div> <div class="cln">:</div> <div class="val">87%</div>
-                                <div class="lbl text-loss">LOSS</div> <div class="cln text-loss">:</div> <div class="val text-loss">10%</div>
-                            </div>
-                            <div class="divider"></div>
-                            <div class="card-eff-right">
-                                <div class="eff-lbl">OEE:</div>
-                                <div class="eff-val">90%</div>
-                            </div>
-                        </div>
-                    </div>
+                    <div class="card purple"><div class="card-header">OVERALL CLUB CAN</div><div class="card-body"><div class="card-data-left"><div class="lbl">AVAILABILITY</div><div class="cln">:</div><div class="val">80%</div><div class="lbl">PERFORMANCE</div><div class="cln">:</div><div class="val">87%</div><div class="lbl text-loss">LOSS</div><div class="cln text-loss">:</div><div class="val text-loss">10%</div></div><div class="divider"></div><div class="card-eff-right"><div class="eff-lbl">OEE:</div><div class="eff-val">90%</div></div></div></div>
                 </div>
-
                 <div class="grid-container">
                     <div class="card purple"><div class="card-header"><span>LINE 01</span><span class="time-op">05:35:05</span></div><div class="card-body"><div class="card-data-left"><div class="lbl">AVAILABILITY</div><div class="cln">:</div><div class="val">80%</div><div class="lbl">PERFORMANCE</div><div class="cln">:</div><div class="val">87%</div><div class="lbl text-loss">LOSS</div><div class="cln text-loss">:</div><div class="val text-loss">10%</div></div><div class="divider"></div><div class="card-eff-right"><div class="eff-lbl">OEE:</div><div class="eff-val">90%</div></div></div></div>
                     <div class="card purple"><div class="card-header"><span>LINE 02</span><span class="time-op">05:35:05</span></div><div class="card-body"><div class="card-data-left"><div class="lbl">AVAILABILITY</div><div class="cln">:</div><div class="val">80%</div><div class="lbl">PERFORMANCE</div><div class="cln">:</div><div class="val">87%</div><div class="lbl text-loss">LOSS</div><div class="cln text-loss">:</div><div class="val text-loss">10%</div></div><div class="divider"></div><div class="card-eff-right"><div class="eff-lbl">OEE:</div><div class="eff-val">90%</div></div></div></div>
@@ -358,28 +337,13 @@
                     <div class="card purple"><div class="card-header"><span>LINE 14</span><span class="time-op">05:35:05</span></div><div class="card-body"><div class="card-data-left"><div class="lbl">AVAILABILITY</div><div class="cln">:</div><div class="val">80%</div><div class="lbl">PERFORMANCE</div><div class="cln">:</div><div class="val">87%</div><div class="lbl text-loss">LOSS</div><div class="cln text-loss">:</div><div class="val text-loss">10%</div></div><div class="divider"></div><div class="card-eff-right"><div class="eff-lbl">OEE:</div><div class="eff-val">90%</div></div></div></div>
                     <div class="card purple"><div class="card-header"><span>LINE 15</span><span class="time-op">05:35:05</span></div><div class="card-body"><div class="card-data-left"><div class="lbl">AVAILABILITY</div><div class="cln">:</div><div class="val">80%</div><div class="lbl">PERFORMANCE</div><div class="cln">:</div><div class="val">87%</div><div class="lbl text-loss">LOSS</div><div class="cln text-loss">:</div><div class="val text-loss">10%</div></div><div class="divider"></div><div class="card-eff-right"><div class="eff-lbl">OEE:</div><div class="eff-val">90%</div></div></div></div>
                 </div>
-
+                
                 <div class="overall-wrapper" style="margin-top: 40px;">
-                    <div class="card green">
-                        <div class="card-header">OVERALL ROUND CAN</div>
-                        <div class="card-body">
-                            <div class="card-data-left">
-                                <div class="lbl">AVAILABILITY</div> <div class="cln">:</div> <div class="val">80%</div>
-                                <div class="lbl">PERFORMANCE</div> <div class="cln">:</div> <div class="val">87%</div>
-                                <div class="lbl text-loss">LOSS</div> <div class="cln text-loss">:</div> <div class="val text-loss">10%</div>
-                            </div>
-                            <div class="divider"></div>
-                            <div class="card-eff-right">
-                                <div class="eff-lbl">OEE:</div>
-                                <div class="eff-val">90%</div>
-                            </div>
-                        </div>
-                    </div>
+                    <div class="card green"><div class="card-header">OVERALL ROUND CAN</div><div class="card-body"><div class="card-data-left"><div class="lbl">AVAILABILITY</div><div class="cln">:</div><div class="val">80%</div><div class="lbl">PERFORMANCE</div><div class="cln">:</div><div class="val">87%</div><div class="lbl text-loss">LOSS</div><div class="cln text-loss">:</div><div class="val text-loss">10%</div></div><div class="divider"></div><div class="card-eff-right"><div class="eff-lbl">Efficien:</div><div class="eff-val">90%</div></div></div></div>
                 </div>
-
                 <div class="grid-container">
-                    <div class="card green"><div class="card-header"><span>LINE 05</span><span class="time-op">05:35:05</span></div><div class="card-body"><div class="card-data-left"><div class="lbl">AVAILABILITY</div><div class="cln">:</div><div class="val">80%</div><div class="lbl">PERFORMANCE</div><div class="cln">:</div><div class="val">87%</div><div class="lbl text-loss">LOSS</div><div class="cln text-loss">:</div><div class="val text-loss">10%</div></div><div class="divider"></div><div class="card-eff-right"><div class="eff-lbl">OEE:</div><div class="eff-val">90%</div></div></div></div>
-                    <div class="card green"><div class="card-header"><span>LINE 06</span><span class="time-op">05:35:05</span></div><div class="card-body"><div class="card-data-left"><div class="lbl">AVAILABILITY</div><div class="cln">:</div><div class="val">80%</div><div class="lbl">PERFORMANCE</div><div class="cln">:</div><div class="val">87%</div><div class="lbl text-loss">LOSS</div><div class="cln text-loss">:</div><div class="val text-loss">10%</div></div><div class="divider"></div><div class="card-eff-right"><div class="eff-lbl">OEE:</div><div class="eff-val">90%</div></div></div></div>
+                    <div class="card green"><div class="card-header"><span>LINE 05</span><span class="time-op">05:35:05</span></div><div class="card-body"><div class="card-data-left"><div class="lbl">AVAILABILITY</div><div class="cln">:</div><div class="val">80%</div><div class="lbl">PERFORMANCE</div><div class="cln">:</div><div class="val">87%</div><div class="lbl text-loss">LOSS</div><div class="cln text-loss">:</div><div class="val text-loss">10%</div></div><div class="divider"></div><div class="card-eff-right"><div class="eff-lbl">Efficien:</div><div class="eff-val">90%</div></div></div></div>
+                    <div class="card green"><div class="card-header"><span>LINE 06</span><span class="time-op">05:35:05</span></div><div class="card-body"><div class="card-data-left"><div class="lbl">AVAILABILITY</div><div class="cln">:</div><div class="val">80%</div><div class="lbl">PERFORMANCE</div><div class="cln">:</div><div class="val">87%</div><div class="lbl text-loss">LOSS</div><div class="cln text-loss">:</div><div class="val text-loss">10%</div></div><div class="divider"></div><div class="card-eff-right"><div class="eff-lbl">Efficien:</div><div class="eff-val">90%</div></div></div></div>
                 </div>
             </div>
         </div>
@@ -435,6 +399,14 @@
                     <canvas id="chartOEE"></canvas>
                 </div>
             </div>
+
+            <div style="background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 2px 6px rgba(0,0,0,0.1);">
+                <h3 style="color:#ea2e2e; font-weight:900; margin-bottom:5px;">GRAFIK LOSS PRESENTATION</h3>
+                <h4 style="text-align:center; color:#666; font-weight:500; margin-bottom:15px; font-size:24px;">LOSS</h4>
+                <div style="height: 400px; display:flex; justify-content:center;">
+                    <canvas id="chartLoss"></canvas>
+                </div>
+            </div>
         </div>
 
     </div>
@@ -473,13 +445,13 @@
             document.getElementById('view-analysis').classList.add('hidden');
             document.getElementById('view-history').classList.add('hidden');
             document.getElementById('view-grafik').classList.add('hidden');
-            document.getElementById('view-setting').classList.add('hidden'); // Reset Setting
+            document.getElementById('view-setting').classList.add('hidden'); 
             
             document.getElementById('btn-live').classList.remove('active');
             document.getElementById('btn-analysis').classList.remove('active');
             document.getElementById('btn-history').classList.remove('active');
             document.getElementById('btn-grafik').classList.remove('active');
-            document.getElementById('btn-setting').classList.remove('active'); // Reset Setting Btn
+            document.getElementById('btn-setting').classList.remove('active'); 
 
             if (viewName === 'live') {
                 document.getElementById('view-live').classList.remove('hidden');
@@ -522,14 +494,10 @@
             if(user === 'admin' && pass === '123') {
                 alert('LOGIN BERHASIL! Mode Operator Aktif.');
                 
-                // Tampilkan Menu Setting
                 document.getElementById('btn-setting').classList.remove('hidden');
                 document.getElementById('sep-setting').classList.remove('hidden');
                 
-                // Langsung masuk ke halaman Setting setelah login
                 switchView('setting');
-                
-                // Tutup Modal
                 closeLoginModal();
             } else {
                 alert('Username atau Password Salah!');
@@ -609,6 +577,7 @@
 
         let prodChartInstance = null;
         let oeeChartInstance = null;
+        let lossChartInstance = null;
 
         function renderCharts() {
             const months = ['JANUARI', 'FEBRUARI', 'MARET', 'APRIL', 'MEI', 'JUNI', 'JULI', 'AGUSTUS', 'SEPTEMBER', 'OKTOBER', 'NOVEMBER', 'DESEMBER'];
@@ -693,6 +662,46 @@
                             stacked: true, 
                             max: 100,
                             ticks: { callback: function(value){return value + "%"} }
+                        }
+                    }
+                }
+            });
+
+            const ctx3 = document.getElementById('chartLoss').getContext('2d');
+            if(lossChartInstance) lossChartInstance.destroy();
+
+            lossChartInstance = new Chart(ctx3, {
+                type: 'pie',
+                data: {
+                    labels: ['BREAK DOWN', 'MINOR STOP', 'SPEEDLOSS', 'EXTERNAL STOP', 'UNUSE', 'TRIAL', 'PLANDOWN TIME'],
+                    datasets: [{
+                        data: [0, 3.2, 1.4, 1.2, 2, 3, 8.2],
+                        backgroundColor: [
+                            '#4472c4', // BREAK DOWN (Blue)
+                            '#ed7d31', // MINOR STOP (Orange)
+                            '#a5a5a5', // SPEEDLOSS (Grey)
+                            '#ffc000', // EXTERNAL STOP (Yellow)
+                            '#5b9bd5', // UNUSE (Light Blue)
+                            '#70ad47', // TRIAL (Green)
+                            '#264478'  // PLANDOWN TIME (Dark Blue)
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: { usePointStyle: true, padding: 20 }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return context.label + ': ' + context.raw + '%';
+                                }
+                            }
                         }
                     }
                 }
