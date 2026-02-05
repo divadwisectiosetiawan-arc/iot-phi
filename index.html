@@ -972,51 +972,66 @@
             });
         }
 
-        // --- TAMBAHAN 2: KONEKSI KE EMQX (MQTT) ---
-        // Letakkan kode ini di bagian paling bawah Script
+// --- TAMBAHAN 2: KONEKSI KE EMQX (MQTT) ---
+// Bagian ini telah diperbarui menggunakan alamat Broker Public EMQX
+
+const mqttOptions = {
+    clean: true,
+    connectTimeout: 4000,
+    // Client ID unik dengan prefix phi_monitor
+    clientId: 'phi_monitor_' + Math.random().toString(16).substr(2, 8),
+    
+    // EMQX Public tidak membutuhkan username & password
+    username: '', 
+    password: '', 
+};
+
+// Alamat WebSocket Secure (WSS) Port 8084 Broker Public
+const brokerUrl = 'wss://broker.emqx.io:8084/mqtt'; 
+
+console.log('Menghubungkan ke MQTT EMQX:', brokerUrl);
+const client = mqtt.connect(brokerUrl, mqttOptions);
+
+client.on('connect', function () {
+    console.log('Terhubung ke EMQX Broker Public!');
+    
+    // Subscribe ke topik baru menggunakan wildcard (+) untuk semua mesin
+    // Format: iot/produksi_baru/[nomor_mesin]/counter
+    const topic = 'iot/produksi_baru/+/counter';
+    
+    client.subscribe(topic, function (err) {
+        if (!err) {
+            console.log('Berhasil subscribe ke topik: ' + topic);
+        } else {
+            console.error('Gagal subscribe:', err);
+        }
+    });
+});
+
+client.on('error', function (err) {
+    console.error('Koneksi Error: ', err);
+});
+
+client.on('message', function (topic, message) {
+    const payload = message.toString();
+    console.log('Data diterima dari [' + topic + ']:', payload);
+    
+    try {
+        const data = JSON.parse(payload);
         
-        const mqttOptions = {
-            clean: true,
-            connectTimeout: 4000,
-            clientId: 'monitor_dashboard_' + Math.random().toString(16).substr(2, 8),
-            
-            // --- WAJIB DIISI! BUKAN APP ID, TAPI USER AUTHENTICATION ---
-            // Buat User di Menu Authentication EMQX Dashboard
-            username: phi, 
-            password: 12345678, 
-        };
-
-        // Alamat WebSocket Secure (WSS) Port 8084
-        const brokerUrl = 'wss://m7cc22f2.ala.us-east-1.emqxsl.com:8084/mqtt'; 
-
-        console.log('Menghubungkan ke MQTT EMQX:', brokerUrl);
-        const client = mqtt.connect(brokerUrl, mqttOptions);
-
-        client.on('connect', function () {
-            console.log('Terhubung ke EMQX Broker!');
-            // Subscribe ke topik
-            client.subscribe('phi/sardines/monitor', function (err) {
-                if (!err) {
-                    console.log('Berhasil subscribe ke topik: phi/sardines/monitor');
-                }
-            });
-        });
-
-        client.on('error', function (err) {
-            console.error('Koneksi Error: ', err);
-            // Jika error auth, cek username & password
-        });
-
-        client.on('message', function (topic, message) {
-            const payload = message.toString();
-            console.log('Data diterima:', payload);
-            try {
-                const data = JSON.parse(payload);
-                updateDashboardRealtime(data);
-            } catch (e) {
-                console.error('Format data bukan JSON:', e);
-            }
-        });
+        // Sesuai struktur data baru: {"counter": {"L1": 123}}
+        if (data.counter) {
+            // Memanggil fungsi update dashboard yang ada di struktur kode baru Anda
+            updateCards(data.counter);
+            updateGrandTotal();
+        } else {
+            // fallback jika format data lama masih masuk
+            updateDashboardRealtime(data);
+        }
+    } catch (e) {
+        console.error('Format data bukan JSON:', e);
+    }
+});
 
         function updateDashboardRealtime(data) {
             // Update Total Production (Hero Section)
