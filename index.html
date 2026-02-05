@@ -6,7 +6,12 @@
     <title>SARDINES PRODUCTION - PHI (Integrated System)</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&family=Roboto+Mono:wght@500;700&display=swap" rel="stylesheet">
+    
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics-compat.js"></script>
 
     <style>
         /* --- 1. SETUP VARIABEL WARNA & DASAR --- */
@@ -75,14 +80,11 @@
 
         /* --- 4. CARD DESIGN --- */
         .grid-container { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-top: 15px; }
-        /* Tinggi card dikembalikan normal karena speed pindah ke header */
         .card { background: white; border-radius: var(--card-radius); box-shadow: var(--card-shadow); overflow: hidden; display: flex; flex-direction: column; height: 135px; } 
 
         .card-header { height: 45px; display: flex; justify-content: space-between; align-items: center; padding: 0 15px; font-family: 'Roboto Mono', monospace; color: white; text-transform: uppercase; letter-spacing: 1px; }
-        /* Style Line Name */
         .line-name { font-size: 20px; font-weight: 700; }
         
-        /* Style Baru untuk Speed di Header */
         .speed-box { text-align: right; line-height: 1.1; }
         .speed-lbl { font-size: 10px; font-weight: 700; opacity: 0.9; }
         .speed-val { font-size: 13px; font-weight: 900; }
@@ -446,7 +448,7 @@
             <div class="setting-top-section">
                 <div class="setting-total-box">
                     <div class="setting-total-title">TOTAL PRODUCTION :</div>
-                    <div class="setting-total-val">14567</div>
+                    <div class="setting-total-val" id="input-total-prod">14567</div>
                 </div>
                 <div class="setting-perf-box">
                     <div class="setting-perf-header">OVERALL PERFORMANCE PRODUCTION</div>
@@ -465,7 +467,7 @@
 
             <div class="action-bar">
                 <button class="btn-act btn-red">RESET ▼</button>
-                <button class="btn-act btn-green">SAVE</button>
+                <button class="btn-act btn-green" onclick="saveDataToFirebase()">SAVE</button>
                 <button class="btn-act btn-red">SETTINGS</button>
             </div>
 
@@ -631,7 +633,65 @@
         </div>
     </div>
 
+    <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+
     <script>
+        // --- 1. KONFIGURASI FIREBASE ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyBNIsY6s9PPG4RDFpf1GCMhlUMq-7_itic",
+            authDomain: "counter-b5014.firebaseapp.com",
+            databaseURL: "https://counter-b5014-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "counter-b5014",
+            storageBucket: "counter-b5014.firebasestorage.app",
+            messagingSenderId: "546497662501",
+            appId: "1:546497662501:web:188f5c3bb074affbbc79cc",
+            measurementId: "G-LTGB8TNL23"
+        };
+
+        // Inisialisasi Firebase
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+        const analytics = firebase.analytics(); // Analytics optional
+
+        // --- 2. FUNGSI SIMPAN KE FIREBASE ---
+        function saveDataToFirebase() {
+            // Ambil data dari tampilan (DOM) untuk disimpan
+            // Anda bisa mengganti ini dengan mengambil value dari <input> form jika sudah ada
+            
+            const timestamp = new Date().toLocaleString();
+            
+            // Contoh data statis (karena belum ada inputan dinamis di HTML asli)
+            const productionData = {
+                timestamp: timestamp,
+                total_production: 14567, // Bisa diambil dari document.getElementById('input-total-prod').innerText
+                performance: {
+                    actual: 8675,
+                    theoretical: 9675,
+                    efficiency: 90
+                },
+                lines_status: {
+                    line01: { speed: 70, status: 'Running' },
+                    line02: { speed: 70, status: 'Running' }
+                    // ...dst
+                }
+            };
+
+            // Simpan ke path 'sardines_production/logs'
+            // Gunakan .push() untuk membuat entri baru setiap kali save
+            database.ref('sardines_production/logs').push(productionData)
+                .then(() => {
+                    alert('BERHASIL: Data disimpan ke Firebase Realtime Database!');
+                    console.log('Data saved:', productionData);
+                })
+                .catch((error) => {
+                    alert('GAGAL: ' + error.message);
+                    console.error(error);
+                });
+        }
+
+
+        // --- LOGIKA PROGRAM ASLI ANDA DI BAWAH INI ---
+
         const Config = {
             machines: [
                 { id: 'L1', name: 'LINE 01' }, { id: 'L2', name: 'LINE 02' },
@@ -910,6 +970,95 @@
                     }
                 }
             });
+        }
+
+        // --- TAMBAHAN 2: KONEKSI KE EMQX (MQTT) ---
+        // Letakkan kode ini di bagian paling bawah Script
+        
+        const mqttOptions = {
+            clean: true,
+            connectTimeout: 4000,
+            clientId: 'monitor_dashboard_' + Math.random().toString(16).substr(2, 8),
+            
+            // --- WAJIB DIISI! BUKAN APP ID, TAPI USER AUTHENTICATION ---
+            // Buat User di Menu Authentication EMQX Dashboard
+            username: phi, 
+            password: 12345678, 
+        };
+
+        // Alamat WebSocket Secure (WSS) Port 8084
+        const brokerUrl = 'wss://m7cc22f2.ala.us-east-1.emqxsl.com:8084/mqtt'; 
+
+        console.log('Menghubungkan ke MQTT EMQX:', brokerUrl);
+        const client = mqtt.connect(brokerUrl, mqttOptions);
+
+        client.on('connect', function () {
+            console.log('Terhubung ke EMQX Broker!');
+            // Subscribe ke topik
+            client.subscribe('phi/sardines/monitor', function (err) {
+                if (!err) {
+                    console.log('Berhasil subscribe ke topik: phi/sardines/monitor');
+                }
+            });
+        });
+
+        client.on('error', function (err) {
+            console.error('Koneksi Error: ', err);
+            // Jika error auth, cek username & password
+        });
+
+        client.on('message', function (topic, message) {
+            const payload = message.toString();
+            console.log('Data diterima:', payload);
+            try {
+                const data = JSON.parse(payload);
+                updateDashboardRealtime(data);
+            } catch (e) {
+                console.error('Format data bukan JSON:', e);
+            }
+        });
+
+        function updateDashboardRealtime(data) {
+            // Update Total Production (Hero Section)
+            const heroNum = document.querySelector('.hero-num');
+            if (heroNum && data.total_production) {
+                heroNum.innerText = data.total_production;
+            }
+
+            // Update Data Per Line
+            if (data.lines) {
+                const cards = document.querySelectorAll('.card');
+                
+                cards.forEach(card => {
+                    const lineNameEl = card.querySelector('.line-name');
+                    if (lineNameEl) {
+                        const lineName = lineNameEl.innerText.trim();
+                        
+                        if (data.lines[lineName]) {
+                            const lineData = data.lines[lineName];
+                            
+                            // Target div .val (Index 0 = Actual, Index 1 = Theoretical)
+                            const valElements = card.querySelectorAll('.val');
+                            if (valElements.length >= 2) {
+                                if(lineData.actual) valElements[0].innerText = lineData.actual;
+                                if(lineData.theoretical) valElements[1].innerText = lineData.theoretical;
+                            }
+
+                            // Update Efficiency
+                            const effVal = card.querySelector('.eff-val');
+                            if (effVal && lineData.efficiency) {
+                                effVal.innerText = lineData.efficiency + '%';
+                            }
+                            
+                            // Update Speed
+                            const speedVal = card.querySelector('.speed-val');
+                            if (speedVal && lineData.speed) {
+                                speedVal.innerText = lineData.speed + '/CPM';
+                            }
+                        }
+                    }
+                });
+            }
         }
     </script>
 </body>
